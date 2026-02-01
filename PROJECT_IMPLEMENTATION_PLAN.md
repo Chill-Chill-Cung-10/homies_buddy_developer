@@ -105,17 +105,17 @@ dev_dependencies:
 ### 0.3 Project Structure Refinement
 ```
 lib/
-├── core/
-│   ├── config/
+├── core/ # Infrastructure
+│   ├── config/ # Global config
 │   │   ├── firebase_config.dart
 │   │   ├── app_config.dart
 │   │   └── environment.dart
-│   ├── network/
-│   │   ├── api_client.dart
-│   │   ├── api_endpoints.dart
-│   │   ├── interceptors/
-│   │   └── websocket_service.dart
-│   ├── storage/
+│   ├── network/ # Nơi tập trung giao tiếp với world
+│   │   ├── api_client.dart # Wrapper của Dio: base config,timeout
+│   │   ├── api_endpoints.dart # Tích hợp tất cả URL 
+│   │   ├── interceptors/ # Auth token, refresh token,logging & error
+│   │   └── websocket_service.dart # Realtime 
+│   ├── storage/ # 
 │   │   ├── hive_service.dart
 │   │   ├── secure_storage.dart
 │   │   └── cache_manager.dart
