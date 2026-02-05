@@ -1,11 +1,17 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:homies_buddy_developer/core/constants/app_assets.dart';
 import 'package:homies_buddy_developer/core/constants/app_colors.dart';
 import 'package:homies_buddy_developer/core/constants/app_shapes.dart';
+import 'package:homies_buddy_developer/core/constants/app_text_styles.dart';
+import 'forgot_password_screen.dart';
+import 'register_screen.dart';
+import 'change_password_screen.dart';
 
 class LoginScreen extends StatefulWidget{
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -19,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
+      backgroundColor: AppColors.backgroundPeach,
       body: SafeArea(child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppShapes.paddingL),
         child: Form(
@@ -30,18 +36,18 @@ class _LoginScreenState extends State<LoginScreen> {
               // UI
               // Logo
               const SizedBox(height: 40),
-              SvgPicture.asset(
-                AppAssets.logo,
-                height: 80,
-                width: 80
+              Image.asset(
+                AppAssets.mascotBackRemoved,
+                height: 100,
+                width: 100
               ),
 
               const SizedBox(height: 32),
 
               // Title
               Text(
-                'Welcome Back!',
-                style: Theme.of(context).textTheme.displayMedium?.copyWith(
+                'Welcome to Amicute World!',
+                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                   color: AppColors.textPrimary,
                   fontWeight: FontWeight.bold,
                 ),
@@ -51,7 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 8),
 
               Text(
-                'Log in to your account',
+                'Where pets connect hearts',
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: AppColors.textSecondary,
                 ),
@@ -59,22 +65,39 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
 
               const SizedBox(height: 40),
-
+              
               // Email TextField
-              TextFormField(
+                TextFormField(
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
                   labelText: 'Email',
                   hintText: 'Enter your email',
-                  prefixIcon: Icon(Icons.email_outlined),
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                  borderRadius: AppShapes.card,
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                  borderRadius: AppShapes.card,
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                  borderRadius: AppShapes.card,
+                  borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
+                  return 'Please enter your email';
                   }
                   if (!value.contains('@')) {
-                    return 'Please enter a valid email';
+                  return 'Please enter a valid email';
                   }
                   return null;
                 },
@@ -83,30 +106,47 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
 
               // Password TextField
-              TextFormField(
+                TextFormField(
                 controller: _passwordController,
                 obscureText: _obscurePassword,
+                textInputAction: TextInputAction.done,
                 decoration: InputDecoration(
                   labelText: 'Password',
                   hintText: 'Enter your password',
+                  floatingLabelBehavior: FloatingLabelBehavior.never,
                   prefixIcon: const Icon(Icons.lock_outlined),
                   suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                   ),
+                  onPressed: () {
+                    setState(() {
+                    _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                  borderRadius: AppShapes.card,
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                  borderRadius: AppShapes.card,
+                  borderSide: const BorderSide(color: Colors.grey, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                  borderRadius: AppShapes.card,
+                  borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
+                  return 'Please enter your password';
                   }
                   if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
+                  return 'Password must be at least 6 characters';
                   }
                   return null;
                 },
@@ -119,13 +159,24 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // TODO: Navigate to Forgot Password
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ForgotPasswordScreen(),
+                      ),
+                    );
                   },
-                  child: const Text('Forgot Password?'),
+                  child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 15),
 
               // Login Button
               SizedBox(
@@ -133,12 +184,38 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // TODO: Handle login
+                      // Demo: Show success and navigate to Change Password
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Login successful! (Demo Mode)'),
+                          backgroundColor: AppColors.successGreen,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      
+                      // Navigate to Change Password after a short delay
+                      Future.delayed(const Duration(seconds: 1), () {
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ChangePasswordScreen(),
+                            ),
+                          );
+                        }
+                      });
                     }
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Text('Login'),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.textPrimary,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppShapes.button,
+                    ),
+                  ),
+                  child: const Text(
+                  'Login',
+                  style: AppTextStyles.buttonLarge,
                   ),
                 ),
               ),
@@ -150,15 +227,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    'Don\'t have an account? ',
+                    'Don\'t have an account?',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // TODO: Navigate to Register
-                    },
-                    child: const Text('Sign Up'),
-                  ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const RegisterScreen(),
+                          ),
+                        );
+                      },
+                      child: const Text(
+                        'Sign Up',
+                        style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                 ],
               ),
 
@@ -184,14 +272,22 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 24),
 
               // Google Sign In
-              OutlinedButton.icon(
+                ElevatedButton.icon(
                 onPressed: () {
                   // TODO: Google Sign In
                 },
-                icon: const Icon(Icons.g_mobiledata, size: 24),
-                label: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text('Continue with Google'),
+                icon: const Icon(Icons.g_mobiledata, size: 24, color: AppColors.textPrimary),
+                label: const Text(
+                  'Continue with Google',
+                  style: TextStyle(color: AppColors.textPrimary),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                  borderRadius: AppShapes.button,
+                  side: const BorderSide(color: Colors.grey, width: 1),
+                  ),
                 ),
               ),
 

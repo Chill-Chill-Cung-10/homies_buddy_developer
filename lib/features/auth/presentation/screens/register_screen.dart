@@ -5,7 +5,7 @@ import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_assets.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -156,7 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 
                 // Title
                 Text(
-                  'Create Account',
+                  'Create Amicute Account',
                   style: AppTextStyles.h1,
                   textAlign: TextAlign.center,
                 ),
@@ -165,7 +165,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 
                 // Subtitle
                 Text(
-                  'Sign up to get started',
+                  'Prepare to get into pets world',
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -181,7 +181,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Full Name',
                     hintText: 'Enter your full name',
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     prefixIcon: const Icon(Icons.person_outline),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   ),
                   textInputAction: TextInputAction.next,
                 ),
@@ -196,7 +212,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Email',
                     hintText: 'Enter your email',
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     prefixIcon: const Icon(Icons.email_outlined),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   ),
                   textInputAction: TextInputAction.next,
                 ),
@@ -211,6 +243,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     hintText: 'Enter your password',
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -222,6 +255,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         });
                       },
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   ),
                   textInputAction: TextInputAction.next,
                 ),
@@ -236,6 +284,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
                     hintText: 'Re-enter your password',
+                    floatingLabelBehavior: FloatingLabelBehavior.never,
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -247,6 +296,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         });
                       },
                     ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: Colors.grey, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppShapes.card,
+                      borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   ),
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _handleRegister(),
@@ -299,24 +363,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Register Button
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleRegister,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.textPrimary,
+                      minimumSize: const Size(double.infinity, 56),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: AppShapes.button,
+                      ),
+                    ),
                     child: _isLoading
                       ? const SizedBox(
                         width: 20,
                         height: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.successGreen),
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                         )
-                      : Text(
+                      : const Text(
                         'Sign Up',
-                        style: TextStyle(
-                          color: AppColors.textPrimary,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: AppTextStyles.buttonLarge,
                         ),
                   ),
                 ),
@@ -336,7 +403,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Text(
                         'Sign In',
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.primaryGreen,
+                          color: AppColors.textSecondary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -361,30 +428,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: AppShapes.paddingL),
                 
                 // Google Sign Up
-                OutlinedButton.icon(
+                ElevatedButton.icon(
                   onPressed: _isLoading ? null : () {
                     // TODO: Implement Google Sign Up
                   },
-                  icon: const Icon(Icons.g_mobiledata, size: 24),
-                  label: const Text('Sign up with Google'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
+                  icon: const Icon(Icons.g_mobiledata, size: 24, color: AppColors.textPrimary),
+                  label: const Text(
+                    'Continue with Google',
+                    style: TextStyle(color: AppColors.textPrimary),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 56),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: AppShapes.button,
+                      side: const BorderSide(color: Colors.grey, width: 1),
+                    ),
                   ),
                 ),
                 
-                const SizedBox(height: AppShapes.paddingM),
-                
-                // Apple Sign Up
-                OutlinedButton.icon(
-                  onPressed: _isLoading ? null : () {
-                    // TODO: Implement Apple Sign Up
-                  },
-                  icon: const Icon(Icons.apple, size: 24),
-                  label: const Text('Sign up with Apple'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                ),
                 
                 const SizedBox(height: AppShapes.paddingXL),
               ],

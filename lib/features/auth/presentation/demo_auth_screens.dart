@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
-import 'features/auth/presentation/screens/register_screen.dart';
-import 'features/auth/presentation/screens/forgot_password_screen.dart';
-import 'features/auth/presentation/screens/change_password_screen.dart';
-import 'core/constants/app_colors.dart';
-import 'core/constants/app_text_styles.dart';
-import 'core/constants/app_shapes.dart';
-import 'core/constants/app_spacing.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/forgot_password_screen.dart';
+import 'screens/change_password_screen.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_text_styles.dart';
+import '../../../core/constants/app_shapes.dart';
+import '../../../core/constants/app_spacing.dart';
 
 /// Demo screen để test tất cả Authentication screens
 /// Chạy: flutter run lib/demo_auth_screens.dart
@@ -15,7 +15,7 @@ void main() {
 }
 
 class DemoAuthScreensApp extends StatelessWidget {
-  const DemoAuthScreensApp({Key? key}) : super(key: key);
+  const DemoAuthScreensApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +27,23 @@ class DemoAuthScreensApp extends StatelessWidget {
         colorScheme: ColorScheme.light(
           primary: AppColors.primaryPeach,
           secondary: AppColors.primaryGreen,
-          background: AppColors.backgroundLight,
+          surface: AppColors.backgroundLight,
         ),
       ),
-      home: const DemoHomeScreen(),
+      home: const LoginScreen(),
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegisterScreen(),
+        '/forgot-password': (context) => const ForgotPasswordScreen(),
+        '/change-password': (context) => const ChangePasswordScreen(),
+        '/demo-home': (context) => const DemoHomeScreen(),
+      },
     );
   }
 }
 
 class DemoHomeScreen extends StatelessWidget {
-  const DemoHomeScreen({Key? key}) : super(key: key);
+  const DemoHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -86,8 +93,10 @@ class DemoHomeScreen extends StatelessWidget {
 
               // Subtitle
               Text(
-                'Select a screen to preview',
-                style: AppTextStyles.bodyMedium,
+                'Use Back button to return here from Login',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
                 textAlign: TextAlign.center,
               ),
 
@@ -173,19 +182,34 @@ class DemoHomeScreen extends StatelessWidget {
                   color: AppColors.primaryPink.withOpacity(0.3),
                   borderRadius: AppShapes.button,
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.info_outline,
-                      color: AppColors.textSecondary,
-                      size: 20,
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.info_outline,
+                          color: AppColors.textSecondary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: AppSpacing.s),
+                        Expanded(
+                          child: Text(
+                            'Navigation Flow:',
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: AppSpacing.s),
-                    Expanded(
-                      child: Text(
-                        'These screens are UI-only. Service integration will be added later.',
-                        style: AppTextStyles.bodySmall,
-                      ),
+                    const SizedBox(height: AppSpacing.s),
+                    Text(
+                      '1. Login → Register / Forgot Password\n'
+                      '2. Register → Back to Login\n'
+                      '3. Forgot Password → Back to Login\n'
+                      '4. Login (success) → Change Password',
+                      style: AppTextStyles.bodySmall,
                     ),
                   ],
                 ),

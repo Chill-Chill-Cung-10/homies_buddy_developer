@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'core/theme/app_theme.dart';
-import 'features/navigation/presentation/screens/main_navigation_screen.dart';
+import 'features/navigation/presentation/main_navigation_screen.dart';
 
 /// Main entry point of Homies Buddy application
 void main() {

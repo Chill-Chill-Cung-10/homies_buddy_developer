@@ -7,6 +7,7 @@ import '../../../../core/constants/app_spacing.dart';
 /// Change Password Screen
 /// Màn hình để người dùng thay đổi mật khẩu (khi đã đăng nhập)
 class ChangePasswordScreen extends StatefulWidget {
+  // ignore: use_super_parameters
   const ChangePasswordScreen({Key? key}) : super(key: key);
 
   @override
@@ -195,19 +196,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   textInputAction: TextInputAction.next,
                   validator: _validateCurrentPassword,
                   enabled: !_isLoading,
+                  style: const TextStyle(fontSize: 16),
                   decoration: InputDecoration(
                     labelText: 'Current Password',
+                    labelStyle: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
                     hintText: 'Enter your current password',
+                    hintStyle: const TextStyle(fontSize: 16),
                     prefixIcon: const Icon(
                       Icons.lock_outline,
-                      color: AppColors.textSecondary,
+                      color: Colors.black,
+                      size: 24,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureCurrentPassword
                             ? Icons.visibility_off
                             : Icons.visibility,
-                        color: AppColors.textSecondary,
+                        color: Colors.black,
                       ),
                       onPressed: () {
                         setState(() {
@@ -217,6 +222,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     filled: true,
                     fillColor: AppColors.surfaceColor,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: AppShapes.button,
                       borderSide: BorderSide.none,
@@ -228,7 +237,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: AppShapes.button,
                       borderSide: const BorderSide(
-                        color: AppColors.primaryGreen,
+                        color: AppColors.textPrimary,
                         width: 2,
                       ),
                     ),
@@ -258,19 +267,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   textInputAction: TextInputAction.next,
                   validator: _validateNewPassword,
                   enabled: !_isLoading,
+                  style: const TextStyle(fontSize: 16),
                   decoration: InputDecoration(
                     labelText: 'New Password',
+                    labelStyle: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
                     hintText: 'Enter your new password',
+                    hintStyle: const TextStyle(fontSize: 16),
                     prefixIcon: const Icon(
                       Icons.lock_outline,
-                      color: AppColors.textSecondary,
+                      color: Colors.black,
+                      size: 24,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureNewPassword
                             ? Icons.visibility_off
                             : Icons.visibility,
-                        color: AppColors.textSecondary,
+                        color: Colors.black,
                       ),
                       onPressed: () {
                         setState(() {
@@ -280,6 +293,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     filled: true,
                     fillColor: AppColors.surfaceColor,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: AppShapes.button,
                       borderSide: BorderSide.none,
@@ -291,7 +308,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: AppShapes.button,
                       borderSide: const BorderSide(
-                        color: AppColors.primaryGreen,
+                        color: AppColors.textPrimary,
                         width: 2,
                       ),
                     ),
@@ -321,19 +338,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   textInputAction: TextInputAction.done,
                   validator: _validateConfirmPassword,
                   enabled: !_isLoading,
+                  style: const TextStyle(fontSize: 16),
                   decoration: InputDecoration(
                     labelText: 'Confirm New Password',
+                    labelStyle: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
                     hintText: 'Re-enter your new password',
+                    hintStyle: const TextStyle(fontSize: 16),
                     prefixIcon: const Icon(
                       Icons.lock_outline,
-                      color: AppColors.textSecondary,
+                      color: Colors.black,
+                      size: 24,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscureConfirmPassword
                             ? Icons.visibility_off
                             : Icons.visibility,
-                        color: AppColors.textSecondary,
+                        color: Colors.black,
                       ),
                       onPressed: () {
                         setState(() {
@@ -343,6 +364,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     ),
                     filled: true,
                     fillColor: AppColors.surfaceColor,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: AppShapes.button,
                       borderSide: BorderSide.none,
@@ -354,7 +379,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: AppShapes.button,
                       borderSide: const BorderSide(
-                        color: AppColors.primaryGreen,
+                        color: AppColors.textPrimary,
                         width: 2,
                       ),
                     ),
@@ -424,17 +449,15 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
                 // Update Password Button
                 SizedBox(
-                  height: 56,
+                  width: double.infinity,
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _handleUpdatePassword,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.buttonPrimary,
-                      foregroundColor: AppColors.textPrimary,
-                      elevation: 2,
+                      backgroundColor: AppColors.textPrimary,
+                      minimumSize: const Size(double.infinity, 56),
                       shape: RoundedRectangleBorder(
                         borderRadius: AppShapes.button,
                       ),
-                      disabledBackgroundColor: AppColors.buttonPrimary.withOpacity(0.5),
                     ),
                     child: _isLoading
                         ? const SizedBox(
@@ -442,9 +465,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                             height: 24,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                AppColors.textPrimary,
-                              ),
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text(

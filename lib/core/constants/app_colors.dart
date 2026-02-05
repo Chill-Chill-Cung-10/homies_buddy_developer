@@ -38,6 +38,8 @@ class AppColors {
   
   // Background Colors
   static const Color backgroundLight = Color(0xFFFFF8F5);
+  static const Color backgroundPost = Color(0xFFFFFFFF);
+  static const Color backgroundPeach = Color(0xFFF5D5C8);
   static const Color cardBackground = Color(0xFFFFF5EE);
   static const Color surfaceColor = Color(0xFFFAF0E6);
   
@@ -62,13 +64,14 @@ class AppColors {
   static const Color navBarUnselected = Color(0xFFBDA88F);
   
   // Gradient Colors
-  static const LinearGradient skyGradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
+  static const LinearGradient backgroundGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
     colors: [
-      Color(0xFFE8F4F8),
-      Color(0xFFB8D4E8),
-    ],
+        Color(0xFFFFD9CC),
+        Color(0xFFF6E4C9),
+      ],
+    stops: [0.0, 0.73],
   );
   
   static const LinearGradient cardGradient = LinearGradient(

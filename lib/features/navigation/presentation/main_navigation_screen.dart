@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../../home/presentation/screens/home_screen.dart';
-import '../../../community/presentation/screens/community_screen.dart';
-import '../../../help/presentation/screens/help_screen.dart';
-import '../../../profile/presentation/screens/profile_screen.dart';
-import '../../../../core/constants/app_colors.dart';
+import '../../home/presentation/screens/home_screen.dart';
+import '../../community/presentation/community_screen.dart';
+import '../../help/presentation/screens/help_screen.dart';
+import '../../profile/presentation/screens/profile_screen.dart';
+import '../../../core/constants/app_colors.dart';
 
 /// Main Navigation Screen with Material 3 Bottom Navigation Bar
 /// 

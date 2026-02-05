@@ -15,7 +15,7 @@ class CustomButton extends StatelessWidget {
   final double? height;
 
   const CustomButton({
-    Key? key,
+    super.key,
     required this.text,
     this.onPressed,
     this.isLoading = false,
@@ -23,7 +23,7 @@ class CustomButton extends StatelessWidget {
     this.type = ButtonType.primary,
     this.icon,
     this.height,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +140,7 @@ class CustomTextField extends StatefulWidget {
   final void Function(String)? onChanged;
 
   const CustomTextField({
-    Key? key,
+    super.key,
     this.controller,
     required this.label,
     this.hint,
@@ -153,7 +153,7 @@ class CustomTextField extends StatefulWidget {
     this.textInputAction,
     this.maxLines = 1,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -231,14 +231,14 @@ class PasswordTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
 
   const PasswordTextField({
-    Key? key,
+    super.key,
     this.controller,
     required this.label,
     this.hint,
     this.validator,
     this.enabled = true,
     this.textInputAction,
-  }) : super(key: key);
+  });
 
   @override
   State<PasswordTextField> createState() => _PasswordTextFieldState();
@@ -280,11 +280,11 @@ class LoadingOverlay extends StatelessWidget {
   final String? loadingText;
 
   const LoadingOverlay({
-    Key? key,
+    super.key,
     required this.isLoading,
     required this.child,
     this.loadingText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -330,13 +330,13 @@ class EmptyStateWidget extends StatelessWidget {
   final String? actionLabel;
 
   const EmptyStateWidget({
-    Key? key,
+    super.key,
     required this.title,
     required this.message,
     required this.icon,
     this.onAction,
     this.actionLabel,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -386,12 +386,12 @@ class InfoCard extends StatelessWidget {
   final Color? iconColor;
 
   const InfoCard({
-    Key? key,
+    super.key,
     required this.message,
     required this.icon,
     this.backgroundColor,
     this.iconColor,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -15,12 +15,10 @@ class AppTheme {
       secondary: AppColors.primaryGreen,
       tertiary: AppColors.primaryPink,
       surface: AppColors.surfaceColor,
-      background: AppColors.backgroundLight,
       error: AppColors.errorRed,
       onPrimary: AppColors.textPrimary,
       onSecondary: AppColors.textPrimary,
       onSurface: AppColors.textPrimary,
-      onBackground: AppColors.textPrimary,
       onError: Colors.white,
     ),
     
@@ -153,8 +151,8 @@ class AppTheme {
       indicatorColor: AppColors.primaryGreen.withOpacity(0.3),
       height: 70,
       elevation: 8,
-      labelTextStyle: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
+      labelTextStyle: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
           return AppTextStyles.label.copyWith(
             color: AppColors.navBarSelected,
             fontSize: 12,
@@ -165,8 +163,8 @@ class AppTheme {
           fontSize: 12,
         );
       }),
-      iconTheme: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
+      iconTheme: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
           return const IconThemeData(
             color: AppColors.navBarSelected,
             size: 28,

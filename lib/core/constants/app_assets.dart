@@ -32,6 +32,7 @@ class AppAssets {
   
   // Auth Assets
   static const String logo = './assets/images/icons/logo.svg'; // SVG from lib/core/assets
+  static const String mascotBackRemoved = 'assets/images/auth/mascot_bg_remove.png';
   static const String authBackground = 'assets/images/auth/auth_background.png';
   static const String welcomeIllustration = 'assets/images/auth/welcome_illustration.png';
   
