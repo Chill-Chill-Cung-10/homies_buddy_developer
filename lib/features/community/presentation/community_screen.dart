@@ -1,50 +1,112 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../mockdata/community_mock_data.dart';
+import 'widgets/social_post_card.dart';
+import 'widgets/comment_overlay.dart';
 
-/// Community Screen - Community Neighbors (Placeholder)
-/// TODO: Implement community feed with cards
-class CommunityScreen extends StatelessWidget {
+/// Community Screen - Community Feed với Social Post Cards
+/// 
+/// Hiển thị feed của các bài post từ community
+class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
+
+  @override
+  State<CommunityScreen> createState() => _CommunityScreenState();
+}
+
+class _CommunityScreenState extends State<CommunityScreen> {
+  final _posts = CommunityMockData.mockPosts;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: const Text(
-          'Community Neighbors',
+          'Community',
           style: AppTextStyles.h2,
         ),
-        backgroundColor: AppColors.backgroundLight,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.search,
+              color: AppColors.iconColor,
+            ),
+            onPressed: () {
+              // TODO: Implement search
+            },
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.add_circle_outline,
+              color: AppColors.iconColor,
+            ),
+            onPressed: () {
+              // TODO: Create new post
+            },
+          ),
+        ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.people,
-              size: 80,
-              color: AppColors.primaryPink,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Community Screen',
-              style: AppTextStyles.h1,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Community feed will be implemented here',
-              style: AppTextStyles.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '(Phase 4 - Community Screen)',
-              style: AppTextStyles.caption,
-            ),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.cardGradient,
+        ),
+        child: RefreshIndicator(
+          color: AppColors.accentOrange,
+          onRefresh: () async {
+            // TODO: Implement refresh
+            await Future.delayed(const Duration(seconds: 1));
+          },
+          child: ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            itemCount: _posts.length,
+            itemBuilder: (context, index) {
+              final post = _posts[index];
+              return SocialPostCard(
+                post: post,
+                onLike: () {
+                  setState(() {
+                    // Toggle like state
+                    final updatedPost = post.copyWith(
+                      isLikedByMe: !post.isLikedByMe,
+                      reactsCount: post.isLikedByMe
+                          ? post.reactsCount - 1
+                          : post.reactsCount + 1,
+                    );
+                    _posts[index] = updatedPost;
+                  });
+                },
+                onComment: () {
+                  // Show comment overlay
+                  showCommentOverlay(context, post);
+                },
+                onAvatarTap: () {
+                  // TODO: Navigate to profile
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Profile: ${post.authorName}'),
+                      duration: const Duration(seconds: 1),
+                    ),
+                  );
+                },
+                onPostTap: () {
+                  // TODO: Navigate to post detail
+                },
+              );
+            },
+          ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // TODO: Create new post
+        },
+        backgroundColor: AppColors.accentOrange,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
         ),
       ),
     );

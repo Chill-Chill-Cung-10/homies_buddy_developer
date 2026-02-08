@@ -1,7 +1,5 @@
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:homies_buddy_developer/core/constants/app_assets.dart';
 import 'package:homies_buddy_developer/core/constants/app_colors.dart';
 import 'package:homies_buddy_developer/core/constants/app_shapes.dart';

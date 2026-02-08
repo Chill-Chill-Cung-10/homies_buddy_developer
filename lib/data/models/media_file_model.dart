@@ -47,7 +47,7 @@ extension MediaFileX on MediaFile {
     } else if (mediaAspectRatio >= 0.99 && mediaAspectRatio <= 1.01) {
       return '1:1';
     }
-    return '${width}:${height}';
+    return '$width:$height';
   }
 
   /// Lấy duration dạng string (vd: "1:23")
@@ -55,7 +55,7 @@ extension MediaFileX on MediaFile {
     if (durationSeconds == null || !isVideo) return '';
     final minutes = durationSeconds! ~/ 60;
     final seconds = durationSeconds! % 60;
-    return '${minutes}:${seconds.toString().padLeft(2, '0')}';
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 
   /// Kiểm tra xem video có dài không (> 1 phút)

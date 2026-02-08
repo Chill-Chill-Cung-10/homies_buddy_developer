@@ -58,6 +58,7 @@ dependencies:
   cached_network_image: ^3.3.1
   photo_view: ^0.15.0
   flutter_image_compress: ^2.1.0
+  carousel_slider: ^5.0.0
 
   # 6. Notification & Scheduler
   firebase_messaging: ^14.7.10
