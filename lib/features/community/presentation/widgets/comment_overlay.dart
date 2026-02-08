@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,10 +15,12 @@ import 'social_post_card.dart';
 /// Hiển thị comment overlay với post preview, comment input, filter, và comment list
 class CommentOverlay extends StatefulWidget {
   final Post post;
+  final String? highlightCommentId;
 
   const CommentOverlay({
     super.key,
     required this.post,
+    this.highlightCommentId,
   });
 
   @override
@@ -27,13 +30,51 @@ class CommentOverlay extends StatefulWidget {
 class _CommentOverlayState extends State<CommentOverlay> {
   final TextEditingController _commentController = TextEditingController();
   final FocusNode _commentFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
+  final Map<String, GlobalKey> _commentKeys = {};
+  
   late List<Comment> _comments;
   CommentSortOption _selectedSortOption = CommentSortOption.latest;
+  String? _currentHighlightedCommentId;
+  double _highlightOpacity = 0.2; // Opacity for smooth fade-out
+  EdgeInsets _highlightPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4); // Padding for smooth size transition
+  Timer? _highlightTimer;
   
   @override
   void initState() {
     super.initState();
+    _currentHighlightedCommentId = widget.highlightCommentId;
     _loadComments();
+    
+    // Scroll to highlighted comment after build
+    if (widget.highlightCommentId != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToHighlightedComment();
+      });
+      
+      // Start fade-out timer (2.5 seconds hold, then 800ms fade)
+      _highlightTimer = Timer(const Duration(milliseconds: 2000), () {
+        if (mounted) {
+          // Animate both opacity and padding to 0 smoothly
+          setState(() {
+            _highlightOpacity = 0.0;
+            _highlightPadding = EdgeInsets.zero; // Remove padding smoothly
+          });
+          
+          // After fade-out animation completes, remove highlight
+          Future.delayed(const Duration(milliseconds: 800), () {
+            if (mounted) {
+              setState(() {
+                _currentHighlightedCommentId = null;
+                // Reset for next time
+                _highlightOpacity = 0.2;
+                _highlightPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+              });
+            }
+          });
+        }
+      });
+    }
   }
 
   void _loadComments() {
@@ -47,7 +88,23 @@ class _CommentOverlayState extends State<CommentOverlay> {
   void dispose() {
     _commentController.dispose();
     _commentFocusNode.dispose();
+    _scrollController.dispose();
+    _highlightTimer?.cancel();
     super.dispose();
+  }
+  
+  void _scrollToHighlightedComment() {
+    if (widget.highlightCommentId == null) return;
+    
+    final key = _commentKeys[widget.highlightCommentId];
+    if (key?.currentContext != null) {
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: 0.3, // Position comment at 30% from top
+      );
+    }
   }
 
   void _handleSortChanged(CommentSortOption? newOption) {
@@ -107,6 +164,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
           // Scrollable content (Post Preview + Comments)
           Expanded(
             child: SingleChildScrollView(
+              controller: _scrollController,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -302,14 +360,21 @@ class _CommentOverlayState extends State<CommentOverlay> {
       itemCount: _comments.length,
       itemBuilder: (context, index) {
         final comment = _comments[index];
-        return _buildCommentItem(comment);
+        final isHighlighted = _currentHighlightedCommentId == comment.commentId;
+        
+        // Create GlobalKey for this comment if it's highlighted
+        if (isHighlighted && !_commentKeys.containsKey(comment.commentId)) {
+          _commentKeys[comment.commentId] = GlobalKey();
+        }
+        
+        return _buildCommentItem(comment, isHighlighted);
       },
     );
   }
 
   /// Single Comment Item
-  Widget _buildCommentItem(Comment comment) {
-    return Container(
+  Widget _buildCommentItem(Comment comment, bool isHighlighted) {
+    final commentWidget = Container(
       margin: const EdgeInsets.only(bottom: AppShapes.paddingM),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -337,7 +402,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
                 color: AppColors.surfaceColor,
                 child: const Icon(
                   Icons.person,
-                  size: 18,
+                  size: AppShapes.iconS,
                   color: AppColors.textHint,
                 ),
               ),
@@ -390,48 +455,57 @@ class _CommentOverlayState extends State<CommentOverlay> {
                 // Comment Meta (Like count + Time)
                 Row(
                   children: [
-                    GestureDetector(
-                      onTap: () => _handleCommentReact(comment),
-                      child: Row(
-                        children: [
-                          SvgPicture.asset(
-                            comment.isReactedByMe
-                                ? 'assets/images/icons/heart_reactions_on.svg'
-                                : 'assets/images/icons/heart_reactions_off.svg',
-                            width: 14,
-                            height: 14,
-                            colorFilter: ColorFilter.mode(
+                    Flexible(
+                      child: GestureDetector(
+                        onTap: () => _handleCommentReact(comment),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SvgPicture.asset(
                               comment.isReactedByMe
-                                  ? AppColors.errorRed
-                                  : AppColors.iconColor,
-                              BlendMode.srcIn,
+                                  ? 'assets/images/icons/heart_reactions_on.svg'
+                                  : 'assets/images/icons/heart_reactions_off.svg',
+                              width: 14,
+                              height: 14,
+                              colorFilter: ColorFilter.mode(
+                                comment.isReactedByMe
+                                    ? AppColors.errorRed
+                                    : AppColors.iconColor,
+                                BlendMode.srcIn,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            comment.reactCount > 0
-                                ? 'Thích ${_formatCount(comment.reactCount)}'
-                                : 'Thích',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: comment.isReactedByMe
-                                  ? AppColors.errorRed
-                                  : AppColors.textHint,
-                              fontWeight: comment.isReactedByMe
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                comment.reactCount > 0
+                                    ? 'Thích ${_formatCount(comment.reactCount)}'
+                                    : 'Thích',
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: comment.isReactedByMe
+                                      ? AppColors.errorRed
+                                      : AppColors.textHint,
+                                  fontWeight: comment.isReactedByMe
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                     
                     const SizedBox(width: 16),
                     
                     // Time
-                    Text(
-                      comment.timeAgo,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.textHint,
+                    Flexible(
+                      child: Text(
+                        comment.timeAgo,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textHint,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -442,6 +516,23 @@ class _CommentOverlayState extends State<CommentOverlay> {
         ],
       ),
     );
+    
+    // Wrap with highlight container if this comment is highlighted
+    if (isHighlighted) {
+      return AnimatedContainer(
+        key: _commentKeys[comment.commentId],
+        duration: const Duration(milliseconds: 800), // Smooth fade duration
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: Colors.yellow.withValues(alpha: _highlightOpacity),
+          borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
+        ),
+        padding: _highlightPadding, // Animate padding smoothly
+        child: commentWidget,
+      );
+    }
+    
+    return commentWidget;
   }
 
   String _formatCount(int count) {
@@ -455,11 +546,18 @@ class _CommentOverlayState extends State<CommentOverlay> {
 }
 
 /// Helper function to show comment overlay
-void showCommentOverlay(BuildContext context, Post post) {
+void showCommentOverlay(
+  BuildContext context,
+  Post post, {
+  String? highlightCommentId,
+}) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => CommentOverlay(post: post),
+    builder: (context) => CommentOverlay(
+      post: post,
+      highlightCommentId: highlightCommentId,
+    ),
   );
 }

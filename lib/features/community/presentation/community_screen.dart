@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../mockdata/community_mock_data.dart';
+import '../mockdata/notification_mock_data.dart';
 import 'widgets/social_post_card.dart';
 import 'widgets/comment_overlay.dart';
+import 'notification_screen.dart';
 
 /// Community Screen - Community Feed với Social Post Cards
 /// 
@@ -38,14 +40,29 @@ class _CommunityScreenState extends State<CommunityScreen> {
               // TODO: Implement search
             },
           ),
-          IconButton(
-            icon: const Icon(
-              Icons.add_circle_outline,
-              color: AppColors.iconColor,
+          Badge(
+            isLabelVisible: NotificationMockData.getUnreadCount() > 0,
+            label: Text('${NotificationMockData.getUnreadCount()}'),
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            offset: const Offset(-4, 4),
+            child: IconButton(
+              icon: const Icon(
+                Icons.notifications,
+                color: AppColors.iconColor,
+              ),
+              onPressed: () {
+                // Navigate to Notification Screen
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationScreen(),
+                  ),
+                ).then((_) {
+                  // Refresh badge count after returning from notifications
+                  setState(() {});
+                });
+              },
             ),
-            onPressed: () {
-              // TODO: Create new post
-            },
           ),
         ],
       ),

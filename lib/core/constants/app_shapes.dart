@@ -29,6 +29,9 @@ class AppShapes {
   static const double cardElevation = 2.0;
   static const double cardHeight = 200.0;
   
+  // Author Avatar Dimensions
+  // static const double
+    
   // Bottom Navigation
   static const double navBarHeight = 60.0;
   static const double navIconSize = 28.0;
