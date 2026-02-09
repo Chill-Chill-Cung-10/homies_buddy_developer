@@ -34,6 +34,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
   final Map<String, GlobalKey> _commentKeys = {};
   
   late List<Comment> _comments;
+  late Post _post; // Local post state for managing reactions
   CommentSortOption _selectedSortOption = CommentSortOption.latest;
   String? _currentHighlightedCommentId;
   double _highlightOpacity = 0.2; // Opacity for smooth fade-out
@@ -44,6 +45,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
   void initState() {
     super.initState();
     _currentHighlightedCommentId = widget.highlightCommentId;
+    _post = widget.post; // Initialize local post state
     _loadComments();
     
     // Scroll to highlighted comment after build
@@ -209,12 +211,30 @@ class _CommentOverlayState extends State<CommentOverlay> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppShapes.paddingM, vertical: AppShapes.paddingS),
       child: SocialPostCard(
-        post: widget.post,
-        // Disable interactions in preview to avoid conflicts
-        onLike: null,
-        onComment: null,
-        onAvatarTap: null,
-        onPostTap: null,
+        post: _post,
+        isCommentHighlighted: true, // Highlight comment button in overlay
+        onLike: () {
+          // Toggle like state
+          setState(() {
+            _post = _post.copyWith(
+              isLikedByMe: !_post.isLikedByMe,
+              reactsCount: _post.isLikedByMe
+                  ? _post.reactsCount - 1
+                  : _post.reactsCount + 1,
+            );
+          });
+        },
+        onComment: null, // Disabled since we're already in comment mode
+        onAvatarTap: () {
+          // Navigate to profile
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Profile: ${_post.authorName}'),
+              duration: const Duration(seconds: 1),
+            ),
+          );
+        },
+        onPostTap: null, // Disabled in overlay
       ),
     );
   }

@@ -17,6 +17,9 @@ class SocialPostCard extends StatefulWidget {
   final VoidCallback? onComment;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onPostTap;
+  /// When true, the comment button is highlighted (e.g. in comment overlay mode)
+  /// and its tap interaction is disabled
+  final bool isCommentHighlighted;
 
   const SocialPostCard({
     super.key,
@@ -25,6 +28,7 @@ class SocialPostCard extends StatefulWidget {
     this.onComment,
     this.onAvatarTap,
     this.onPostTap,
+    this.isCommentHighlighted = false,
   });
 
   @override
@@ -460,28 +464,50 @@ class _SocialPostCardState extends State<SocialPostCard>
 
           // Comment Button
           GestureDetector(
-            onTap: widget.onComment,
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  'assets/images/icons/comments.svg',
-                  width: 24,
-                  height: 24,
-                  colorFilter: const ColorFilter.mode(
-                    AppColors.iconColor,
-                    BlendMode.srcIn,
+            onTap: widget.isCommentHighlighted ? null : widget.onComment,
+            child: Container(
+              padding: widget.isCommentHighlighted 
+                  ? const EdgeInsets.symmetric(horizontal: 12, vertical: 6)
+                  : EdgeInsets.zero,
+              decoration: widget.isCommentHighlighted 
+                  ? BoxDecoration(
+                      color: AppColors.accentOrange.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.accentOrange.withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                    )
+                  : null,
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    'assets/images/icons/comments.svg',
+                    width: 24,
+                    height: 24,
+                    colorFilter: ColorFilter.mode(
+                      widget.isCommentHighlighted 
+                          ? AppColors.accentOrange 
+                          : AppColors.iconColor,
+                      BlendMode.srcIn,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  _formatCount(widget.post.commentCount),
-                  style: const TextStyle(
-                    fontFamily: 'Norican',
-                    fontSize: 16,
-                    color: AppColors.textPrimary,
+                  const SizedBox(width: 6),
+                  Text(
+                    _formatCount(widget.post.commentCount),
+                    style: TextStyle(
+                      fontFamily: 'Norican',
+                      fontSize: 16,
+                      color: widget.isCommentHighlighted 
+                          ? AppColors.accentOrange 
+                          : AppColors.textPrimary,
+                      fontWeight: widget.isCommentHighlighted 
+                          ? FontWeight.w600 
+                          : FontWeight.normal,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
