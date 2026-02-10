@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -17,6 +18,10 @@ class SocialPostCard extends StatefulWidget {
   final VoidCallback? onComment;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onPostTap;
+  /// Callback when author name is tapped
+  final VoidCallback? onAuthorNameTap;
+  /// Callback when a mention is tapped, receives the mention string (e.g. '@haiia')
+  final ValueChanged<String>? onMentionTap;
   /// When true, the comment button is highlighted (e.g. in comment overlay mode)
   /// and its tap interaction is disabled
   final bool isCommentHighlighted;
@@ -28,6 +33,8 @@ class SocialPostCard extends StatefulWidget {
     this.onComment,
     this.onAvatarTap,
     this.onPostTap,
+    this.onAuthorNameTap,
+    this.onMentionTap,
     this.isCommentHighlighted = false,
   });
 
@@ -202,7 +209,6 @@ class _SocialPostCardState extends State<SocialPostCard>
   /// Build Author Name with mentions if available
   Widget _buildAuthorNameWithMentions() {
     if (widget.post.hasMentions) {
-      final mentionsText = widget.post.mentions.join(', ');
       return Text.rich(
         TextSpan(
           children: [
@@ -212,6 +218,10 @@ class _SocialPostCardState extends State<SocialPostCard>
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
               ),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  widget.onAuthorNameTap?.call();
+                },
             ),
             TextSpan(
               text: ' cùng với ',
@@ -220,23 +230,45 @@ class _SocialPostCardState extends State<SocialPostCard>
                 color: AppColors.textBlack,
               ),
             ),
-            TextSpan(
-              text: mentionsText,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
+            // Build each mention as a separate tappable span
+            ...widget.post.mentions.asMap().entries.expand((entry) {
+              final index = entry.key;
+              final mention = entry.value;
+              return [
+                if (index > 0)
+                  TextSpan(
+                    text: ', ',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                TextSpan(
+                  text: mention,
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.accentOrange,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      widget.onMentionTap?.call(mention);
+                    },
+                ),
+              ];
+            }),
           ],
         ),
       );
     }
     
-    return Text(
-      widget.post.authorName,
-      style: AppTextStyles.bodyLarge.copyWith(
-        fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+    return GestureDetector(
+      onTap: widget.onAuthorNameTap,
+      child: Text(
+        widget.post.authorName,
+        style: AppTextStyles.bodyLarge.copyWith(
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
       ),
     );
   }

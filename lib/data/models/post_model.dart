@@ -10,7 +10,7 @@ part 'post_model.g.dart';
 /// Chứa đầy đủ thông tin về bài post bao gồm nội dung,
 /// media files, tương tác (react, comment), và thông tin tác giả
 @freezed
-class Post with _$Post {
+class Post with _$Post {  
   const factory Post({
     required String authorName,
     required String authorId,

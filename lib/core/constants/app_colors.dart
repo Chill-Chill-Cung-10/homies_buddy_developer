@@ -47,6 +47,7 @@ class AppColors {
   static const Color textPrimary = Color(0xFF5D4E37);       // Màu nâu cho text chính
   static const Color textSecondary = Color(0xFF8B7355);     // Màu nâu nhạt
   static const Color textHint = Color(0xFFBDA88F);
+  static const Color textBlackContrast = Color(0xFFFFFFFF);
   static const Color textBlack = Color(0xFF000000);
   // UI Element Colors
   static const Color buttonPrimary = Color(0xFFE8C4A7);

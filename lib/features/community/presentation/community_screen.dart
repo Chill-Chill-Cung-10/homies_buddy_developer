@@ -3,9 +3,11 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../mockdata/community_mock_data.dart';
 import '../mockdata/notification_mock_data.dart';
+import '../mockdata/profile_mock_data.dart';
 import 'widgets/social_post_card.dart';
 import 'widgets/comment_overlay.dart';
 import 'notification_screen.dart';
+import 'screens/personal_profile_screen.dart';
 
 /// Community Screen - Community Feed với Social Post Cards
 /// 
@@ -19,6 +21,33 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen> {
   final _posts = CommunityMockData.mockPosts;
+
+  void _navigateToProfile(BuildContext context, String authorId) {
+    final user = ProfileMockData.getUserByAuthorId(authorId);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PersonalProfileScreen(user: user),
+      ),
+    );
+  }
+
+  void _navigateToProfileByUsername(BuildContext context, String mention) {
+    final user = ProfileMockData.getUserByUsername(mention);
+    if (user != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PersonalProfileScreen(user: user),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Profile not found for $mention'),
+          duration: const Duration(seconds: 1),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,13 +129,13 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   showCommentOverlay(context, post);
                 },
                 onAvatarTap: () {
-                  // TODO: Navigate to profile
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Profile: ${post.authorName}'),
-                      duration: const Duration(seconds: 1),
-                    ),
-                  );
+                  _navigateToProfile(context, post.authorId);
+                },
+                onAuthorNameTap: () {
+                  _navigateToProfile(context, post.authorId);
+                },
+                onMentionTap: (mention) {
+                  _navigateToProfileByUsername(context, mention);
                 },
                 onPostTap: () {
                   // TODO: Navigate to post detail
