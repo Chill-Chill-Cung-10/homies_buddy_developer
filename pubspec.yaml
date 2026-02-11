@@ -130,6 +130,8 @@ flutter:
     - assets/images/auth/
     - assets/images/icons/
     - assets/images/common/
+    - lib/features/help/presentation/screens/img/
+    - lib/features/help/presentation/screens/img/
     # Icons from lib/core/assets (for logo.svg)
     # - assets/images/icons/
 
