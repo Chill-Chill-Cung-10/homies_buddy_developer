@@ -1,18 +1,4 @@
 class AppAssets {
-  // Home Assets
-  static const String gardenBackground = 'assets/images/home/garden_background.png';
-  static const String house = 'assets/images/home/house.png';
-  static const String sheep = 'assets/images/home/sheep.png';
-  static const String cat = 'assets/images/home/cat.png';
-  static const String plantPot = 'assets/images/home/plant_pot.png';
-  static const String wateringCan = 'assets/images/home/watering_can_icon.png';
-  static const String flowerBed = 'assets/images/home/flower_bed.png';
-  static const String fence = 'assets/images/home/fence.png';
-  
-  // Community Assets
-  static const String harvestBasket = 'assets/images/community/harvest_basket.png';
-  static const String communityGarden = 'assets/images/community/community_garden.png';
-  static const String avatarPlaceholder = 'assets/images/community/avatar_placeholder.png';
   
   // Help Assets
   static const String mascotOnion = 'assets/images/help/mascot_onion.png';

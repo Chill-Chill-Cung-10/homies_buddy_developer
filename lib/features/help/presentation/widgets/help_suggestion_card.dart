@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
-import '../../data/models/chat_message_model.dart';
+import '../../data/models/help_chat_model.dart';
 
 /// Help Suggestion Card - displays help topic with icon and pastel background
 class HelpSuggestionCard extends StatelessWidget {

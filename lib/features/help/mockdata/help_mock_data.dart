@@ -1,4 +1,4 @@
-import '../data/models/chat_message_model.dart';
+import '../data/models/help_chat_model.dart';
 
 /// Mock data for Ask For Help screen
 class HelpMockData {
@@ -70,32 +70,32 @@ class HelpMockData {
   }
 
   /// Conversation history mock data
-  static List<ConversationHistory> get conversationHistories => [
-    ConversationHistory(
+  static List<HelpConversationHistory> get conversationHistories => [
+    HelpConversationHistory(
       id: 'conv_1',
       title: 'Fern Care Tips',
       preview: 'How often should I water my fern?',
       lastMessageAt: DateTime.now().subtract(const Duration(hours: 2)),
       messages: [
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_1_1',
           text: 'How often should I water my fern?',
           isUser: true,
           timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 5)),
         ),
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_1_2',
           text: getBotResponse('water fern'),
           isUser: false,
           timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 4)),
         ),
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_1_3',
           text: 'Thank you! That helps a lot.',
           isUser: true,
           timestamp: DateTime.now().subtract(const Duration(hours: 2)),
         ),
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_1_4',
           text: getBotResponse('thank'),
           isUser: false,
@@ -103,19 +103,19 @@ class HelpMockData {
         ),
       ],
     ),
-    ConversationHistory(
+    HelpConversationHistory(
       id: 'conv_2',
       title: 'Pet Training',
       preview: 'How do I start training my puppy?',
       lastMessageAt: DateTime.now().subtract(const Duration(days: 1)),
       messages: [
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_2_1',
           text: 'How do I start training my puppy?',
           isUser: true,
           timestamp: DateTime.now().subtract(const Duration(days: 1, minutes: 10)),
         ),
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_2_2',
           text: getBotResponse('training basics'),
           isUser: false,
@@ -123,19 +123,19 @@ class HelpMockData {
         ),
       ],
     ),
-    ConversationHistory(
+    HelpConversationHistory(
       id: 'conv_3',
       title: 'Health Checkup',
       preview: 'When should I take my cat to the vet?',
       lastMessageAt: DateTime.now().subtract(const Duration(days: 3)),
       messages: [
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_3_1',
           text: 'When should I take my cat to the vet?',
           isUser: true,
           timestamp: DateTime.now().subtract(const Duration(days: 3, minutes: 5)),
         ),
-        ChatMessage(
+        HelpChatMessage(
           id: 'msg_3_2',
           text: getBotResponse('health check vet'),
           isUser: false,

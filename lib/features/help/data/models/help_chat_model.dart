@@ -1,12 +1,16 @@
-/// Chat Message Model for Ask For Help screen
-class ChatMessage {
+/// Help Chat Model - for Ask For Help assistant chat (bot-human interaction)
+/// Renamed from chat_message_model.dart to distinguish from person-to-person messaging
+library;
+
+/// Chat message between user and help assistant bot
+class HelpChatMessage {
   final String id;
   final String text;
   final bool isUser;
   final DateTime timestamp;
   final List<String> imageUrls;
 
-  const ChatMessage({
+  const HelpChatMessage({
     required this.id,
     required this.text,
     required this.isUser,
@@ -14,14 +18,14 @@ class ChatMessage {
     this.imageUrls = const [],
   });
 
-  ChatMessage copyWith({
+  HelpChatMessage copyWith({
     String? id,
     String? text,
     bool? isUser,
     DateTime? timestamp,
     List<String>? imageUrls,
   }) {
-    return ChatMessage(
+    return HelpChatMessage(
       id: id ?? this.id,
       text: text ?? this.text,
       isUser: isUser ?? this.isUser,
@@ -31,15 +35,15 @@ class ChatMessage {
   }
 }
 
-/// Conversation history item
-class ConversationHistory {
+/// Help conversation history item (saved chat sessions with bot)
+class HelpConversationHistory {
   final String id;
   final String title;
   final String preview;
   final DateTime lastMessageAt;
-  final List<ChatMessage> messages;
+  final List<HelpChatMessage> messages;
 
-  const ConversationHistory({
+  const HelpConversationHistory({
     required this.id,
     required this.title,
     required this.preview,

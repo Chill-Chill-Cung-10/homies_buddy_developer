@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
-import '../../data/models/chat_message_model.dart';
+import '../../data/models/help_chat_model.dart';
 import '../../mockdata/help_mock_data.dart';
 import '../widgets/chat_bubble.dart';
 import '../widgets/help_suggestion_card.dart';
@@ -30,7 +30,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
   bool _isNewChat = true;
   bool _isTypingAnimationComplete = false;
   bool _isBotTyping = false;
-  final List<ChatMessage> _messages = [];
+  final List<HelpChatMessage> _messages = [];
   final List<String> _attachedImages = [];
 
   @override
@@ -46,7 +46,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
   void _sendMessage(String text) {
     if (text.trim().isEmpty && _attachedImages.isEmpty) return;
 
-    final userMessage = ChatMessage(
+    final userMessage = HelpChatMessage(
       id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
       text: text.trim(),
       isUser: true,
@@ -67,7 +67,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
     // Simulate bot response after delay
     Future.delayed(const Duration(milliseconds: 1200), () {
       if (!mounted) return;
-      final botResponse = ChatMessage(
+      final botResponse = HelpChatMessage(
         id: 'msg_bot_${DateTime.now().millisecondsSinceEpoch}',
         text: HelpMockData.getBotResponse(text),
         isUser: false,
@@ -85,7 +85,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
     _sendMessage(suggestion.title);
   }
 
-  void _loadConversation(ConversationHistory conversation) {
+  void _loadConversation(HelpConversationHistory conversation) {
     setState(() {
       _isNewChat = false;
       _messages.clear();

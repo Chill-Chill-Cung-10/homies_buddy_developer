@@ -8,6 +8,8 @@ import 'widgets/social_post_card.dart';
 import 'widgets/comment_overlay.dart';
 import 'notification_screen.dart';
 import 'screens/personal_profile_screen.dart';
+import '../../chat/presentation/screens/chat_list_screen.dart';
+import '../../chat/mockdata/chat_mock_data.dart';
 
 /// Community Screen - Community Feed với Social Post Cards
 /// 
@@ -54,7 +56,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Community',
+          'Amicute',
           style: AppTextStyles.h2,
         ),
         backgroundColor: Colors.transparent,
@@ -88,6 +90,30 @@ class _CommunityScreenState extends State<CommunityScreen> {
                   ),
                 ).then((_) {
                   // Refresh badge count after returning from notifications
+                  setState(() {});
+                });
+              },
+            ),
+          ),
+          Badge(
+            isLabelVisible: ChatMockData.getTotalUnreadCount() > 0,
+            label: Text('${ChatMockData.getTotalUnreadCount()}'),
+            backgroundColor: AppColors.accentOrange,
+            textColor: Colors.white,
+            offset: const Offset(-4, 4),
+            child: IconButton(
+              icon: const Icon(
+                Icons.chat_bubble_outline,
+                color: AppColors.iconColor,
+              ),
+              onPressed: () {
+                // Navigate to Chat List Screen
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ChatListScreen(),
+                  ),
+                ).then((_) {
+                  // Refresh badge count after returning from chat
                   setState(() {});
                 });
               },

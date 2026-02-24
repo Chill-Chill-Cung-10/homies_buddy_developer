@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
-import '../../data/models/chat_message_model.dart';
+import '../../data/models/help_chat_model.dart';
 
 /// Conversation History Sidebar - slides in from the right as a Drawer,
 /// showing past conversations and a "New Chat" button.
 class ConversationHistorySidebar extends StatelessWidget {
-  final List<ConversationHistory> conversations;
-  final ValueChanged<ConversationHistory> onConversationTap;
+  final List<HelpConversationHistory> conversations;
+  final ValueChanged<HelpConversationHistory> onConversationTap;
   final VoidCallback onNewChatTap;
 
   const ConversationHistorySidebar({
@@ -169,7 +169,7 @@ class ConversationHistorySidebar extends StatelessWidget {
 }
 
 class _ConversationTile extends StatelessWidget {
-  final ConversationHistory conversation;
+  final HelpConversationHistory conversation;
   final VoidCallback onTap;
 
   const _ConversationTile({
