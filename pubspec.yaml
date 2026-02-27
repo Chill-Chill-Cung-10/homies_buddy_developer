@@ -132,6 +132,8 @@ flutter:
     - assets/images/auth/
     - assets/images/icons/
     - assets/images/common/
+    - assets/images/home/background/
+    - assets/images/home/pets/
     # Icons from lib/core/assets (for logo.svg)
     # - assets/images/icons/
 
