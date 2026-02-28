@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/widgets/spinning_nav_button.dart';
 import '../mockdata/community_mock_data.dart';
 import '../mockdata/notification_mock_data.dart';
 import '../mockdata/profile_mock_data.dart';
@@ -55,6 +56,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: const SpinningNavButton(
+          iconColor: AppColors.textPrimary,
+        ),
         title: const Text(
           'Amicute',
           style: AppTextStyles.h2,

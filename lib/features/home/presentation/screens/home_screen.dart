@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/widgets/spinning_nav_button.dart';
 import '../widgets/calendar_item.dart';
 import '../widgets/exp_item.dart';
 import '../widgets/user_moments_box.dart';
@@ -50,15 +51,9 @@ class HomeScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  margin: EdgeInsets.only(top: 17),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.settings, color: Color(0xFFFFFFFF)),
-                    onPressed: () {
-                      // TODO: Navigate to settings
-                    },
+                  margin: const EdgeInsets.only(top: 17),
+                  child: const SpinningNavButton(
+                    iconColor: Colors.white,
                   ),
                 ),
                 SizedBox(width: 8),

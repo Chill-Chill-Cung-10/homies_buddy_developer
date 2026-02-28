@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
+import '../../../../core/widgets/spinning_nav_button.dart';
 import '../../data/models/help_chat_model.dart';
 import '../../mockdata/help_mock_data.dart';
 import '../widgets/chat_bubble.dart';
@@ -220,7 +221,9 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 48), // Balance the right icon
+          const SpinningNavButton(
+            iconColor: AppColors.textPrimary,
+          ),
           const Expanded(
             child: Text(
               'Ask For Help',
