@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'password_requirement.dart';
 
 part 'change_password_request.freezed.dart';
 part 'change_password_request.g.dart';
@@ -84,14 +85,4 @@ extension ChangePasswordRequestX on ChangePasswordRequest {
       ),
     ];
   }
-}
-
-class PasswordRequirement {
-  final String label;
-  final bool isMet;
-
-  PasswordRequirement({
-    required this.label,
-    required this.isMet,
-  });
 }

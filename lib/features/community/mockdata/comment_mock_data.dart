@@ -1,4 +1,7 @@
 import '../../../data/models/comment_model.dart';
+import '../data/models/comment_sort_option.dart';
+
+export '../data/models/comment_sort_option.dart';
 
 /// Mock data cho Comments - để test UI Comment Overlay
 class CommentMockData {
@@ -165,12 +168,4 @@ class CommentMockData {
   }
 }
 
-/// Enum cho sort options
-enum CommentSortOption {
-  latest('Latest comments'),
-  mostReacted('Most reacted'),
-  oldest('Oldest comments');
-
-  final String displayName;
-  const CommentSortOption(this.displayName);
-}
+// [Refactored] Phase 3.4 — CommentSortOption chuyển sang data/models/comment_sort_option.dart

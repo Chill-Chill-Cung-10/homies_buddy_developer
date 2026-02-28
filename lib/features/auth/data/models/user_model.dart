@@ -3,8 +3,15 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
-/// User Model - Thông tin người dùng
+/// [Refactored] Phase 2.3 — Auth-specific user model (lightweight).
 /// 
+/// Dùng cho authentication state (AuthState.authenticated).
+/// Khác với `lib/data/models/user_model.dart` (community social profile model)
+/// chứa thêm posts, followers, homies, etc.
+///
+/// Single source of truth cho social profile là `lib/data/models/user_model.dart`.
+/// Model này chỉ chứa thông tin cốt lõi (identity, email, verification).
+///
 /// Sử dụng Freezed để tự động generate:
 /// - copyWith method
 /// - equality (==, hashCode)
@@ -29,7 +36,11 @@ class UserModel with _$UserModel {
       _$UserModelFromJson(json);
 }
 
-/// Extension để thêm các helper methods
+/// Typedef cho code clarity — sử dụng `AuthUser` thay cho `UserModel` (auth)
+/// để phân biệt với community `UserModel`.
+typedef AuthUser = UserModel;
+
+/// Extension để thêm các helper methods cho auth user
 extension UserModelX on UserModel {
   /// Kiểm tra xem user đã hoàn thiện profile chưa
   bool get isProfileComplete {

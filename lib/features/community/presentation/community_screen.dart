@@ -3,11 +3,12 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/spinning_nav_button.dart';
 import '../mockdata/community_mock_data.dart';
-import '../mockdata/notification_mock_data.dart';
+/// [Refactored] Phase 3.6 — Import notification from its own feature module
+import '../../notifications/data/notification_mock_data.dart';
 import '../mockdata/profile_mock_data.dart';
 import 'widgets/social_post_card.dart';
 import 'widgets/comment_overlay.dart';
-import 'notification_screen.dart';
+import '../../notifications/presentation/screens/notification_screen.dart';
 import 'screens/personal_profile_screen.dart';
 import '../../chat/presentation/screens/chat_list_screen.dart';
 import '../../chat/mockdata/chat_mock_data.dart';
@@ -60,7 +61,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
           iconColor: AppColors.textPrimary,
         ),
         title: const Text(
-          'Amicute',
+          'Feeds',
           style: AppTextStyles.h2,
         ),
         backgroundColor: Colors.transparent,

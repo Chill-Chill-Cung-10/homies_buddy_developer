@@ -1,0 +1,174 @@
+/// [Refactored] Phase 3.2 — Extracted from social_post_card.dart
+/// Media carousel: single image, video thumbnail, or multi-image carousel
+library;
+import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/constants/app_shapes.dart';
+import '../../../../../data/models/media_file_model.dart';
+
+class PostMediaCarousel extends StatefulWidget {
+  final List<MediaFile> mediaFiles;
+
+  const PostMediaCarousel({
+    super.key,
+    required this.mediaFiles,
+  });
+
+  @override
+  State<PostMediaCarousel> createState() => _PostMediaCarouselState();
+}
+
+class _PostMediaCarouselState extends State<PostMediaCarousel> {
+  int _currentMediaIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.mediaFiles.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppShapes.paddingS,
+        vertical: AppShapes.paddingS,
+      ),
+      child: widget.mediaFiles.length == 1
+          ? _buildSingleMedia(widget.mediaFiles.first)
+          : _buildMediaCarousel(widget.mediaFiles),
+    );
+  }
+
+  Widget _buildSingleMedia(MediaFile media) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: AppShapes.paddingS),
+      child: AspectRatio(
+        aspectRatio: media.mediaAspectRatio,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppShapes.iconRadius),
+          child: _buildMediaContent(media),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMediaCarousel(List<MediaFile> mediaFiles) {
+    return Column(
+      children: [
+        CarouselSlider(
+          options: CarouselOptions(
+            aspectRatio: mediaFiles[_currentMediaIndex].mediaAspectRatio,
+            viewportFraction: 1.0,
+            enableInfiniteScroll: false,
+            onPageChanged: (index, reason) {
+              setState(() {
+                _currentMediaIndex = index;
+              });
+            },
+          ),
+          items: mediaFiles.map((media) {
+            return Builder(
+              builder: (BuildContext context) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(AppShapes.iconRadius),
+                  child: _buildMediaContent(media),
+                );
+              },
+            );
+          }).toList(),
+        ),
+        if (mediaFiles.length > 1) _buildCarouselIndicators(mediaFiles.length),
+      ],
+    );
+  }
+
+  Widget _buildMediaContent(MediaFile media) {
+    if (media.isVideo) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          CachedNetworkImage(
+            imageUrl: media.thumbnailUrl ?? media.mediaUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              color: AppColors.surfaceColor,
+              child: const Center(
+                child: CircularProgressIndicator(color: AppColors.accentOrange),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: AppColors.surfaceColor,
+              child: const Icon(Icons.error),
+            ),
+          ),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
+            ),
+          ),
+          if (media.durationSeconds != null)
+            Positioned(
+              bottom: 8,
+              right: 8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  media.durationString,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      );
+    } else {
+      return CachedNetworkImage(
+        imageUrl: media.mediaUrl,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: AppColors.surfaceColor,
+          child: const Center(
+            child: CircularProgressIndicator(color: AppColors.accentOrange),
+          ),
+        ),
+        errorWidget: (context, url, error) => Container(
+          color: AppColors.surfaceColor,
+          child: const Icon(Icons.error),
+        ),
+      );
+    }
+  }
+
+  Widget _buildCarouselIndicators(int count) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppShapes.paddingS),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(count, (index) {
+          return Container(
+            width: 6,
+            height: 6,
+            margin: const EdgeInsets.symmetric(horizontal: 3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: _currentMediaIndex == index
+                  ? AppColors.accentOrange
+                  : AppColors.textHint.withValues(alpha: 0.3),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'password_requirement.dart';
 
 part 'register_request.freezed.dart';
 part 'register_request.g.dart';
@@ -127,15 +128,4 @@ extension RegisterRequestX on RegisterRequest {
       ),
     ];
   }
-}
-
-/// Password Requirement - Để hiển thị trong UI
-class PasswordRequirement {
-  final String label;
-  final bool isMet;
-
-  PasswordRequirement({
-    required this.label,
-    required this.isMet,
-  });
 }

@@ -5,6 +5,7 @@
 /// ```dart
 /// import 'package:homies_buddy_developer/features/home/presentation/widgets/user_moments_box/user_moments_box_exports.dart';
 /// ```
+library;
 
 // Main widget
 export 'user_moments_box.dart';

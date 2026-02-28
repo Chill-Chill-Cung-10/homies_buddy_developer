@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
 import '../../../../data/models/post_model.dart';
 import '../../../../data/models/comment_model.dart';
 import '../../mockdata/comment_mock_data.dart';
-import 'social_post_card.dart';
+import 'comments/comment_item.dart';
+import 'comments/comment_input_section.dart';
+import 'comments/comment_post_preview.dart';
 
+/// [Refactored] Phase 3.3 — Split into CommentItem, CommentInputSection,
+/// CommentPostPreview sub-widgets.
+///
 /// Comment Overlay - Instagram-style comment bottom sheet
-/// 
 /// Hiển thị comment overlay với post preview, comment input, filter, và comment list
 class CommentOverlay extends StatefulWidget {
   final Post post;
@@ -206,134 +208,39 @@ class _CommentOverlayState extends State<CommentOverlay> {
     );
   }
 
-  /// Post Preview Section - Reusing SocialPostCard for consistency
+  /// Post Preview Section - Reusing CommentPostPreview
   Widget _buildPostPreview() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppShapes.paddingM, vertical: AppShapes.paddingS),
-      child: SocialPostCard(
-        post: _post,
-        isCommentHighlighted: true, // Highlight comment button in overlay
-        onLike: () {
-          // Toggle like state
-          setState(() {
-            _post = _post.copyWith(
-              isLikedByMe: !_post.isLikedByMe,
-              reactsCount: _post.isLikedByMe
-                  ? _post.reactsCount - 1
-                  : _post.reactsCount + 1,
-            );
-          });
-        },
-        onComment: null, // Disabled since we're already in comment mode
-        onAvatarTap: () {
-          // Navigate to profile
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Profile: ${_post.authorName}'),
-              duration: const Duration(seconds: 1),
-            ),
+    return CommentPostPreview(
+      post: _post,
+      onLike: () {
+        setState(() {
+          _post = _post.copyWith(
+            isLikedByMe: !_post.isLikedByMe,
+            reactsCount: _post.isLikedByMe
+                ? _post.reactsCount - 1
+                : _post.reactsCount + 1,
           );
-        },
-        onPostTap: null, // Disabled in overlay
-      ),
+        });
+      },
+      onAvatarTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profile: ${_post.authorName}'),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      },
     );
   }
 
   /// Comment Input & Filter Section
   Widget _buildCommentInputSection() {
-    return Container(
-      padding: const EdgeInsets.all(AppShapes.paddingM),
-      child: Column(
-        children: [
-          // Comment Input Field
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppShapes.paddingM,
-              vertical: AppShapes.paddingS,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceColor,
-              borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _commentController,
-                    focusNode: _commentFocusNode,
-                    decoration: const InputDecoration(
-                      hintText: 'Your Comment...',
-                      hintStyle: TextStyle(
-                        color: AppColors.textHint,
-                        fontSize: 14,
-                      ),
-                      border: InputBorder.none,
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                    maxLines: null,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => _handleSendComment(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(
-                    Icons.send,
-                    color: AppColors.accentOrange,
-                    size: 24,
-                  ),
-                  onPressed: _handleSendComment,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Filter Dropdown
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                // decoration: BoxDecoration(
-                //   border: Border.all(color: AppColors.textHint.withValues(alpha: 0.3)),
-                //   borderRadius: BorderRadius.circular(AppShapes.iconRadius),
-                // ),
-                child: DropdownButton<CommentSortOption>(
-                  value: _selectedSortOption,
-                  onChanged: _handleSortChanged,
-                  underline: const SizedBox.shrink(),
-                  borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
-                  isDense: true,
-                  icon: const Icon(
-                    Icons.arrow_drop_down,
-                    color: AppColors.iconColor,
-                  ),
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textPrimary,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  items: CommentSortOption.values.map((option) {
-                    return DropdownMenuItem(
-                      value: option,
-                      child: Text(option.displayName),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return CommentInputSection(
+      commentController: _commentController,
+      commentFocusNode: _commentFocusNode,
+      selectedSortOption: _selectedSortOption,
+      onSortChanged: _handleSortChanged,
+      onSendComment: _handleSendComment,
     );
   }
 
@@ -387,182 +294,19 @@ class _CommentOverlayState extends State<CommentOverlay> {
           _commentKeys[comment.commentId] = GlobalKey();
         }
         
-        return _buildCommentItem(comment, isHighlighted);
+        return CommentItem(
+          comment: comment,
+          isHighlighted: isHighlighted,
+          highlightOpacity: _highlightOpacity,
+          highlightPadding: _highlightPadding,
+          commentKey: _commentKeys[comment.commentId],
+          onReact: _handleCommentReact,
+        );
       },
     );
   }
 
-  /// Single Comment Item
-  Widget _buildCommentItem(Comment comment, bool isHighlighted) {
-    final commentWidget = Container(
-      margin: const EdgeInsets.only(bottom: AppShapes.paddingM),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Commenter Avatar
-          ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: comment.authorAvatar,
-              width: 36,
-              height: 36,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                width: 36,
-                height: 36,
-                color: AppColors.surfaceColor,
-                child: const Icon(
-                  Icons.person,
-                  size: 18,
-                  color: AppColors.textHint,
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                width: 36,
-                height: 36,
-                color: AppColors.surfaceColor,
-                child: const Icon(
-                  Icons.person,
-                  size: AppShapes.iconS,
-                  color: AppColors.textHint,
-                ),
-              ),
-            ),
-          ),
-          
-          const SizedBox(width: 12),
-          
-          // Comment Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Comment Bubble
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppShapes.paddingM,
-                    vertical: AppShapes.paddingS + 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceColor,
-                    borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Commenter Name
-                      Text(
-                        comment.authorName,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      
-                      // Comment Text
-                      Text(
-                        comment.contentText,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                const SizedBox(height: 6),
-                
-                // Comment Meta (Like count + Time)
-                Row(
-                  children: [
-                    Flexible(
-                      child: GestureDetector(
-                        onTap: () => _handleCommentReact(comment),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SvgPicture.asset(
-                              comment.isReactedByMe
-                                  ? 'assets/images/icons/heart_reactions_on.svg'
-                                  : 'assets/images/icons/heart_reactions_off.svg',
-                              width: 14,
-                              height: 14,
-                              colorFilter: ColorFilter.mode(
-                                comment.isReactedByMe
-                                    ? AppColors.errorRed
-                                    : AppColors.iconColor,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                comment.reactCount > 0
-                                    ? 'Thích ${_formatCount(comment.reactCount)}'
-                                    : 'Thích',
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: comment.isReactedByMe
-                                      ? AppColors.errorRed
-                                      : AppColors.textHint,
-                                  fontWeight: comment.isReactedByMe
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(width: 16),
-                    
-                    // Time
-                    Flexible(
-                      child: Text(
-                        comment.timeAgo,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textHint,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-    
-    // Wrap with highlight container if this comment is highlighted
-    if (isHighlighted) {
-      return AnimatedContainer(
-        key: _commentKeys[comment.commentId],
-        duration: const Duration(milliseconds: 800), // Smooth fade duration
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(
-          color: Colors.yellow.withValues(alpha: _highlightOpacity),
-          borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
-        ),
-        padding: _highlightPadding, // Animate padding smoothly
-        child: commentWidget,
-      );
-    }
-    
-    return commentWidget;
-  }
-
-  String _formatCount(int count) {
-    if (count >= 1000000) {
-      return '${(count / 1000000).toStringAsFixed(1)}M';
-    } else if (count >= 1000) {
-      return '${(count / 1000).toStringAsFixed(1)}K';
-    }
-    return count.toString();
-  }
+  // [Refactored] Phase 1.5 — _formatCount chuyển sang core/utils/formatters.dart.
 }
 
 /// Helper function to show comment overlay

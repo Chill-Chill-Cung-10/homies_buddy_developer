@@ -13,8 +13,12 @@ enum UserRole {
   @JsonValue('admin') admin;
 }
 
-/// User Model - Đại diện cho Người dùng trong hệ thống
+/// [Refactored] Phase 2.3 — Community social profile model (SINGLE SOURCE OF TRUTH).
 /// 
+/// Đây là model chính cho user profile, chứa đầy đủ:
+/// identity, social graph, posts, followers, role, etc.
+/// 
+/// Khác với `features/auth/data/models/user_model.dart` (auth-only, lightweight).
 /// Model này được thiết kế để hỗ trợ UI Visual (như màn hình "Yoga In Life")
 /// và Social Graph (Homies với cả người và thú cưng).
 @freezed

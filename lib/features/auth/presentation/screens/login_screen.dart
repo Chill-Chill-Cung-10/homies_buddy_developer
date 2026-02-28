@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:homies_buddy_developer/core/constants/app_assets.dart';
 import 'package:homies_buddy_developer/core/constants/app_colors.dart';
 import 'package:homies_buddy_developer/core/constants/app_shapes.dart';
-import 'package:homies_buddy_developer/core/constants/app_text_styles.dart';
+import '../widgets/auth_input_field.dart';
+import '../widgets/auth_password_field.dart';
+import '../widgets/auth_submit_button.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 import 'change_password_screen.dart';
 
+/// [Refactored] Phase 2.1 — Sử dụng AuthInputField, AuthPasswordField,
+/// AuthSubmitButton thay vì hardcode InputDecoration.
 class LoginScreen extends StatefulWidget{
   const LoginScreen({super.key});
   @override
@@ -18,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -65,37 +68,18 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 40),
               
               // Email TextField
-                TextFormField(
+              AuthInputField(
                 controller: _emailController,
+                labelText: 'Email',
+                hintText: 'Enter your email',
+                prefixIcon: Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'Enter your email',
-                  floatingLabelBehavior: FloatingLabelBehavior.never,
-                  prefixIcon: const Icon(Icons.email_outlined),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                  borderRadius: AppShapes.card,
-                  borderSide: const BorderSide(color: Colors.grey, width: 1),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                  borderRadius: AppShapes.card,
-                  borderSide: const BorderSide(color: Colors.grey, width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                  borderRadius: AppShapes.card,
-                  borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
+                    return 'Please enter your email';
                   }
                   if (!value.contains('@')) {
-                  return 'Please enter a valid email';
+                    return 'Please enter a valid email';
                   }
                   return null;
                 },
@@ -104,47 +88,15 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 16),
 
               // Password TextField
-                TextFormField(
+              AuthPasswordField(
                 controller: _passwordController,
-                obscureText: _obscurePassword,
                 textInputAction: TextInputAction.done,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Enter your password',
-                  floatingLabelBehavior: FloatingLabelBehavior.never,
-                  prefixIcon: const Icon(Icons.lock_outlined),
-                  suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                    _obscurePassword = !_obscurePassword;
-                    });
-                  },
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                  borderRadius: AppShapes.card,
-                  borderSide: const BorderSide(color: Colors.grey, width: 1),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                  borderRadius: AppShapes.card,
-                  borderSide: const BorderSide(color: Colors.grey, width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                  borderRadius: AppShapes.card,
-                  borderSide: const BorderSide(color: AppColors.textPrimary, width: 2),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
+                    return 'Please enter your password';
                   }
                   if (value.length < 6) {
-                  return 'Password must be at least 6 characters';
+                    return 'Password must be at least 6 characters';
                   }
                   return null;
                 },
@@ -177,12 +129,10 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 15),
 
               // Login Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
+              AuthSubmitButton(
+                label: 'Login',
+                onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      // Demo: Show success and navigate to Change Password
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Login successful! (Demo Mode)'),
@@ -190,8 +140,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           duration: Duration(seconds: 2),
                         ),
                       );
-                      
-                      // Navigate to Change Password after a short delay
                       Future.delayed(const Duration(seconds: 1), () {
                         if (context.mounted) {
                           Navigator.push(
@@ -204,18 +152,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       });
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.textPrimary,
-                      minimumSize: const Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppShapes.button,
-                    ),
-                  ),
-                  child: const Text(
-                  'Login',
-                  style: AppTextStyles.buttonLarge,
-                  ),
-                ),
               ),
 
               const SizedBox(height: 16),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../data/models/help_chat_model.dart';
 
 /// Chat bubble widget for user and bot messages
@@ -62,7 +63,7 @@ class ChatBubble extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4, right: 4),
                 child: Text(
-                  _formatTime(message.timestamp),
+                  formatTimeHHmm(message.timestamp),
                   style: AppTextStyles.caption.copyWith(fontSize: 10),
                 ),
               ),
@@ -133,7 +134,7 @@ class ChatBubble extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4, left: 4),
                 child: Text(
-                  _formatTime(message.timestamp),
+                  formatTimeHHmm(message.timestamp),
                   style: AppTextStyles.caption.copyWith(fontSize: 10),
                 ),
               ),
@@ -181,9 +182,6 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime time) {
-    final hour = time.hour.toString().padLeft(2, '0');
-    final minute = time.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
+  // [Refactored] Phase 1.5 — _formatTime chuyển sang core/utils/formatters.dart
+  // (formatTimeHHmm).
 }

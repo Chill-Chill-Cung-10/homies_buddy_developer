@@ -9,5 +9,6 @@ export 'login_request.dart';
 export 'login_response.dart';
 export 'register_request.dart';
 export 'forgot_password_request.dart';
-export 'change_password_request.dart' hide PasswordRequirement;
+export 'change_password_request.dart';
 export 'auth_state.dart';
+export 'password_requirement.dart'; // [Refactored] Phase 2.2

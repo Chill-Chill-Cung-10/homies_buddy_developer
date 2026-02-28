@@ -1,15 +1,17 @@
+/// [Refactored] Phase 2.4 — Moved from lib/features/auth/presentation/ to example/
+library;
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/forgot_password_screen.dart';
-import 'screens/change_password_screen.dart';
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_text_styles.dart';
-import '../../../core/constants/app_shapes.dart';
-import '../../../core/constants/app_spacing.dart';
+import 'package:homies_buddy_developer/features/auth/presentation/screens/login_screen.dart';
+import 'package:homies_buddy_developer/features/auth/presentation/screens/register_screen.dart';
+import 'package:homies_buddy_developer/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:homies_buddy_developer/features/auth/presentation/screens/change_password_screen.dart';
+import 'package:homies_buddy_developer/core/constants/app_colors.dart';
+import 'package:homies_buddy_developer/core/constants/app_text_styles.dart';
+import 'package:homies_buddy_developer/core/constants/app_shapes.dart';
+import 'package:homies_buddy_developer/core/constants/app_spacing.dart';
 
 /// Demo screen để test tất cả Authentication screens
-/// Chạy: flutter run lib/demo_auth_screens.dart
+/// Chạy: flutter run example/demo_auth_screens.dart
 void main() {
   runApp(const DemoAuthScreensApp());
 }

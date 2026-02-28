@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/widgets/common_widgets.dart';
+import '../../../../../core/widgets/widgets.dart';
 import '../../../../../data/models/moment_note_model.dart';
 import '../../../mock_data/mock_moment_notes.dart';
 import 'card_notes_item.dart';

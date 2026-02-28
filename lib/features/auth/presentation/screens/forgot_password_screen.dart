@@ -3,7 +3,10 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../widgets/auth_input_field.dart';
+import '../widgets/auth_submit_button.dart';
 
+/// [Refactored] Phase 2.1 — Sử dụng AuthInputField, AuthSubmitButton.
 /// Forgot Password Screen
 /// Màn hình để người dùng yêu cầu reset password qua email
 class ForgotPasswordScreen extends StatefulWidget {
@@ -156,89 +159,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // Email TextField
-                TextFormField(
+                AuthInputField(
                   controller: _emailController,
+                  labelText: 'Email Address',
+                  hintText: 'Enter your email',
+                  prefixIcon: Icons.email_outlined,
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.done,
                   validator: _validateEmail,
                   enabled: !_isLoading,
-                  style: const TextStyle(fontSize: 16),
-                  decoration: InputDecoration(
-                  labelText: 'Email Address',
-                  labelStyle: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-                  hintText: 'Enter your email',
-                  hintStyle: const TextStyle(fontSize: 16),
-                  prefixIcon: const Icon(
-                    Icons.email_outlined,
-                    color: Colors.black,
-                    size: 24,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.surfaceColor,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 20,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: AppShapes.button,
-                    borderSide: BorderSide.none,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: AppShapes.button,
-                    borderSide: BorderSide.none,
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: AppShapes.button,
-                    borderSide: const BorderSide(
-                    color: AppColors.textPrimary,
-                    width: 2,
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: AppShapes.button,
-                    borderSide: const BorderSide(
-                    color: AppColors.errorRed,
-                    width: 2,
-                    ),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: AppShapes.button,
-                    borderSide: const BorderSide(
-                    color: AppColors.errorRed,
-                    width: 2,
-                    ),
-                  ),
-                  ),
+                  style: AuthFieldStyle.surface,
                 ),
 
                 const SizedBox(height: AppSpacing.xl),
 
                 // Send Reset Link Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSendResetLink,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.textPrimary,
-                      minimumSize: const Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppShapes.button,
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text(
-                            'Send Reset Link',
-                            style: AppTextStyles.buttonLarge,
-                          ),
-                  ),
+                AuthSubmitButton(
+                  label: 'Send Reset Link',
+                  isLoading: _isLoading,
+                  onPressed: _handleSendResetLink,
                 ),
 
                 const SizedBox(height: AppSpacing.l),

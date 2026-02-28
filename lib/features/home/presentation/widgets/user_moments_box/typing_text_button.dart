@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../../../../core/widgets/common_widgets.dart';
+import '../../../../../core/widgets/widgets.dart';
 
 /// A button with typing animation effect
 /// Can be reused for any typing text animation needs

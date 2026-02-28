@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../data/models/help_chat_model.dart';
 
 /// Conversation History Sidebar - slides in from the right as a Drawer,
@@ -239,7 +240,7 @@ class _ConversationTile extends StatelessWidget {
 
               // Time
               Text(
-                _formatTime(conversation.lastMessageAt),
+                formatRelativeTime(conversation.lastMessageAt),
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.textHint,
                   fontSize: 11,
@@ -252,18 +253,6 @@ class _ConversationTile extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final diff = now.difference(dateTime);
-
-    if (diff.inMinutes < 60) {
-      return '${diff.inMinutes}m ago';
-    } else if (diff.inHours < 24) {
-      return '${diff.inHours}h ago';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays}d ago';
-    } else {
-      return '${dateTime.day}/${dateTime.month}';
-    }
-  }
+  // [Refactored] Phase 1.5 — _formatTime chuyển sang core/utils/formatters.dart
+  // (formatRelativeTime).
 }

@@ -3,7 +3,11 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../widgets/auth_input_field.dart';
+import '../widgets/auth_password_field.dart';
+import '../widgets/auth_submit_button.dart';
 
+/// [Refactored] Phase 2.1 — Sử dụng AuthPasswordField, AuthSubmitButton.
 /// Change Password Screen
 /// Màn hình để người dùng thay đổi mật khẩu (khi đã đăng nhập)
 class ChangePasswordScreen extends StatefulWidget {
@@ -20,9 +24,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  bool _obscureCurrentPassword = true;
-  bool _obscureNewPassword = true;
-  bool _obscureConfirmPassword = true;
   bool _isLoading = false;
 
   // Password requirements state
@@ -190,214 +191,38 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 const SizedBox(height: AppSpacing.m),
 
                 // Current Password Field
-                TextFormField(
+                AuthPasswordField(
                   controller: _currentPasswordController,
-                  obscureText: _obscureCurrentPassword,
-                  textInputAction: TextInputAction.next,
+                  labelText: 'Current Password',
+                  hintText: 'Enter your current password',
                   validator: _validateCurrentPassword,
                   enabled: !_isLoading,
-                  style: const TextStyle(fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: 'Current Password',
-                    labelStyle: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-                    hintText: 'Enter your current password',
-                    hintStyle: const TextStyle(fontSize: 16),
-                    prefixIcon: const Icon(
-                      Icons.lock_outline,
-                      color: Colors.black,
-                      size: 24,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureCurrentPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureCurrentPassword = !_obscureCurrentPassword;
-                        });
-                      },
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surfaceColor,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.textPrimary,
-                        width: 2,
-                      ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.errorRed,
-                        width: 2,
-                      ),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.errorRed,
-                        width: 2,
-                      ),
-                    ),
-                  ),
+                  style: AuthFieldStyle.surface,
                 ),
 
                 const SizedBox(height: AppSpacing.l),
 
                 // New Password Field
-                TextFormField(
+                AuthPasswordField(
                   controller: _newPasswordController,
-                  obscureText: _obscureNewPassword,
-                  textInputAction: TextInputAction.next,
+                  labelText: 'New Password',
+                  hintText: 'Enter your new password',
                   validator: _validateNewPassword,
                   enabled: !_isLoading,
-                  style: const TextStyle(fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: 'New Password',
-                    labelStyle: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-                    hintText: 'Enter your new password',
-                    hintStyle: const TextStyle(fontSize: 16),
-                    prefixIcon: const Icon(
-                      Icons.lock_outline,
-                      color: Colors.black,
-                      size: 24,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureNewPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureNewPassword = !_obscureNewPassword;
-                        });
-                      },
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surfaceColor,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.textPrimary,
-                        width: 2,
-                      ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.errorRed,
-                        width: 2,
-                      ),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.errorRed,
-                        width: 2,
-                      ),
-                    ),
-                  ),
+                  style: AuthFieldStyle.surface,
                 ),
 
                 const SizedBox(height: AppSpacing.l),
 
                 // Confirm New Password Field
-                TextFormField(
+                AuthPasswordField(
                   controller: _confirmPasswordController,
-                  obscureText: _obscureConfirmPassword,
-                  textInputAction: TextInputAction.done,
+                  labelText: 'Confirm New Password',
+                  hintText: 'Re-enter your new password',
                   validator: _validateConfirmPassword,
+                  textInputAction: TextInputAction.done,
                   enabled: !_isLoading,
-                  style: const TextStyle(fontSize: 16),
-                  decoration: InputDecoration(
-                    labelText: 'Confirm New Password',
-                    labelStyle: const TextStyle(fontSize: 16, color: AppColors.textPrimary),
-                    hintText: 'Re-enter your new password',
-                    hintStyle: const TextStyle(fontSize: 16),
-                    prefixIcon: const Icon(
-                      Icons.lock_outline,
-                      color: Colors.black,
-                      size: 24,
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureConfirmPassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureConfirmPassword = !_obscureConfirmPassword;
-                        });
-                      },
-                    ),
-                    filled: true,
-                    fillColor: AppColors.surfaceColor,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 20,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.textPrimary,
-                        width: 2,
-                      ),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.errorRed,
-                        width: 2,
-                      ),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: AppShapes.button,
-                      borderSide: const BorderSide(
-                        color: AppColors.errorRed,
-                        width: 2,
-                      ),
-                    ),
-                  ),
+                  style: AuthFieldStyle.surface,
                 ),
 
                 const SizedBox(height: AppSpacing.xl),
@@ -448,31 +273,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 const SizedBox(height: AppSpacing.xl),
 
                 // Update Password Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleUpdatePassword,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.textPrimary,
-                      minimumSize: const Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: AppShapes.button,
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          )
-                        : const Text(
-                            'Update Password',
-                            style: AppTextStyles.buttonLarge,
-                          ),
-                  ),
+                AuthSubmitButton(
+                  label: 'Update Password',
+                  isLoading: _isLoading,
+                  onPressed: _handleUpdatePassword,
                 ),
 
                 const SizedBox(height: AppSpacing.l),

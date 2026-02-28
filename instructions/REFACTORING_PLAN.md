@@ -89,9 +89,9 @@
 
 ---
 
-### PHASE 1: Core Layer — Dọn dẹp & Hợp nhất (Ưu tiên CAO)
+### PHASE 1: Core Layer — Dọn dẹp & Hợp nhất (Ưu tiên CAO) ✅ COMPLETED
 
-#### 1.1 Hợp nhất `AppColors` → 1 file duy nhất
+#### 1.1 Hợp nhất `AppColors` → 1 file duy nhất ✅
 
 **Hành động:**
 ```
@@ -108,7 +108,7 @@ SAU:
 - Xóa ~30 dòng commented-out colors trong file giữ lại
 - Update tất cả import references
 
-#### 1.2 Tách `common_widgets.dart` (742 dòng) → 6 file
+#### 1.2 Tách `common_widgets.dart` (742 dòng) → 6 file ✅
 
 **Hành động:**
 ```
@@ -137,21 +137,21 @@ SAU:
 
 **Lợi ích:** Import chỉ widget cần dùng, giảm build time, dễ test từng widget.
 
-#### 1.3 Tách padding khỏi `AppShapes` → `AppSpacing`
+#### 1.3 Tách padding khỏi `AppShapes` → `AppSpacing` ✅
 
 **Hành động:**
 - Di chuyển `paddingXS`, `paddingS`, `paddingM`, `paddingL`, `paddingXL` từ `AppShapes` sang `AppSpacing`
 - `AppShapes` chỉ giữ border radius, card dimensions, nav bar dimensions
 - Rename nếu cần để tránh trùng tên
 
-#### 1.4 Kết nối `AppTypography` vào `AppTextStyles`
+#### 1.4 Kết nối `AppTypography` vào `AppTextStyles` ✅
 
 **Hành động:**
 - `AppTextStyles` sử dụng `AppTypography.primaryFont` thay vì hardcode font family
 - `AppTextStyles` sử dụng `AppTypography.letterSpacing`, `titleWeight`, `bodyWeight`
 - Xóa `reactionsWeight` commented-out
 
-#### 1.5 Tạo utility functions dùng chung
+#### 1.5 Tạo utility functions dùng chung ✅
 
 **Hành động:**
 ```
@@ -166,7 +166,7 @@ TẠO MỚI:
 
 **Lợi ích:** Xóa 3 bản copy `_formatCount()`, 2 bản copy `_formatTime()`.
 
-#### 1.6 Dọn dẹp placeholder files
+#### 1.6 Dọn dẹp placeholder files ✅
 
 **Hành động:**
 - Xóa 12 file rỗng trong `config/`, `network/`, `services/`, `storage/`
@@ -176,9 +176,9 @@ TẠO MỚI:
 
 ---
 
-### PHASE 2: Feature Auth — Giảm duplication (Ưu tiên CAO)
+### PHASE 2: Feature Auth — Giảm duplication (Ưu tiên CAO) ✅ COMPLETED
 
-#### 2.1 Tạo `AuthInputField` widget tái sử dụng
+#### 2.1 Tạo `AuthInputField` widget tái sử dụng ✅
 
 **Hành động:**
 ```
@@ -199,7 +199,7 @@ TẠO MỚI:
 
 **Tổng tiết kiệm:** ~500+ dòng duplicate code.
 
-#### 2.2 Extract `PasswordRequirement` → file riêng
+#### 2.2 Extract `PasswordRequirement` → file riêng ✅
 
 **Hành động:**
 ```
@@ -212,14 +212,14 @@ XÓA khỏi:
   models.dart                   (xóa `hide PasswordRequirement`)
 ```
 
-#### 2.3 Hợp nhất `UserModel`
+#### 2.3 Hợp nhất `UserModel` ✅
 
 **Hành động:**
 - Giữ `lib/data/models/user_model.dart` làm **single source of truth**
 - Tạo `AuthUser` (subset) trong `features/auth/` nếu cần lightweight version
 - Hoặc dùng extension để thêm auth-specific fields
 
-#### 2.4 Di chuyển `demo_auth_screens.dart`
+#### 2.4 Di chuyển `demo_auth_screens.dart` ✅
 
 **Hành động:**
 - Di chuyển `lib/features/auth/presentation/demo_auth_screens.dart` → `test/` hoặc `example/`
@@ -227,9 +227,9 @@ XÓA khỏi:
 
 ---
 
-### PHASE 3: Feature Community — Tách widget lớn (Ưu tiên CAO)
+### PHASE 3: Feature Community — Tách widget lớn (Ưu tiên CAO) ✅ COMPLETED
 
-#### 3.1 Tách `personal_profile_screen.dart` (603 dòng)
+#### 3.1 Tách `personal_profile_screen.dart` (603 dòng) ✅
 
 **Hành động:**
 ```
@@ -248,7 +248,7 @@ SAU:
     └── profile_post_feed.dart           ← _buildPostFeed
 ```
 
-#### 3.2 Tách `social_post_card.dart` (574 dòng)
+#### 3.2 Tách `social_post_card.dart` (574 dòng) ✅
 
 **Hành động:**
 ```
@@ -266,7 +266,7 @@ SAU:
     └── post_content.dart            ← _buildContent (hashtag/mention rendering)
 ```
 
-#### 3.3 Tách `comment_overlay.dart` (584 dòng)
+#### 3.3 Tách `comment_overlay.dart` (584 dòng) ✅
 
 **Hành động:**
 ```
@@ -282,13 +282,13 @@ SAU:
     └── comment_sort_option.dart     ← CommentSortOption enum (hiện nằm trong mockdata!)
 ```
 
-#### 3.4 Chuyển `CommentSortOption` enum
+#### 3.4 Chuyển `CommentSortOption` enum ✅
 
 **Hành động:**
 - Di chuyển từ `mockdata/comment_mock_data.dart` → `data/models/enums/comment_sort_option.dart` hoặc `widgets/comments/comment_sort_option.dart`
 - Đây là domain concept, không phải mock data
 
-#### 3.5 Tách `profile_mock_data.dart` (278 dòng)
+#### 3.5 Tách `profile_mock_data.dart` (278 dòng) ✅
 
 **Hành động:**
 ```
@@ -302,7 +302,7 @@ SAU:
     └── mock_user_posts.dart    ← User-specific posts
 ```
 
-#### 3.6 Di chuyển `notification_screen.dart` → feature riêng
+#### 3.6 Di chuyển `notification_screen.dart` → feature riêng ✅
 
 **Hành động:**
 ```
@@ -696,17 +696,17 @@ lib/
 
 ## 🗓️ THỨ TỰ THỰC HIỆN ĐỀ XUẤT
 
-| Giai đoạn | Công việc | Ưu tiên | Ước tính |
+| Giai đoạn | Công việc | Ưu tiên | Trạng thái |
 |-----------|-----------|---------|----------|
-| **Phase 1** | Core: Merge AppColors, tách common_widgets, tạo utils | 🔴 Cao | 2-3 ngày |
-| **Phase 2** | Auth: Tạo reusable widgets, fix duplicates | 🔴 Cao | 1-2 ngày |
-| **Phase 3** | Community: Tách 3 file lớn, tách notifications | 🔴 Cao | 2-3 ngày |
-| **Phase 4** | Help: Tách ask_for_help_screen | 🟡 TB | 1 ngày |
-| **Phase 5** | Chat: Chuẩn hóa models, tách settings | 🟡 TB | 1-2 ngày |
-| **Phase 6** | Home: Extract hardcoded colors | 🟢 Thấp | 0.5 ngày |
-| **Phase 7** | i18n: Extract strings | 🟢 Thấp | 1 ngày |
-| **Phase 8** | Architecture: Repository + State management | 🔵 Tương lai | 3-5 ngày |
-| **Bonus** | Fix `withOpacity()` deprecated | 🟡 TB | 0.5 ngày |
+| **Phase 1** | Core: Merge AppColors, tách common_widgets, tạo utils | 🔴 Cao | ✅ COMPLETED |
+| **Phase 2** | Auth: Tạo reusable widgets, fix duplicates | 🔴 Cao | ✅ COMPLETED |
+| **Phase 3** | Community: Tách 3 file lớn, tách notifications | 🔴 Cao | ✅ COMPLETED |
+| **Phase 4** | Help: Tách ask_for_help_screen | 🟡 TB | ⬜ Chưa thực hiện |
+| **Phase 5** | Chat: Chuẩn hóa models, tách settings | 🟡 TB | ⬜ Chưa thực hiện |
+| **Phase 6** | Home: Extract hardcoded colors | 🟢 Thấp | ⬜ Chưa thực hiện |
+| **Phase 7** | i18n: Extract strings | 🟢 Thấp | ⬜ Chưa thực hiện |
+| **Phase 8** | Architecture: Repository + State management | 🔵 Tương lai | ⬜ Chưa thực hiện |
+| **Bonus** | Fix `withOpacity()` deprecated | 🟡 TB | ⬜ Chưa thực hiện |
 
 **Tổng ước tính: ~12-18 ngày làm việc** (trải dài theo sprint, không cần làm liên tục)
 
@@ -720,3 +720,37 @@ lib/
 4. **Giữ barrel export files** — Để import path không đổi cho consumer code
 5. **Không refactor + thêm feature cùng lúc** — Tách riêng refactoring commits
 6. **Freezed codegen** — Sau khi convert chat models, chạy `dart run build_runner build`
+
+---
+
+## ✅ LỊCH SỬ HOÀN THÀNH
+
+### Phase 1: Core Layer ✅ (Hoàn thành)
+| Sub-phase | Mô tả | Kết quả |
+|-----------|-------|---------|
+| 1.1 | Hợp nhất AppColors | Merged `theme/app_colors.dart` → `constants/app_colors.dart`, xóa file cũ |
+| 1.2 | Tách common_widgets.dart | 742 dòng → 8 file nhỏ + barrel export `widgets.dart` |
+| 1.3 | Tách padding → AppSpacing | Tạo `app_spacing.dart`, `AppShapes` deprecated padding methods |
+| 1.4 | Kết nối AppTypography ↔ AppTextStyles | Dùng `AppTypography.primaryFont` thay hardcode |
+| 1.5 | Tạo utility functions | `formatters.dart` — `formatCount()`, `limitWords()`, `formatRelativeTime()`, `formatTimeHHmm()` |
+| 1.6 | Dọn placeholder files | Xóa 9 file rỗng + 4 thư mục rỗng |
+
+### Phase 2: Feature Auth ✅ (Hoàn thành)
+| Sub-phase | Mô tả | Kết quả |
+|-----------|-------|---------|
+| 2.1 | Tạo AuthInputField widgets | 3 widget mới (`auth_input_field`, `auth_password_field`, `auth_submit_button`), 4 screen cập nhật |
+| 2.2 | Extract PasswordRequirement | Tạo `password_requirement.dart` riêng, xóa `hide` workaround |
+| 2.3 | Hợp nhất UserModel | Thêm `typedef AuthUser = UserModel` trong auth, document SINGLE SOURCE OF TRUTH |
+| 2.4 | Di chuyển demo file | `demo_auth_screens.dart` → `example/`, imports chuyển thành package imports |
+
+### Phase 3: Feature Community ✅ (Hoàn thành)
+| Sub-phase | Mô tả | Kết quả |
+|-----------|-------|---------|
+| 3.1 | Tách personal_profile_screen | 590 → ~160 dòng + 4 sub-widgets (`ProfileHeroHeader`, `ProfileStatsSection`, `ProfileBuddiesSection`, `ProfilePostFeed`) |
+| 3.2 | Tách social_post_card | 568 → ~90 dòng (StatelessWidget) + 4 sub-widgets (`PostHeader`, `PostContent`, `PostMediaCarousel`, `PostFooter`) |
+| 3.3 | Tách comment_overlay | 578 → ~210 dòng + 3 sub-widgets (`CommentItem`, `CommentInputSection`, `CommentPostPreview`) |
+| 3.4 | Chuyển CommentSortOption | Enum → `data/models/comment_sort_option.dart`, backward compat export |
+| 3.5 | Tách profile_mock_data | 338 → ~22 dòng facade + 3 file (`MockPets`, `MockUserPosts`, `MockUsers`) |
+| 3.6 | Di chuyển notification → feature riêng | `features/notifications/` với screens, widgets, data; old files → re-exports |
+
+> **Tất cả code refactored đều có comment `[Refactored] Phase X.Y` để dễ trace.**
