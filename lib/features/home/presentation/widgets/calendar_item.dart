@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CozyCalendar extends StatefulWidget {
+  const CozyCalendar({super.key});
+
   @override
   _CozyCalendarState createState() => _CozyCalendarState();
 }
@@ -39,8 +41,8 @@ class _CozyCalendarState extends State<CozyCalendar> {
                 }
               },
               child: Container(
-                width: MediaQuery.of(context).size.width * 0.7,
-                padding: EdgeInsets.symmetric(vertical: 8),
+                width: MediaQuery.of(context).size.width * 0.9,
+                padding: EdgeInsets.symmetric(vertical: 1),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(16),
@@ -114,6 +116,9 @@ class _CozyCalendarState extends State<CozyCalendar> {
         children: [
           IconButton(
             icon: Icon(Icons.chevron_left),
+            iconSize: 20,
+            padding: EdgeInsets.all(4),
+            constraints: BoxConstraints(),
             onPressed: () {
               setState(() {
                 currentMonth =
@@ -121,21 +126,23 @@ class _CozyCalendarState extends State<CozyCalendar> {
               });
             },
           ),
-          Text(
-            "${_monthName(currentMonth.month)} ${currentMonth.day} ${currentMonth.year}",
-            style: TextStyle(fontWeight: FontWeight.bold),
+          Flexible(
+            child: Text(
+              "${_monthName(currentMonth.month)} ${currentMonth.day} ${currentMonth.year}",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-          Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.chevron_right),
-                onPressed: () {
-                  setState(() {
-                    currentMonth = DateTime(currentMonth.year, currentMonth.month, currentMonth.day + 1);
-                  });
-                },
-              ),
-            ],
+          IconButton(
+            icon: Icon(Icons.chevron_right),
+            iconSize: 20,
+            padding: EdgeInsets.all(4),
+            constraints: BoxConstraints(),
+            onPressed: () {
+              setState(() {
+                currentMonth = DateTime(currentMonth.year, currentMonth.month, currentMonth.day + 1);
+              });
+            },
           ),
         ],
       ),
@@ -194,13 +201,22 @@ class _CozyCalendarState extends State<CozyCalendar> {
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text("${day.day}"),
-                SizedBox(height: 2),
-                _buildMood(day),
-              ],
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Padding(
+                padding: EdgeInsets.all(2),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "${day.day}",
+                      style: TextStyle(fontSize: 10),
+                    ),
+                    _buildMood(day),
+                  ],
+                ),
+              ),
             ),
           ),
         );
@@ -212,28 +228,28 @@ class _CozyCalendarState extends State<CozyCalendar> {
   Widget _buildMood(DateTime day) {
     // fake data demo
     if (day.day == 1) {
-      return Icon(Icons.pets, size: 14, color: Colors.orange);
+      return Icon(Icons.pets, size: 8, color: Colors.orange);
     }
     if (day.day == 6) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.favorite, size: 10, color: Colors.red),
-          Icon(Icons.favorite, size: 10, color: Colors.red),
+          Icon(Icons.favorite, size: 7, color: Colors.red),
+          Icon(Icons.favorite, size: 7, color: Colors.red),
         ],
       );
     }
     if (day.day == 12) {
       return Container(
-        padding: EdgeInsets.all(4),
+        padding: EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: Color(0xFFF2D6B3),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(4),
         ),
-        child: Icon(Icons.sentiment_satisfied, size: 12),
+        child: Icon(Icons.sentiment_satisfied, size: 7),
       );
     }
-    return SizedBox(height: 12);
+    return SizedBox(height: 6);
   }
 
   // ================= LOGIC =================
@@ -260,8 +276,8 @@ class _CozyCalendarState extends State<CozyCalendar> {
 
   String _monthName(int m) {
     const names = [
-      "", "January", "Feburary", "Mar", "April", "May",
-      "Jun", "July", "August", "September", "October", "November", "December"
+      "", "Jan", "Feb", "Mar", "Apr", "May",
+      "Jun", "July", "Aug", "Sep", "Oct", "Nov", "Dec"
     ];
     return names[m];
   }

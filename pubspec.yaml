@@ -126,7 +126,6 @@ flutter:
   # Assets configuration
   assets:
     # Images
-    - assets/images/home/
     - assets/images/community/
     - assets/images/help/
     - assets/images/auth/

@@ -576,3 +576,166 @@ class CustomDialog {
     );
   }
 }
+
+/// Blinking cursor widget for typing effect
+/// Can be reused anywhere that needs a typing animation effect
+class BlinkingCursor extends StatefulWidget {
+  final Color color;
+  final double fontSize;
+  final String character;
+
+  const BlinkingCursor({
+    super.key,
+    required this.color,
+    this.fontSize = 16,
+    this.character = '|',
+  });
+
+  @override
+  State<BlinkingCursor> createState() => _BlinkingCursorState();
+}
+
+class _BlinkingCursorState extends State<BlinkingCursor>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 530),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Opacity(
+          opacity: _controller.value,
+          child: Text(
+            widget.character,
+            style: TextStyle(
+              fontSize: widget.fontSize,
+              fontWeight: FontWeight.w600,
+              color: widget.color,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Reusable bottom sheet for picking media (photos/videos)
+/// Can be used anywhere in the app that needs media selection
+class MediaPickerBottomSheet extends StatelessWidget {
+  final VoidCallback? onPhotoTap;
+  final VoidCallback? onVideoTap;
+  final String photoLabel;
+  final String videoLabel;
+  final IconData photoIcon;
+  final IconData videoIcon;
+
+  const MediaPickerBottomSheet({
+    super.key,
+    this.onPhotoTap,
+    this.onVideoTap,
+    this.photoLabel = 'Choose Photo',
+    this.videoLabel = 'Choose Video',
+    this.photoIcon = Icons.photo_library,
+    this.videoIcon = Icons.videocam,
+  });
+
+  /// Static method to show the bottom sheet and return selected option
+  static Future<String?> show(
+    BuildContext context, {
+    String photoLabel = 'Choose Photo',
+    String videoLabel = 'Choose Video',
+    IconData photoIcon = Icons.photo_library,
+    IconData videoIcon = Icons.videocam,
+  }) {
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundLight,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(photoIcon, color: Colors.brown.shade600),
+                title: Text(
+                  photoLabel,
+                  style: const TextStyle(color: AppColors.textPrimary),
+                ),
+                onTap: () => Navigator.pop(ctx, 'photo'),
+              ),
+              ListTile(
+                leading: Icon(videoIcon, color: Colors.brown.shade600),
+                title: Text(
+                  videoLabel,
+                  style: const TextStyle(color: AppColors.textPrimary),
+                ),
+                onTap: () => Navigator.pop(ctx, 'video'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: const BoxDecoration(
+        color: AppColors.backgroundLight,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(photoIcon, color: Colors.brown.shade600),
+              title: Text(
+                photoLabel,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+              onTap: onPhotoTap,
+            ),
+            ListTile(
+              leading: Icon(videoIcon, color: Colors.brown.shade600),
+              title: Text(
+                videoLabel,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+              onTap: onVideoTap,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
