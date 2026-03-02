@@ -131,8 +131,16 @@ lib/
     │           └── notification_item.dart
     │
     └── profile/
+        ├── mockdata/
+        │   └── current_user_mock.dart    ← Mock current user (đang đăng nhập)
         └── presentation/
-            └── screens/
+            ├── screens/
+            │   └── profile_screen.dart   ← User Profile Screen (Tab 4, orchestrator)
+            └── widgets/
+                └── profile/              ← Sub-widgets cho ProfileScreen
+                    ├── user_profile_hero_header.dart   ← Hero header + settings icon
+                    ├── user_profile_stats_section.dart ← Stats + Edit Profile button
+                    └── profile_settings_menu.dart      ← Settings bottom sheet (Logout, Change Password...)
 ```
 
 ---
