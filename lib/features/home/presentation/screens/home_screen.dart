@@ -19,11 +19,11 @@ class _HomeScreenState extends State<HomeScreen> {
   final PetMood _currentMood = PetMood.happy;
   BackgroundTime _currentTimeOfDay = BackgroundTime.morning;
 
-  // Map mood → PetAnimationState
-  static const Map<PetMood, PetAnimationState> _moodToState = {
-    PetMood.happy: PetAnimationState.happy,
-    PetMood.idle: PetAnimationState.idle,
-    PetMood.sad: PetAnimationState.sad,
+  // Map mood → PetState
+  static const Map<PetMood, PetState> _moodToState = {
+    PetMood.happy: PetState.happy,
+    PetMood.idle: PetState.idle,
+    PetMood.sad: PetState.sad,
   };
 
   void _switchTimeOfDay(BackgroundTime time) {
@@ -59,8 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
             top: screenSize.height * 0.38,
             child: Center(
               child: PetAnimationWidget(
-                // Đổi state theo mood hiện tại
-                state: _moodToState[_currentMood]!,
+                // Đổi animation theo mood hiện tại
+                animation: PetAnimation.state(_moodToState[_currentMood]!),
                 width: screenSize.width * 0.5,
                 height: screenSize.width * 0.5,
               ),

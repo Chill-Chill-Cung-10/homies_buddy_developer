@@ -47,3 +47,13 @@ app.*.map.json
 .env
 
 ./instructions/*
+
+# Firebase sensitive files
+**/google-services.json
+**/GoogleService-Info.plist
+lib/firebase_options.dart
+.firebaserc
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebase/
