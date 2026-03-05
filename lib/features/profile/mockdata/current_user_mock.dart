@@ -3,7 +3,6 @@
 library;
 import '../../../data/models/user_model.dart';
 import '../../community/mockdata/mock_users.dart';
-import '../../community/mockdata/mock_pets.dart';
 import '../../community/mockdata/mock_user_posts.dart';
 
 class CurrentUserMock {
@@ -19,7 +18,6 @@ class CurrentUserMock {
         'Pet lover & developer. Building a world where every pet finds a buddy.',
     location: 'Ho Chi Minh, Vietnam',
     humanBuddies: [MockUsers.jackUser, MockUsers.haiiaUser],
-    petBuddies: [MockPets.mickeyy, MockPets.anniDogg],
     followerCount: 2450,
     followingCount: 310,
     isFollowedByMe: false,

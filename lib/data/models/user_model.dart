@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'pet_profile_model.dart';
 import 'post_model.dart';
 
 part 'user_model.freezed.dart';
@@ -8,8 +7,6 @@ part 'user_model.g.dart';
 /// User Role - Vai trò của user
 enum UserRole {
   @JsonValue('user') user,
-  @JsonValue('vet') vet,
-  @JsonValue('shop') shop,
   @JsonValue('admin') admin;
 }
 
@@ -37,9 +34,7 @@ class UserModel with _$UserModel {
     String? location,               // "California, USA"
     
     // --- 3. Social Graph (Mạng lưới bạn bè - Homies) ---
-    // User muốn: humanBuddies & petBuddies
     @Default([]) List<UserModel> humanBuddies, // List bạn bè (human) (Jack, Jane...)
-    @Default([]) List<PetProfile> petBuddies,  // List thú cưng (pet) (Mickeyy, Anni...)
     
     // Stats
     @Default(0) int followerCount,
@@ -62,10 +57,10 @@ class UserModel with _$UserModel {
 
 /// Extension hỗ trợ UI logic
 extension UserModelX on UserModel {
-  /// Lấy danh sách tổng hợp tất cả "Homies" (cả người và pet)
+  /// Lấy danh sách tất cả "Homies" (user buddies)
   /// Để hiển thị ở list tròn ngang "Salahhh's Homies"
-  List<dynamic> get allHomies {
-    return [...humanBuddies, ...petBuddies];
+  List<UserModel> get allHomies {
+    return [...humanBuddies];
   }
 
   /// Kiểm tra có headline lớn không (để render UI Yoga)

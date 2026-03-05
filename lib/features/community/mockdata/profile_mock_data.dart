@@ -1,11 +1,10 @@
-/// [Refactored] Phase 3.5 — Split into mock_users.dart, mock_pets.dart,
-/// mock_user_posts.dart. This file delegates to those for backward compat.
+/// [Refactored] Split into mock_users.dart, mock_user_posts.dart.
+/// This file delegates to those for backward compat.
 library;
 import '../../../data/models/user_model.dart';
 import 'mock_users.dart';
 
 export 'mock_users.dart';
-export 'mock_pets.dart';
 export 'mock_user_posts.dart';
 
 /// Mock data cho Profile Screen — backward-compatible facade

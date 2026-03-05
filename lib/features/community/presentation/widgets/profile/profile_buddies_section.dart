@@ -1,5 +1,5 @@
 /// [Refactored] Phase 3.1 — Extracted from personal_profile_screen.dart
-/// Horizontal scrollable list of buddies (humans + pets)
+/// Horizontal scrollable list of buddies (humans only)
 library;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -7,12 +7,11 @@ import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
 import '../../../../../core/constants/app_shapes.dart';
 import '../../../../../data/models/user_model.dart';
-import '../../../../../data/models/pet_profile_model.dart';
 
 class ProfileBuddiesSection extends StatelessWidget {
   final String displayName;
-  final List<dynamic> allBuddies;
-  final ValueChanged<dynamic> onBuddyTap;
+  final List<UserModel> allBuddies;
+  final ValueChanged<UserModel> onBuddyTap;
 
   const ProfileBuddiesSection({
     super.key,
@@ -58,21 +57,12 @@ class ProfileBuddiesSection extends StatelessWidget {
   }
 
   Widget _buildBuddyItem(dynamic buddy) {
-    String name;
-    String avatarUrl;
-
-    if (buddy is UserModel) {
-      name = buddy.fullName;
-      avatarUrl = buddy.avatarUrl;
-    } else if (buddy is PetProfile) {
-      name = buddy.petName;
-      avatarUrl = buddy.petAvatar;
-    } else {
-      return const SizedBox.shrink();
-    }
+    final user = buddy as UserModel;
+    final name = user.fullName;
+    final avatarUrl = user.avatarUrl;
 
     return GestureDetector(
-      onTap: () => onBuddyTap(buddy),
+      onTap: () => onBuddyTap(user),
       child: Container(
         width: 80,
         margin: const EdgeInsets.only(right: 12),

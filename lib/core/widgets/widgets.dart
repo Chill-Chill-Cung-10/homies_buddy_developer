@@ -18,6 +18,9 @@ export 'dialogs/custom_dialog.dart';
 
 // Feedback
 export 'feedback/loading_overlay.dart';
+export 'feedback/loading_screen.dart';
+export 'feedback/loading_indicator.dart';
+export 'feedback/shimmer_loading.dart';
 export 'feedback/empty_state_widget.dart';
 export 'feedback/blinking_cursor.dart';
 

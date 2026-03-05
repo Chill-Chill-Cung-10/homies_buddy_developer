@@ -17,9 +17,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../data/models/user_model.dart';
-import '../../../../data/models/pet_profile_model.dart';
 import '../../../../data/models/post_model.dart';
-import '../../../community/mockdata/profile_mock_data.dart';
 import '../../../community/presentation/screens/personal_profile_screen.dart';
 import '../../../community/presentation/widgets/comment_overlay.dart';
 import '../../../community/presentation/widgets/profile/profile_buddies_section.dart';
@@ -40,7 +38,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   late UserModel _user;
-  late List<dynamic> _allBuddies;
+  late List<UserModel> _allBuddies;
 
   @override
   void initState() {
@@ -165,14 +163,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _navigateToBuddyProfile(dynamic buddy) {
-    if (buddy is UserModel) {
-      _navigateToProfile(buddy);
-    } else if (buddy is PetProfile) {
-      final ownerUser =
-          ProfileMockData.getUserByAuthorId(buddy.petOwner.ownerId);
-      _navigateToProfile(ownerUser);
-    }
+  void _navigateToBuddyProfile(UserModel buddy) {
+    _navigateToProfile(buddy);
   }
 
   @override

@@ -1,0 +1,99 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ==========================================================================
+    // HELPER FUNCTIONS
+    // ==========================================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isValidImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidVideoFile() {
+      return request.resource.contentType.matches('video/.*');
+    }
+    
+    function isValidMediaFile() {
+      return isValidImageFile() || isValidVideoFile();
+    }
+    
+    // Max file size: 10MB for images, 100MB for videos
+    function isValidImageSize() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    function isValidVideoSize() {
+      return request.resource.size < 50 * 1024 * 1024;
+    }
+    
+    // ==========================================================================
+    // AVATARS - /avatars/{userId}/
+    // ==========================================================================
+    
+    match /avatars/{userId}/{filename} {
+      // Anyone can read avatars (public)
+      allow read: if true;
+      
+      // Only owner can upload/update their avatar
+      allow write: if isOwner(userId) && 
+                      isValidImageFile() && 
+                      isValidImageSize();
+      
+      // Only owner can delete
+      allow delete: if isOwner(userId);
+    }
+    
+    // ==========================================================================
+    // COVERS - /covers/{userId}/
+    // ==========================================================================
+    
+    match /covers/{userId}/{filename} {
+      // Anyone can read covers (public)
+      allow read: if true;
+      
+      // Only owner can upload/update their cover
+      allow write: if isOwner(userId) && 
+                      isValidImageFile() && 
+                      isValidImageSize();
+      
+      // Only owner can delete
+      allow delete: if isOwner(userId);
+    }
+    
+    // ==========================================================================
+    // POST MEDIA - /posts/{postId}/
+    // ==========================================================================
+    
+    match /posts/{postId}/{filename} {
+      // Anyone authenticated can read post media
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can upload media for posts
+      // NOTE: Validation logic ở app layer (check ownership post)
+      allow write: if isAuthenticated() && 
+                      isValidMediaFile() &&
+                      ((isValidImageFile() && isValidImageSize()) ||
+                       (isValidVideoFile() && isValidVideoSize()));
+      
+      // Any authenticated user can delete (app layer validates ownership)
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================================================
+    // DENY ALL OTHER PATHS
+    // ==========================================================================
+    
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

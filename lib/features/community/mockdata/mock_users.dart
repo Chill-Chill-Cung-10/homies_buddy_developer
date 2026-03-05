@@ -2,7 +2,6 @@
 /// Mock user data: UserModel definitions + lookup
 library;
 import '../../../data/models/user_model.dart';
-import 'mock_pets.dart';
 import 'mock_user_posts.dart';
 
 class MockUsers {
@@ -112,7 +111,6 @@ class MockUsers {
           'To the degree that we look clearly and compassionately at ourselves, we feel confident and fearless about looking into someone else\'s eyes.',
       location: 'California, USA',
       humanBuddies: [jackUser, haiiaUser],
-      petBuddies: [MockPets.mickeyy, MockPets.anniDogg, MockPets.petriCat],
       followerCount: 1499,
       followingCount: 340,
       isFollowedByMe: false,
@@ -128,7 +126,6 @@ class MockUsers {
       bio: 'Living my best life with my hooman. Fetch is life!',
       location: 'Texas, USA',
       humanBuddies: [jackUser],
-      petBuddies: [MockPets.mickeyy],
       followerCount: 2100,
       followingCount: 150,
       isFollowedByMe: true,
@@ -144,7 +141,6 @@ class MockUsers {
       bio: 'Two paws, one heart. Adventures and naps together.',
       location: 'London, UK',
       humanBuddies: [haiiaUser],
-      petBuddies: [MockPets.anniDogg, MockPets.petriCat],
       followerCount: 8700,
       followingCount: 420,
       isFollowedByMe: true,
@@ -160,7 +156,6 @@ class MockUsers {
       bio: 'Short legs, big heart. Trained and fabulous!',
       location: 'Sydney, Australia',
       humanBuddies: [jackUser, haiiaUser],
-      petBuddies: [MockPets.mickeyy],
       followerCount: 1500,
       followingCount: 90,
       isFollowedByMe: false,
@@ -176,7 +171,6 @@ class MockUsers {
       bio: 'Professional napper. Part-time food taster.',
       location: 'Tokyo, Japan',
       humanBuddies: [],
-      petBuddies: [MockPets.petriCat, MockPets.anniDogg],
       followerCount: 950,
       followingCount: 60,
       isFollowedByMe: true,

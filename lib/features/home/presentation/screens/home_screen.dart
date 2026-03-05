@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/spinning_nav_button.dart';
 import '../widgets/calendar_item.dart';
-import '../widgets/exp_item.dart';
 import '../widgets/user_moments_box.dart';
+import '../widgets/pet_animation_widget.dart';
+import '../widgets/background_animation_widget.dart';
 
-/// Trạng thái cảm xúc của pet — dùng để test UI chuyển đổi
 enum PetMood { happy, idle, sad }
 
 class HomeScreen extends StatefulWidget {
@@ -16,79 +16,58 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  PetMood _currentMood = PetMood.idle;
+  final PetMood _currentMood = PetMood.happy;
+  BackgroundTime _currentTimeOfDay = BackgroundTime.morning;
 
-  // ── Mapping mood → asset paths ──
-  static const Map<PetMood, String> _backgroundAssets = {
-    PetMood.happy: 'assets/images/home/background/tom_home_happy.png',
-    PetMood.idle: 'assets/images/home/background/tom_home_late_afternoon.png',
-    PetMood.sad: 'assets/images/home/background/tom_home_sad.png',
+  // Map mood → PetAnimationState
+  static const Map<PetMood, PetAnimationState> _moodToState = {
+    PetMood.happy: PetAnimationState.happy,
+    PetMood.idle: PetAnimationState.idle,
+    PetMood.sad: PetAnimationState.sad,
   };
 
-  static const Map<PetMood, String> _petAssets = {
-    PetMood.happy: 'assets/images/home/pets/lumni_happy.png',
-    PetMood.idle: 'assets/images/home/pets/lumni_idle.png',
-    PetMood.sad: 'assets/images/home/pets/lumni_sleep.png',
-  };
-
-  void _switchMood(PetMood mood) {
-    if (_currentMood == mood) return;
-    setState(() => _currentMood = mood);
+  void _switchTimeOfDay(BackgroundTime time) {
+    if (_currentTimeOfDay == time) return;
+    setState(() => _currentTimeOfDay = time);
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        toolbarHeight: 0, // Ẩn appBar
+        toolbarHeight: 0,
       ),
       body: Stack(
         children: [
-          // ===== Background Image (smooth crossfade) =====
-          ...PetMood.values.map((mood) => Positioned.fill(
-            child: AnimatedOpacity(
-              opacity: _currentMood == mood ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 600),
-              curve: Curves.easeInOut,
-              child: Image.asset(
-                _backgroundAssets[mood]!,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-              ),
+          // ── Background crossfade ──
+          Positioned.fill(
+            child: ImageBackgroundWidget(
+              timeOfDay: _currentTimeOfDay,
             ),
-          )),
+          ),
 
-          // ===== Pet Image (smooth crossfade) =====
+          // ── Pet Animation (thay Image.asset bằng PetAnimationWidget) ──
           Positioned(
-            left: 40,
-            right: 100,
-            top: MediaQuery.of(context).size.height * 0.40,
+            left: 0,
+            right: 0,
+            top: screenSize.height * 0.38,
             child: Center(
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width * 0.5,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: PetMood.values.map((mood) => AnimatedOpacity(
-                    opacity: _currentMood == mood ? 1.0 : 0.0,
-                    duration: const Duration(milliseconds: 600),
-                    curve: Curves.easeInOut,
-                    child: Image.asset(
-                      _petAssets[mood]!,
-                      width: MediaQuery.of(context).size.width * 0.5,
-                      fit: BoxFit.contain,
-                    ),
-                  )).toList(),
-                ),
+              child: PetAnimationWidget(
+                // Đổi state theo mood hiện tại
+                state: _moodToState[_currentMood]!,
+                width: screenSize.width * 0.5,
+                height: screenSize.width * 0.5,
               ),
             ),
           ),
 
-          // ===== Top Section: Settings & Calendar & IconButton =====
+          // ── Top: Settings & Calendar ──
           Positioned(
             top: 16,
             left: 2,
@@ -98,77 +77,70 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Container(
                   margin: const EdgeInsets.only(top: 17),
-                  child: const SpinningNavButton(
-                    iconColor: Colors.white,
-                  ),
+                  child: const SpinningNavButton(iconColor: Colors.white),
                 ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: CozyCalendar(),
-                ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
+                const Expanded(child: CozyCalendar()),
+                const SizedBox(width: 8),
                 Container(
-                  margin: EdgeInsets.only(top: 17),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                  margin: const EdgeInsets.only(top: 17),
                   child: IconButton(
-                    icon: const Icon(Icons.grid_view_rounded, color: Color(0xFFFFFFFF)),
-                    onPressed: () {
-                      // TODO: Navigate to grid view
-                    },
+                    icon: const Icon(Icons.grid_view_rounded, color: Colors.white),
+                    onPressed: () {},
                   ),
                 ),
               ],
             ),
           ),
 
-          // ===== Pet Mood Selector Buttons (above ExpBar) =====
+          // ── Time of Day Selector ──
           Positioned(
-            bottom: 128,
+            top: 120,
             left: 24,
             right: 24,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _MoodButton(
-                  icon: Icons.sentiment_very_satisfied_rounded,
-                  label: 'Happy',
-                  isActive: _currentMood == PetMood.happy,
-                  onTap: () => _switchMood(PetMood.happy),
-                ),
-                const SizedBox(width: 12),
-                _MoodButton(
-                  icon: Icons.sentiment_neutral_rounded,
-                  label: 'Idle',
-                  isActive: _currentMood == PetMood.idle,
-                  onTap: () => _switchMood(PetMood.idle),
-                ),
-                const SizedBox(width: 12),
-                _MoodButton(
-                  icon: Icons.sentiment_dissatisfied_rounded,
-                  label: 'Sad',
-                  isActive: _currentMood == PetMood.sad,
-                  onTap: () => _switchMood(PetMood.sad),
-                ),
-              ],
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _TimeButton(
+                    icon: Icons.brightness_2,
+                    label: 'Dawn',
+                    isActive: _currentTimeOfDay == BackgroundTime.earlyMorning,
+                    onTap: () => _switchTimeOfDay(BackgroundTime.earlyMorning),
+                  ),
+                  const SizedBox(width: 8),
+                  _TimeButton(
+                    icon: Icons.wb_sunny_outlined,
+                    label: 'Morning',
+                    isActive: _currentTimeOfDay == BackgroundTime.morning,
+                    onTap: () => _switchTimeOfDay(BackgroundTime.morning),
+                  ),
+                  const SizedBox(width: 8),
+                  _TimeButton(
+                    icon: Icons.wb_sunny,
+                    label: 'Afternoon',
+                    isActive: _currentTimeOfDay == BackgroundTime.afternoon,
+                    onTap: () => _switchTimeOfDay(BackgroundTime.afternoon),
+                  ),
+                  const SizedBox(width: 8),
+                  _TimeButton(
+                    icon: Icons.nightlight_round,
+                    label: 'Night',
+                    isActive: _currentTimeOfDay == BackgroundTime.night,
+                    onTap: () => _switchTimeOfDay(BackgroundTime.night),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          // ===== Bottom Section: ExpBar =====
-          Positioned(
-            bottom: 80,
+          // ── Thoughts Share ──
+          const Positioned(
+            bottom: 18,
             left: 24,
             right: 24,
-            child: ExpBar(current: 3),
-          ),
-
-          // ===== Bottom Section: Thoughts Share =====
-          Positioned(
-            bottom: 24,
-            left: 24,
-            right: 24,
-            child: const UserMomentsBox(),
+            child: UserMomentsBox(),
           ),
         ],
       ),
@@ -176,14 +148,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-/// Button chọn mood cho pet — hiển thị icon + label, highlight khi active
-class _MoodButton extends StatelessWidget {
+class _TimeButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool isActive;
   final VoidCallback onTap;
 
-  const _MoodButton({
+  const _TimeButton({
     required this.icon,
     required this.label,
     required this.isActive,
@@ -197,16 +168,14 @@ class _MoodButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: isActive
               ? Colors.white.withOpacity(0.9)
-              : Colors.white.withOpacity(0.4),
-          borderRadius: BorderRadius.circular(20),
+              : Colors.white.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive
-                ? AppColors.accentOrange
-                : Colors.white.withOpacity(0.5),
+            color: isActive ? AppColors.accentOrange : Colors.white.withOpacity(0.5),
             width: isActive ? 2 : 1,
           ),
           boxShadow: isActive
@@ -224,14 +193,14 @@ class _MoodButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 20,
+              size: 16,
               color: isActive ? AppColors.accentOrange : Colors.white,
             ),
             const SizedBox(width: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                 color: isActive ? AppColors.textPrimary : Colors.white,
               ),

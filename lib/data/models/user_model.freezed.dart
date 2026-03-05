@@ -38,11 +38,8 @@ mixin _$UserModel {
   String? get location =>
       throw _privateConstructorUsedError; // "California, USA"
   // --- 3. Social Graph (Mạng lưới bạn bè - Homies) ---
-  // User muốn: humanBuddies & petBuddies
   List<UserModel> get humanBuddies =>
       throw _privateConstructorUsedError; // List bạn bè (human) (Jack, Jane...)
-  List<PetProfile> get petBuddies =>
-      throw _privateConstructorUsedError; // List thú cưng (pet) (Mickeyy, Anni...)
   // Stats
   int get followerCount => throw _privateConstructorUsedError;
   int get followingCount => throw _privateConstructorUsedError;
@@ -80,7 +77,6 @@ abstract class $UserModelCopyWith<$Res> {
     String? bio,
     String? location,
     List<UserModel> humanBuddies,
-    List<PetProfile> petBuddies,
     int followerCount,
     int followingCount,
     bool isFollowedByMe,
@@ -114,7 +110,6 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
     Object? bio = freezed,
     Object? location = freezed,
     Object? humanBuddies = null,
-    Object? petBuddies = null,
     Object? followerCount = null,
     Object? followingCount = null,
     Object? isFollowedByMe = null,
@@ -160,10 +155,6 @@ class _$UserModelCopyWithImpl<$Res, $Val extends UserModel>
                 ? _value.humanBuddies
                 : humanBuddies // ignore: cast_nullable_to_non_nullable
                       as List<UserModel>,
-            petBuddies: null == petBuddies
-                ? _value.petBuddies
-                : petBuddies // ignore: cast_nullable_to_non_nullable
-                      as List<PetProfile>,
             followerCount: null == followerCount
                 ? _value.followerCount
                 : followerCount // ignore: cast_nullable_to_non_nullable
@@ -213,7 +204,6 @@ abstract class _$$UserModelImplCopyWith<$Res>
     String? bio,
     String? location,
     List<UserModel> humanBuddies,
-    List<PetProfile> petBuddies,
     int followerCount,
     int followingCount,
     bool isFollowedByMe,
@@ -246,7 +236,6 @@ class __$$UserModelImplCopyWithImpl<$Res>
     Object? bio = freezed,
     Object? location = freezed,
     Object? humanBuddies = null,
-    Object? petBuddies = null,
     Object? followerCount = null,
     Object? followingCount = null,
     Object? isFollowedByMe = null,
@@ -292,10 +281,6 @@ class __$$UserModelImplCopyWithImpl<$Res>
             ? _value._humanBuddies
             : humanBuddies // ignore: cast_nullable_to_non_nullable
                   as List<UserModel>,
-        petBuddies: null == petBuddies
-            ? _value._petBuddies
-            : petBuddies // ignore: cast_nullable_to_non_nullable
-                  as List<PetProfile>,
         followerCount: null == followerCount
             ? _value.followerCount
             : followerCount // ignore: cast_nullable_to_non_nullable
@@ -338,7 +323,6 @@ class _$UserModelImpl implements _UserModel {
     this.bio,
     this.location,
     final List<UserModel> humanBuddies = const [],
-    final List<PetProfile> petBuddies = const [],
     this.followerCount = 0,
     this.followingCount = 0,
     this.isFollowedByMe = false,
@@ -346,7 +330,6 @@ class _$UserModelImpl implements _UserModel {
     this.role = UserRole.user,
     this.createdAt,
   }) : _humanBuddies = humanBuddies,
-       _petBuddies = petBuddies,
        _posts = posts;
 
   factory _$UserModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -378,11 +361,9 @@ class _$UserModelImpl implements _UserModel {
   final String? location;
   // "California, USA"
   // --- 3. Social Graph (Mạng lưới bạn bè - Homies) ---
-  // User muốn: humanBuddies & petBuddies
   final List<UserModel> _humanBuddies;
   // "California, USA"
   // --- 3. Social Graph (Mạng lưới bạn bè - Homies) ---
-  // User muốn: humanBuddies & petBuddies
   @override
   @JsonKey()
   List<UserModel> get humanBuddies {
@@ -392,17 +373,6 @@ class _$UserModelImpl implements _UserModel {
   }
 
   // List bạn bè (human) (Jack, Jane...)
-  final List<PetProfile> _petBuddies;
-  // List bạn bè (human) (Jack, Jane...)
-  @override
-  @JsonKey()
-  List<PetProfile> get petBuddies {
-    if (_petBuddies is EqualUnmodifiableListView) return _petBuddies;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_petBuddies);
-  }
-
-  // List thú cưng (pet) (Mickeyy, Anni...)
   // Stats
   @override
   @JsonKey()
@@ -437,7 +407,7 @@ class _$UserModelImpl implements _UserModel {
 
   @override
   String toString() {
-    return 'UserModel(id: $id, username: $username, fullName: $fullName, avatarUrl: $avatarUrl, coverUrl: $coverUrl, headline: $headline, bio: $bio, location: $location, humanBuddies: $humanBuddies, petBuddies: $petBuddies, followerCount: $followerCount, followingCount: $followingCount, isFollowedByMe: $isFollowedByMe, posts: $posts, role: $role, createdAt: $createdAt)';
+    return 'UserModel(id: $id, username: $username, fullName: $fullName, avatarUrl: $avatarUrl, coverUrl: $coverUrl, headline: $headline, bio: $bio, location: $location, humanBuddies: $humanBuddies, followerCount: $followerCount, followingCount: $followingCount, isFollowedByMe: $isFollowedByMe, posts: $posts, role: $role, createdAt: $createdAt)';
   }
 
   @override
@@ -462,10 +432,6 @@ class _$UserModelImpl implements _UserModel {
             const DeepCollectionEquality().equals(
               other._humanBuddies,
               _humanBuddies,
-            ) &&
-            const DeepCollectionEquality().equals(
-              other._petBuddies,
-              _petBuddies,
             ) &&
             (identical(other.followerCount, followerCount) ||
                 other.followerCount == followerCount) &&
@@ -492,7 +458,6 @@ class _$UserModelImpl implements _UserModel {
     bio,
     location,
     const DeepCollectionEquality().hash(_humanBuddies),
-    const DeepCollectionEquality().hash(_petBuddies),
     followerCount,
     followingCount,
     isFollowedByMe,
@@ -526,7 +491,6 @@ abstract class _UserModel implements UserModel {
     final String? bio,
     final String? location,
     final List<UserModel> humanBuddies,
-    final List<PetProfile> petBuddies,
     final int followerCount,
     final int followingCount,
     final bool isFollowedByMe,
@@ -557,11 +521,8 @@ abstract class _UserModel implements UserModel {
   @override
   String? get location; // "California, USA"
   // --- 3. Social Graph (Mạng lưới bạn bè - Homies) ---
-  // User muốn: humanBuddies & petBuddies
   @override
   List<UserModel> get humanBuddies; // List bạn bè (human) (Jack, Jane...)
-  @override
-  List<PetProfile> get petBuddies; // List thú cưng (pet) (Mickeyy, Anni...)
   // Stats
   @override
   int get followerCount;

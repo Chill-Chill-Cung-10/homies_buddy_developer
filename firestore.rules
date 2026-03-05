@@ -1,0 +1,171 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================================================
+    // HELPER FUNCTIONS
+    // ==========================================================================
+    
+    /// Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    /// Check if user is the owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    /// Check if user is admin
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    /// Check if document data contains required fields
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    // ==========================================================================
+    // USERS COLLECTION
+    // ==========================================================================
+    
+    match /users/{userId} {
+      // Anyone authenticated can read user profiles
+      allow read: if isAuthenticated();
+      
+      // Only owner can create their profile (via sign up)
+      allow create: if isOwner(userId) && 
+                       hasRequiredFields(['username', 'fullName', 'avatarUrl']);
+      
+      // Only owner can update their profile
+      allow update: if isOwner(userId);
+      
+      // Only owner or admin can delete
+      allow delete: if isOwner(userId) || isAdmin();
+      
+      // --- Followers subcollection ---
+      match /followers/{followerId} {
+        // Anyone can read
+        allow read: if isAuthenticated();
+        
+        // Only the follower can add themselves
+        allow create: if isOwner(followerId);
+        
+        // Only the follower can remove themselves
+        allow delete: if isOwner(followerId);
+      }
+      
+      // --- Following subcollection ---
+      match /following/{followingId} {
+        // Anyone can read
+        allow read: if isAuthenticated();
+        
+        // Only owner can follow someone
+        allow create: if isOwner(userId);
+        
+        // Only owner can unfollow
+        allow delete: if isOwner(userId);
+      }
+      
+      // --- Notifications subcollection ---
+      match /notifications/{notifId} {
+        // Only owner can read their notifications
+        allow read: if isOwner(userId);
+        
+        // Only owner can update (mark as read)
+        allow update: if isOwner(userId);
+        
+        // Only owner can delete
+        allow delete: if isOwner(userId);
+        
+        // Nobody can create directly (only Cloud Functions)
+        allow create: if false;
+      }
+    }
+    
+    // ==========================================================================
+    // USERNAMES COLLECTION (for uniqueness check)
+    // ==========================================================================
+    
+    match /usernames/{username} {
+      // Anyone can read to check availability
+      allow read: if true;
+      
+      // Only Cloud Functions can write
+      allow write: if false;
+    }
+    
+    // ==========================================================================
+    // POSTS COLLECTION
+    // ==========================================================================
+    
+    match /posts/{postId} {
+      // Anyone authenticated can read public posts
+      // TODO: Add privacy filter logic for friends/private
+      allow read: if isAuthenticated();
+      
+      // Authenticated users can create posts
+      allow create: if isAuthenticated() &&
+                       request.resource.data.authorId == request.auth.uid &&
+                       hasRequiredFields(['authorId', 'authorName', 'authorAvatar', 
+                                          'contentText', 'privacy']);
+      
+      // Only author can update their post
+      allow update: if isAuthenticated() && 
+                       resource.data.authorId == request.auth.uid;
+      
+      // Only author or admin can delete
+      allow delete: if isAuthenticated() && 
+                       (resource.data.authorId == request.auth.uid || isAdmin());
+      
+      // --- Comments subcollection ---
+      match /comments/{commentId} {
+        // Anyone can read comments
+        allow read: if isAuthenticated();
+        
+        // Authenticated users can create comments
+        allow create: if isAuthenticated() &&
+                         request.resource.data.authorId == request.auth.uid;
+        
+        // Only comment author can update
+        allow update: if isAuthenticated() && 
+                         resource.data.authorId == request.auth.uid;
+        
+        // Only comment author or post author or admin can delete
+        allow delete: if isAuthenticated() && 
+                         (resource.data.authorId == request.auth.uid ||
+                          get(/databases/$(database)/documents/posts/$(postId)).data.authorId == request.auth.uid ||
+                          isAdmin());
+        
+        // --- Comment reacts subcollection ---
+        match /reacts/{reactUserId} {
+          // Anyone can read
+          allow read: if isAuthenticated();
+          
+          // Only the user can add/remove their own react
+          allow create, delete: if isOwner(reactUserId);
+        }
+      }
+      
+      // --- Post reacts subcollection ---
+      match /reacts/{reactUserId} {
+        // Anyone can read
+        allow read: if isAuthenticated();
+        
+        // Only the user can add/remove their own react
+        allow create, delete: if isOwner(reactUserId);
+      }
+    }
+    
+    // ==========================================================================
+    // DENY ALL OTHER COLLECTIONS
+    // ==========================================================================
+    
+    // Deny access to any other collections not explicitly defined
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

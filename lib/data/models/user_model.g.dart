@@ -21,11 +21,6 @@ _$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
               ?.map((e) => UserModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      petBuddies:
-          (json['petBuddies'] as List<dynamic>?)
-              ?.map((e) => PetProfile.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          const [],
       followerCount: (json['followerCount'] as num?)?.toInt() ?? 0,
       followingCount: (json['followingCount'] as num?)?.toInt() ?? 0,
       isFollowedByMe: json['isFollowedByMe'] as bool? ?? false,
@@ -52,7 +47,6 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'bio': instance.bio,
       'location': instance.location,
       'humanBuddies': instance.humanBuddies,
-      'petBuddies': instance.petBuddies,
       'followerCount': instance.followerCount,
       'followingCount': instance.followingCount,
       'isFollowedByMe': instance.isFollowedByMe,
@@ -61,9 +55,4 @@ Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
       'createdAt': instance.createdAt?.toIso8601String(),
     };
 
-const _$UserRoleEnumMap = {
-  UserRole.user: 'user',
-  UserRole.vet: 'vet',
-  UserRole.shop: 'shop',
-  UserRole.admin: 'admin',
-};
+const _$UserRoleEnumMap = {UserRole.user: 'user', UserRole.admin: 'admin'};
