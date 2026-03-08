@@ -6,7 +6,7 @@ part 'change_password_request.g.dart';
 
 /// Change Password Request Model - Đổi mật khẩu
 @freezed
-class ChangePasswordRequest with _$ChangePasswordRequest {
+abstract class ChangePasswordRequest with _$ChangePasswordRequest {
   const factory ChangePasswordRequest({
     required String currentPassword,
     required String newPassword,

@@ -10,43 +10,42 @@ import 'core_providers.dart';
 // =============================================================================
 
 /// Get comments của một post (stream)
-/// 
+///
 /// [postId] - ID của post
-final commentsProvider = StreamProvider.family<List<Comment>, String>(
-  (ref, postId) {
-    final repository = ref.watch(commentRepositoryProvider);
-    return repository.getComments(postId, limit: 50);
-  },
-);
+final commentsProvider = StreamProvider.family<List<Comment>, String>((
+  ref,
+  postId,
+) {
+  final repository = ref.watch(commentRepositoryProvider);
+  return repository.getComments(postId, limit: 50);
+});
 
 /// Get comments sorted by react count (top comments)
-final topCommentsProvider = StreamProvider.family<List<Comment>, String>(
-  (ref, postId) {
-    final repository = ref.watch(commentRepositoryProvider);
-    return repository.getComments(
-      postId,
-      sortBy: 'reactCount',
-      descending: true,
-      limit: 10,
-    );
-  },
-);
+final topCommentsProvider = StreamProvider.family<List<Comment>, String>((
+  ref,
+  postId,
+) {
+  final repository = ref.watch(commentRepositoryProvider);
+  return repository.getComments(
+    postId,
+    sortBy: 'reactCount',
+    descending: true,
+    limit: 10,
+  );
+});
 
 /// Get comment count của post
-final commentCountProvider = FutureProvider.family<int, String>(
-  (ref, postId) {
-    final repository = ref.watch(commentRepositoryProvider);
-    return repository.getCommentCount(postId);
-  },
-);
+final commentCountProvider = FutureProvider.family<int, String>((ref, postId) {
+  final repository = ref.watch(commentRepositoryProvider);
+  return repository.getCommentCount(postId);
+});
 
 /// Check if user has reacted to a comment
-final hasReactedCommentProvider = FutureProvider.family<bool, CommentReactParams>(
-  (ref, params) {
-    final repository = ref.watch(commentRepositoryProvider);
-    return repository.hasReacted(params.postId, params.commentId);
-  },
-);
+final hasReactedCommentProvider =
+    FutureProvider.family<bool, CommentReactParams>((ref, params) {
+      final repository = ref.watch(commentRepositoryProvider);
+      return repository.hasReacted(params.postId, params.commentId);
+    });
 
 /// Parameters cho comment react check
 class CommentReactParams {
@@ -71,7 +70,7 @@ class CommentReactParams {
 // =============================================================================
 
 /// Provider cho các actions liên quan đến comments
-/// 
+///
 /// Usage:
 /// ```dart
 /// final commentActions = ref.read(commentActionsProvider);

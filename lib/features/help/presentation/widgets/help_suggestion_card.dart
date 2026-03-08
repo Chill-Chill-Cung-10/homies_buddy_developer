@@ -8,11 +8,7 @@ class HelpSuggestionCard extends StatelessWidget {
   final HelpSuggestion suggestion;
   final VoidCallback? onTap;
 
-  const HelpSuggestionCard({
-    super.key,
-    required this.suggestion,
-    this.onTap,
-  });
+  const HelpSuggestionCard({super.key, required this.suggestion, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -108,8 +104,5 @@ class _CardVisuals {
   final String emoji;
   final Color backgroundColor;
 
-  const _CardVisuals({
-    required this.emoji,
-    required this.backgroundColor,
-  });
+  const _CardVisuals({required this.emoji, required this.backgroundColor});
 }

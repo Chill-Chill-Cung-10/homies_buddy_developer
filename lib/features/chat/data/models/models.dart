@@ -1,5 +1,5 @@
 /// Chat Models - Barrel export file
-/// 
+///
 /// Import all chat models with one line:
 /// import 'package:homies_buddy_developer/features/chat/data/models/models.dart';
 library;

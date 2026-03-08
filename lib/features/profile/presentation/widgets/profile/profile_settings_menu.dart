@@ -1,6 +1,7 @@
 /// Settings bottom sheet cho Profile Screen
 /// Hiển thị các tùy chọn: Profile Setting, Change Password, Logout
 library;
+
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
@@ -28,10 +29,7 @@ class ProfileMenuItem {
 class ProfileSettingsMenu extends StatelessWidget {
   final List<ProfileMenuItem> menuItems;
 
-  const ProfileSettingsMenu({
-    super.key,
-    required this.menuItems,
-  });
+  const ProfileSettingsMenu({super.key, required this.menuItems});
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +65,7 @@ class ProfileSettingsMenu extends StatelessWidget {
             ),
             child: Text(
               'Settings',
-              style: AppTextStyles.h3.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
 
@@ -99,8 +95,9 @@ class ProfileSettingsMenu extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: (item.iconColor ?? AppColors.accentOrange)
-                    .withValues(alpha: 0.12),
+                color: (item.iconColor ?? AppColors.accentOrange).withValues(
+                  alpha: 0.12,
+                ),
                 borderRadius: BorderRadius.circular(AppShapes.iconRadius),
               ),
               child: Icon(

@@ -701,12 +701,7 @@ lib/
 | **Phase 1** | Core: Merge AppColors, tách common_widgets, tạo utils | 🔴 Cao | ✅ COMPLETED |
 | **Phase 2** | Auth: Tạo reusable widgets, fix duplicates | 🔴 Cao | ✅ COMPLETED |
 | **Phase 3** | Community: Tách 3 file lớn, tách notifications | 🔴 Cao | ✅ COMPLETED |
-| **Phase 4** | Help: Tách ask_for_help_screen | 🟡 TB | ⬜ Chưa thực hiện |
-| **Phase 5** | Chat: Chuẩn hóa models, tách settings | 🟡 TB | ⬜ Chưa thực hiện |
-| **Phase 6** | Home: Extract hardcoded colors | 🟢 Thấp | ⬜ Chưa thực hiện |
-| **Phase 7** | i18n: Extract strings | 🟢 Thấp | ⬜ Chưa thực hiện |
-| **Phase 8** | Architecture: Repository + State management | 🔵 Tương lai | ⬜ Chưa thực hiện |
-| **Bonus** | Fix `withOpacity()` deprecated | 🟡 TB | ⬜ Chưa thực hiện |
+
 
 **Tổng ước tính: ~12-18 ngày làm việc** (trải dài theo sprint, không cần làm liên tục)
 

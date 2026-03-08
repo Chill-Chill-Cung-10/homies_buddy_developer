@@ -6,34 +6,35 @@ part of 'user_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$UserModelImpl _$$UserModelImplFromJson(Map<String, dynamic> json) =>
-    _$UserModelImpl(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      fullName: json['fullName'] as String,
-      avatarUrl: json['avatarUrl'] as String?,
-      phoneNumber: json['phoneNumber'] as String?,
-      dateOfBirth: json['dateOfBirth'] == null
-          ? null
-          : DateTime.parse(json['dateOfBirth'] as String),
-      isEmailVerified: json['isEmailVerified'] as bool? ?? false,
-      createdAt: json['createdAt'] == null
-          ? null
-          : DateTime.parse(json['createdAt'] as String),
-      updatedAt: json['updatedAt'] == null
-          ? null
-          : DateTime.parse(json['updatedAt'] as String),
-    );
+_UserModel _$UserModelFromJson(Map<String, dynamic> json) => _UserModel(
+  id: json['id'] as String,
+  email: json['email'] as String,
+  fullName: json['full_name'] as String,
+  username: json['username'] as String,
+  avatarUrl: json['avatar_url'] as String?,
+  phoneNumber: json['phone_number'] as String?,
+  dateOfBirth: json['date_of_birth'] == null
+      ? null
+      : DateTime.parse(json['date_of_birth'] as String),
+  isEmailVerified: json['is_email_verified'] as bool? ?? false,
+  createdAt: json['created_at'] == null
+      ? null
+      : DateTime.parse(json['created_at'] as String),
+  updatedAt: json['updated_at'] == null
+      ? null
+      : DateTime.parse(json['updated_at'] as String),
+);
 
-Map<String, dynamic> _$$UserModelImplToJson(_$UserModelImpl instance) =>
+Map<String, dynamic> _$UserModelToJson(_UserModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'email': instance.email,
-      'fullName': instance.fullName,
-      'avatarUrl': instance.avatarUrl,
-      'phoneNumber': instance.phoneNumber,
-      'dateOfBirth': instance.dateOfBirth?.toIso8601String(),
-      'isEmailVerified': instance.isEmailVerified,
-      'createdAt': instance.createdAt?.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
+      'full_name': instance.fullName,
+      'username': instance.username,
+      'avatar_url': instance.avatarUrl,
+      'phone_number': instance.phoneNumber,
+      'date_of_birth': instance.dateOfBirth?.toIso8601String(),
+      'is_email_verified': instance.isEmailVerified,
+      'created_at': instance.createdAt?.toIso8601String(),
+      'updated_at': instance.updatedAt?.toIso8601String(),
     };

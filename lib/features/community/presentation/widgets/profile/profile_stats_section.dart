@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.1 — Extracted from personal_profile_screen.dart
 /// Profile stats row (posts, followers, following) and follow button
 library;
+
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
@@ -75,10 +76,10 @@ class ProfileStatsSection extends StatelessWidget {
         child: ElevatedButton(
           onPressed: onFollowToggle,
           style: ElevatedButton.styleFrom(
-            backgroundColor:
-                isFollowing ? AppColors.surfaceColor : AppColors.accentOrange,
-            foregroundColor:
-                isFollowing ? AppColors.textPrimary : Colors.white,
+            backgroundColor: isFollowing
+                ? AppColors.surfaceColor
+                : AppColors.accentOrange,
+            foregroundColor: isFollowing ? AppColors.textPrimary : Colors.white,
             elevation: 0,
             padding: const EdgeInsets.symmetric(vertical: 12),
             shape: RoundedRectangleBorder(

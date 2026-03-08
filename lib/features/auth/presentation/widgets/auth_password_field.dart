@@ -43,8 +43,9 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
       validator: widget.validator,
       enabled: widget.enabled,
       style: const TextStyle(fontSize: 16),
-      onFieldSubmitted:
-          widget.onFieldSubmitted != null ? (_) => widget.onFieldSubmitted!() : null,
+      onFieldSubmitted: widget.onFieldSubmitted != null
+          ? (_) => widget.onFieldSubmitted!()
+          : null,
       decoration: _buildDecoration(),
     );
   }
@@ -78,26 +79,38 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: AppShapes.card,
-            borderSide:
-                const BorderSide(color: AppColors.textPrimary, width: 2),
+            borderSide: const BorderSide(
+              color: AppColors.textPrimary,
+              width: 2,
+            ),
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 20,
+          ),
         );
 
       case AuthFieldStyle.surface:
         return InputDecoration(
           labelText: widget.labelText,
-          labelStyle:
-              const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+          labelStyle: const TextStyle(
+            fontSize: 16,
+            color: AppColors.textPrimary,
+          ),
           hintText: widget.hintText,
           hintStyle: const TextStyle(fontSize: 16),
-          prefixIcon: const Icon(Icons.lock_outline, color: Colors.black, size: 24),
+          prefixIcon: const Icon(
+            Icons.lock_outline,
+            color: Colors.black,
+            size: 24,
+          ),
           suffixIcon: suffixIcon,
           filled: true,
           fillColor: AppColors.surfaceColor,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 20,
+          ),
           border: OutlineInputBorder(
             borderRadius: AppShapes.button,
             borderSide: BorderSide.none,
@@ -108,18 +121,18 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: AppShapes.button,
-            borderSide:
-                const BorderSide(color: AppColors.textPrimary, width: 2),
+            borderSide: const BorderSide(
+              color: AppColors.textPrimary,
+              width: 2,
+            ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: AppShapes.button,
-            borderSide:
-                const BorderSide(color: AppColors.errorRed, width: 2),
+            borderSide: const BorderSide(color: AppColors.errorRed, width: 2),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: AppShapes.button,
-            borderSide:
-                const BorderSide(color: AppColors.errorRed, width: 2),
+            borderSide: const BorderSide(color: AppColors.errorRed, width: 2),
           ),
         );
     }

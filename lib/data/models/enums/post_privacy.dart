@@ -4,10 +4,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 enum PostPrivacy {
   @JsonValue('public')
   public,
-  
+
   @JsonValue('friends')
   friends,
-  
+
   @JsonValue('private')
   private;
 

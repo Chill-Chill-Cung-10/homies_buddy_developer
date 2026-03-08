@@ -5,7 +5,7 @@ import '../../data/models/enums/post_privacy.dart';
 import '../../core/services/firebase_service.dart';
 
 /// Post Repository - Quản lý operations liên quan đến posts
-/// 
+///
 /// Handles:
 /// - Create/Update/Delete posts
 /// - Get feed with pagination
@@ -16,13 +16,10 @@ class PostRepository {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Get community feed (public posts)
-  /// 
+  ///
   /// [lastDoc] - Document cuối cùng để cursor-based pagination
   /// [limit] - Số lượng posts mỗi page
-  Stream<List<Post>> getFeed({
-    DocumentSnapshot? lastDoc,
-    int limit = 10,
-  }) {
+  Stream<List<Post>> getFeed({DocumentSnapshot? lastDoc, int limit = 10}) {
     Query<Map<String, dynamic>> query = _firebaseService.postsCollection
         .where('privacy', isEqualTo: 'public')
         .orderBy('createdAt', descending: true)
@@ -38,7 +35,8 @@ class PostRepository {
           ...doc.data(),
           'postId': doc.id,
           // Convert Timestamp to DateTime
-          'createdAt': (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+          'createdAt':
+              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
               DateTime.now(),
           'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
         });
@@ -66,7 +64,8 @@ class PostRepository {
         return Post.fromJson({
           ...doc.data(),
           'postId': doc.id,
-          'createdAt': (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+          'createdAt':
+              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
               DateTime.now(),
           'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
         });
@@ -83,7 +82,8 @@ class PostRepository {
       return Post.fromJson({
         ...doc.data()!,
         'postId': doc.id,
-        'createdAt': (doc.data()!['createdAt'] as Timestamp?)?.toDate() ??
+        'createdAt':
+            (doc.data()!['createdAt'] as Timestamp?)?.toDate() ??
             DateTime.now(),
         'updatedAt': (doc.data()!['updatedAt'] as Timestamp?)?.toDate(),
       });
@@ -100,7 +100,8 @@ class PostRepository {
       return Post.fromJson({
         ...doc.data()!,
         'postId': doc.id,
-        'createdAt': (doc.data()!['createdAt'] as Timestamp?)?.toDate() ??
+        'createdAt':
+            (doc.data()!['createdAt'] as Timestamp?)?.toDate() ??
             DateTime.now(),
         'updatedAt': (doc.data()!['updatedAt'] as Timestamp?)?.toDate(),
       });
@@ -108,7 +109,7 @@ class PostRepository {
   }
 
   /// Create new post
-  /// 
+  ///
   /// [mediaFiles] đã được upload lên Storage trước đó
   Future<String> createPost({
     required String contentText,
@@ -124,13 +125,14 @@ class PostRepository {
 
     try {
       // Get author info
-      final authorDoc =
-          await _firebaseService.usersCollection.doc(currentUserId).get();
+      final authorDoc = await _firebaseService.usersCollection
+          .doc(currentUserId)
+          .get();
       final authorData = authorDoc.data();
 
       // Create post document
       final postRef = _firebaseService.postsCollection.doc();
-      
+
       await postRef.set({
         'authorId': currentUserId,
         'authorName': authorData?['fullName'] ?? 'Unknown',
@@ -138,16 +140,20 @@ class PostRepository {
         'contentText': contentText,
         'hashtags': hashtags,
         'mentions': mentions,
-        'mediaFiles': mediaFiles.map((m) => {
-              'id': m.id,
-              'mediaUrl': m.mediaUrl,
-              'thumbnailUrl': m.thumbnailUrl,
-              'mediaType': m.mediaType.name,
-              'mediaAspectRatio': m.mediaAspectRatio,
-              'width': m.width,
-              'height': m.height,
-              'durationSeconds': m.durationSeconds,
-            }).toList(),
+        'mediaFiles': mediaFiles
+            .map(
+              (m) => {
+                'id': m.id,
+                'mediaUrl': m.mediaUrl,
+                'thumbnailUrl': m.thumbnailUrl,
+                'mediaType': m.mediaType.name,
+                'mediaAspectRatio': m.mediaAspectRatio,
+                'width': m.width,
+                'height': m.height,
+                'durationSeconds': m.durationSeconds,
+              },
+            )
+            .toList(),
         'reactsCount': 0,
         'commentCount': 0,
         'privacy': privacy.name,
@@ -216,7 +222,7 @@ class PostRepository {
   }
 
   /// Toggle react on post (like/unlike)
-  /// 
+  ///
   /// Optimistic update - Cloud Function will update reactsCount
   Future<void> toggleReact(String postId) async {
     final currentUserId = _firebaseService.currentUserId;
@@ -225,20 +231,16 @@ class PostRepository {
     }
 
     try {
-      final reactRef = _firebaseService
-          .postReacts(postId)
-          .doc(currentUserId);
+      final reactRef = _firebaseService.postReacts(postId).doc(currentUserId);
 
       final doc = await reactRef.get();
-      
+
       if (doc.exists) {
         // Already reacted -> unreact
         await reactRef.delete();
       } else {
         // Not reacted yet -> react
-        await reactRef.set({
-          'reactedAt': FieldValue.serverTimestamp(),
-        });
+        await reactRef.set({'reactedAt': FieldValue.serverTimestamp()});
       }
     } catch (e) {
       throw PostRepositoryException('Failed to toggle react: $e');
@@ -282,7 +284,8 @@ class PostRepository {
         return Post.fromJson({
           ...doc.data(),
           'postId': doc.id,
-          'createdAt': (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+          'createdAt':
+              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
               DateTime.now(),
           'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
         });
@@ -311,7 +314,8 @@ class PostRepository {
         return Post.fromJson({
           ...doc.data(),
           'postId': doc.id,
-          'createdAt': (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+          'createdAt':
+              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
               DateTime.now(),
           'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
         });

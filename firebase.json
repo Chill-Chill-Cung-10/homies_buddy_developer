@@ -23,9 +23,12 @@
       ]
     }
   ],
-  "storage": {
-    "rules": "storage.rules"
-  },
+  "storage": [
+    {
+      "rules": "storage.rules",
+      "bucket": "amicute-43081.firebasestorage.app"
+    }
+  ],
   "emulators": {
     "auth": {
       "port": 9099

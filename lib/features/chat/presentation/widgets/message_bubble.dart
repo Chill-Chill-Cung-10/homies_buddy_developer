@@ -6,17 +6,13 @@ import '../../data/models/models.dart';
 import 'message_status_indicator.dart';
 
 /// Message Bubble Widget
-/// 
+///
 /// Displays a chat message bubble
 class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isMe;
 
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isMe,
-  });
+  const MessageBubble({super.key, required this.message, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
@@ -27,8 +23,9 @@ class MessageBubble extends StatelessWidget {
         bottom: 12,
       ),
       child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           Container(
             decoration: BoxDecoration(
@@ -50,10 +47,7 @@ class MessageBubble extends StatelessWidget {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: message.type == MessageType.text
                   ? _buildTextMessage()
                   : _buildImageMessage(),
@@ -85,9 +79,7 @@ class MessageBubble extends StatelessWidget {
     return Text(
       message.content,
       style: AppTextStyles.bodyMedium.copyWith(
-        color: isMe
-            ? AppColors.textPrimary
-            : AppColors.textPrimary,
+        color: isMe ? AppColors.textPrimary : AppColors.textPrimary,
         height: 1.4,
       ),
     );
@@ -106,9 +98,7 @@ class MessageBubble extends StatelessWidget {
             width: 200,
             height: 200,
             color: Colors.grey.shade200,
-            child: const Center(
-              child: CircularProgressIndicator(),
-            ),
+            child: const Center(child: CircularProgressIndicator()),
           );
         },
         errorBuilder: (context, error, stackTrace) {

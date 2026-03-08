@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.3 — Extracted from comment_overlay.dart
 /// Post preview section — wraps SocialPostCard with comment-highlighted mode
 library;
+
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_shapes.dart';
 import '../../../../../data/models/post_model.dart';

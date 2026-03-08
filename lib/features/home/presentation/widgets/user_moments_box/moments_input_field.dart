@@ -43,7 +43,8 @@ class MomentsInputField extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: borderRadius ?? BorderRadius.circular(20),
-        boxShadow: boxShadow ??
+        boxShadow:
+            boxShadow ??
             [
               BoxShadow(
                 color: Colors.brown.withOpacity(0.1),
@@ -57,11 +58,7 @@ class MomentsInputField extends StatelessWidget {
           // Add circle button
           IconButton(
             onPressed: enabled ? onAddPressed : null,
-            icon: Icon(
-              Icons.add_circle,
-              color: iconColor,
-              size: 28,
-            ),
+            icon: Icon(Icons.add_circle, color: iconColor, size: 28),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
@@ -85,8 +82,10 @@ class MomentsInputField extends StatelessWidget {
                   fontWeight: FontWeight.w400,
                 ),
                 border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
                 isDense: true,
               ),
             ),
@@ -99,10 +98,7 @@ class MomentsInputField extends StatelessWidget {
               sendIconPath,
               width: 24,
               height: 24,
-              colorFilter: ColorFilter.mode(
-                iconColor,
-                BlendMode.srcIn,
-              ),
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 36, minHeight: 36),

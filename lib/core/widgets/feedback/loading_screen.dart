@@ -4,7 +4,7 @@ import '../../constants/app_text_styles.dart';
 import '../../constants/app_spacing.dart';
 
 /// [Loading Widget] — Full-screen loading screen.
-/// 
+///
 /// Dùng cho initial app loading hoặc major state transitions.
 /// Có thể customize với logo, message, và animated indicator.
 class LoadingScreen extends StatelessWidget {
@@ -97,9 +97,10 @@ class _PulsingLoadingIndicatorState extends State<_PulsingLoadingIndicator>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    _animation = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0.6,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _controller.repeat(reverse: true);
   }
 

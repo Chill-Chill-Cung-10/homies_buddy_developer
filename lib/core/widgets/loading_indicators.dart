@@ -6,12 +6,8 @@ import '../constants/app_text_styles.dart';
 class BottomLoadingIndicator extends StatelessWidget {
   final String? message;
   final Color? color;
-  
-  const BottomLoadingIndicator({
-    super.key,
-    this.message,
-    this.color,
-  });
+
+  const BottomLoadingIndicator({super.key, this.message, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +47,8 @@ class BottomLoadingIndicator extends StatelessWidget {
 class EndOfListWidget extends StatelessWidget {
   final String? message;
   final IconData? icon;
-  
-  const EndOfListWidget({
-    super.key,
-    this.message,
-    this.icon,
-  });
+
+  const EndOfListWidget({super.key, this.message, this.icon});
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +83,7 @@ class ShimmerPlaceholder extends StatefulWidget {
   final double? width;
   final double? height;
   final BorderRadius? borderRadius;
-  
+
   const ShimmerPlaceholder({
     super.key,
     this.width,
@@ -115,10 +107,11 @@ class _ShimmerPlaceholderState extends State<ShimmerPlaceholder>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     )..repeat();
-    
-    _animation = Tween<double>(begin: -1.0, end: 2.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+
+    _animation = Tween<double>(
+      begin: -1.0,
+      end: 2.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -161,11 +154,8 @@ class _ShimmerPlaceholderState extends State<ShimmerPlaceholder>
 /// Loading state cho toàn màn hình
 class FullPageLoadingIndicator extends StatelessWidget {
   final String? message;
-  
-  const FullPageLoadingIndicator({
-    super.key,
-    this.message,
-  });
+
+  const FullPageLoadingIndicator({super.key, this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +188,7 @@ class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
   final VoidCallback? onActionPressed;
   final String? actionLabel;
-  
+
   const EmptyStateWidget({
     super.key,
     required this.title,
@@ -224,9 +214,7 @@ class EmptyStateWidget extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               title,
-              style: AppTextStyles.h3.copyWith(
-                color: AppColors.textSecondary,
-              ),
+              style: AppTextStyles.h3.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
@@ -265,12 +253,8 @@ class EmptyStateWidget extends StatelessWidget {
 class ErrorStateWidget extends StatelessWidget {
   final String? message;
   final VoidCallback? onRetry;
-  
-  const ErrorStateWidget({
-    super.key,
-    this.message,
-    this.onRetry,
-  });
+
+  const ErrorStateWidget({super.key, this.message, this.onRetry});
 
   @override
   Widget build(BuildContext context) {

@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.1 — Extracted from personal_profile_screen.dart
 /// Horizontal scrollable list of buddies (humans only)
 library;
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../../core/constants/app_colors.dart';
@@ -43,7 +44,9 @@ class ProfileBuddiesSection extends StatelessWidget {
             height: 100,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: AppShapes.paddingM),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppShapes.paddingM,
+              ),
               itemCount: allBuddies.length,
               itemBuilder: (context, index) {
                 final buddy = allBuddies[index];

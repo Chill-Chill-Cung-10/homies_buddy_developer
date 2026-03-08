@@ -22,71 +22,72 @@ enum PetState {
 
 /// Các animation chuyển đổi giữa các trạng thái (play once)
 enum PetTransition {
-  happyToWalkHorizontally,    // happy -> walkingHorizontally
-  happyVsSmiling,             // transition giữa happy variants
-  idleToSleep,                // idle -> sleep
-  lookingToWalkFront,         // lookingOutside -> walkingFront
-  lookFrontToBack,            // quay từ trước ra sau
-  lookBackToFront,            // quay từ sau ra trước
+  happyToWalkHorizontally, // happy -> walkingHorizontally
+  happyVsSmiling, // transition giữa happy variants
+  idleToSleep, // idle -> sleep
+  lookingToWalkFront, // lookingOutside -> walkingFront
+  lookFrontToBack, // quay từ trước ra sau
+  lookBackToFront, // quay từ sau ra trước
 }
 
 /// Sealed class đại diện cho bất kỳ animation nào của pet
 sealed class PetAnimation {
   const PetAnimation();
-  
+
   /// Tạo animation từ state
   factory PetAnimation.state(PetState state) = _PetAnimationState;
-  
+
   /// Tạo animation từ transition
-  factory PetAnimation.transition(PetTransition transition) = _PetAnimationTransition;
-  
+  factory PetAnimation.transition(PetTransition transition) =
+      _PetAnimationTransition;
+
   /// Lấy config tương ứng
   _SpriteConfig get config;
-  
+
   /// Kiểm tra có phải là transition không (play once)
   bool get isTransition;
 }
 
 class _PetAnimationState extends PetAnimation {
   final PetState state;
-  
+
   const _PetAnimationState(this.state);
-  
+
   @override
   _SpriteConfig get config => _stateConfigs[state]!;
-  
+
   @override
   bool get isTransition => false;
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is _PetAnimationState &&
           runtimeType == other.runtimeType &&
           state == other.state;
-  
+
   @override
   int get hashCode => state.hashCode;
 }
 
 class _PetAnimationTransition extends PetAnimation {
   final PetTransition transition;
-  
+
   const _PetAnimationTransition(this.transition);
-  
+
   @override
   _SpriteConfig get config => _transitionConfigs[transition]!;
-  
+
   @override
   bool get isTransition => true;
-  
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is _PetAnimationTransition &&
           runtimeType == other.runtimeType &&
           transition == other.transition;
-  
+
   @override
   int get hashCode => transition.hashCode;
 }
@@ -170,7 +171,8 @@ const Map<PetState, _SpriteConfig> _stateConfigs = {
 // ── Cấu hình sprite cho các TRANSITION (play once) ──
 const Map<PetTransition, _SpriteConfig> _transitionConfigs = {
   PetTransition.happyToWalkHorizontally: _SpriteConfig(
-    assetPath: 'assets/images/home/sprite_pets/lumni_happy_to_walk_horizontally.png',
+    assetPath:
+        'assets/images/home/sprite_pets/lumni_happy_to_walk_horizontally.png',
     columns: 5,
     rows: 13,
     frameCount: 61,
@@ -223,56 +225,54 @@ class PetFSM extends ChangeNotifier {
   PetState? _targetState; // State mục tiêu sau khi transition hoàn tất
   Timer? _stateTimer;
   final math.Random _random = math.Random();
-  
+
   // Zone management
   PetZone _currentZone = HomeZones.zone3;
   PetZone? _targetZone;
-  
+
   /// Animation hiện tại đang chạy
   PetAnimation get currentAnimation => _currentAnimation;
-  
+
   /// State hiện tại (nếu đang trong state ổn định)
   PetState? get currentState {
     final anim = _currentAnimation;
     return anim is _PetAnimationState ? anim.state : null;
   }
-  
+
   /// Kiểm tra có đang trong transition không
   bool get isInTransition => _currentAnimation.isTransition;
-  
+
   /// Zone hiện tại của pet
   PetZone get currentZone => _currentZone;
-  
+
   /// Target zone khi đang di chuyển
   PetZone? get targetZone => _targetZone;
-  
-  PetFSM({
-    PetState initialState = PetState.idle,
-    PetZone? initialZone,
-  })  : _currentAnimation = PetAnimation.state(initialState),
-        _currentZone = initialZone ?? HomeZones.zone3 {
+
+  PetFSM({PetState initialState = PetState.idle, PetZone? initialZone})
+    : _currentAnimation = PetAnimation.state(initialState),
+      _currentZone = initialZone ?? HomeZones.zone3 {
     _scheduleNextBehavior();
   }
-  
+
   @override
   void dispose() {
     _stateTimer?.cancel();
     super.dispose();
   }
-  
+
   // ═══════════════════════════════════════════
   // PUBLIC API
   // ═══════════════════════════════════════════
-  
+
   /// Chuyển đến state mới (tự động tìm transition phù hợp nếu có)
   void transitionTo(PetState newState) {
     final current = currentState;
     if (current == null) return; // Đang trong transition, bỏ qua
     if (current == newState) return; // Đã ở state này rồi
-    
+
     // Tìm transition phù hợp
     final transition = _findTransition(current, newState);
-    
+
     if (transition != null) {
       // Có transition -> play transition, sau đó chuyển sang newState
       _playTransition(transition, targetState: newState);
@@ -281,27 +281,27 @@ class PetFSM extends ChangeNotifier {
       _changeToState(newState);
     }
   }
-  
+
   /// Bắt đầu hành vi random tự động
   void startAutoBehavior() {
     _scheduleNextBehavior();
   }
-  
+
   /// Dừng hành vi tự động
   void stopAutoBehavior() {
     _stateTimer?.cancel();
     _stateTimer = null;
   }
-  
+
   /// Force chuyển sang state ngay lập tức (không qua transition)
   void forceState(PetState state) {
     _changeToState(state);
   }
-  
+
   // ═══════════════════════════════════════════
   // PRIVATE METHODS
   // ═══════════════════════════════════════════
-  
+
   /// Đổi sang state mới và schedule behavior tiếp theo
   void _changeToState(PetState newState) {
     _currentAnimation = PetAnimation.state(newState);
@@ -309,16 +309,19 @@ class PetFSM extends ChangeNotifier {
     notifyListeners();
     _scheduleNextBehavior();
   }
-  
+
   /// Play transition animation với target state sau khi xong
-  void _playTransition(PetTransition transition, {required PetState targetState}) {
+  void _playTransition(
+    PetTransition transition, {
+    required PetState targetState,
+  }) {
     _currentAnimation = PetAnimation.transition(transition);
     _targetState = targetState;
     notifyListeners();
-    
+
     // Transition sẽ tự động gọi _onTransitionComplete qua callback
   }
-  
+
   /// Callback khi transition hoàn tất
   void onTransitionComplete() {
     if (_targetState != null) {
@@ -328,40 +331,39 @@ class PetFSM extends ChangeNotifier {
       _changeToState(_randomIdleState());
     }
   }
-  
+
   /// Tìm transition phù hợp giữa 2 states
   PetTransition? _findTransition(PetState from, PetState to) {
     // Map các transitions có sẵn
     final transitionMap = {
-      (PetState.happy, PetState.walkingHorizontally): 
+      (PetState.happy, PetState.walkingHorizontally):
           PetTransition.happyToWalkHorizontally,
-      (PetState.idle, PetState.sleep): 
-          PetTransition.idleToSleep,
-      (PetState.lookingOutside, PetState.walkingFront): 
+      (PetState.idle, PetState.sleep): PetTransition.idleToSleep,
+      (PetState.lookingOutside, PetState.walkingFront):
           PetTransition.lookingToWalkFront,
       // Có thể thêm nhiều transitions khác
     };
-    
+
     return transitionMap[(from, to)];
   }
-  
+
   /// Lên lịch hành vi tiếp theo
   void _scheduleNextBehavior() {
     _stateTimer?.cancel();
-    
+
     // Random thời gian chờ: 3-8 giây
     final delaySeconds = 3 + _random.nextInt(6);
-    
+
     _stateTimer = Timer(Duration(seconds: delaySeconds), () {
       _performRandomBehavior();
     });
   }
-  
+
   /// Thực hiện hành vi ngẫu nhiên dựa trên state hiện tại
   void _performRandomBehavior() {
     final current = currentState;
     if (current == null) return; // Đang trong transition
-    
+
     switch (current) {
       case PetState.idle:
         // Từ idle có thể: ngủ, nhìn ra ngoài, đi lại
@@ -373,7 +375,7 @@ class PetFSM extends ChangeNotifier {
         ];
         transitionTo(behaviors[_random.nextInt(behaviors.length)]);
         break;
-        
+
       case PetState.happy:
         // Từ happy có thể: đi ngang, idle, smiling
         final rand = _random.nextDouble();
@@ -384,17 +386,17 @@ class PetFSM extends ChangeNotifier {
         } else {
           // Play happy vs smiling transition rồi về happy
           _playTransition(
-            PetTransition.happyVsSmiling, 
+            PetTransition.happyVsSmiling,
             targetState: PetState.happy,
           );
         }
         break;
-        
+
       case PetState.sleep:
         // Từ sleep thường về idle
         transitionTo(PetState.idle);
         break;
-        
+
       case PetState.lookingOutside:
         // Từ lookingOutside có thể đi về phía trước hoặc về idle
         final rand = _random.nextDouble();
@@ -404,14 +406,14 @@ class PetFSM extends ChangeNotifier {
           transitionTo(PetState.idle);
         }
         break;
-        
+
       case PetState.walkingHorizontally:
       case PetState.walkingFront:
       case PetState.walkingAway:
         // Sau khi đi, về idle hoặc happy
         transitionTo(_random.nextBool() ? PetState.idle : PetState.happy);
         break;
-        
+
       case PetState.sad:
         // Sad có thể về idle hoặc tiếp tục sad
         if (_random.nextBool()) {
@@ -422,22 +424,22 @@ class PetFSM extends ChangeNotifier {
         break;
     }
   }
-  
+
   /// Random một state idle (idle, happy, lookingOutside)
   PetState _randomIdleState() {
     final states = [PetState.idle, PetState.happy, PetState.lookingOutside];
     return states[_random.nextInt(states.length)];
   }
-  
+
   // ═══════════════════════════════════════════
   // HELPER METHODS
   // ═══════════════════════════════════════════
-  
+
   /// Trigger pet về nhà (walking away)
   void goHome() {
     transitionTo(PetState.walkingAway);
   }
-  
+
   /// Trigger pet đi ra (walking front)
   void comeOut() {
     // Nếu đang nhìn ra ngoài, dùng transition
@@ -447,30 +449,31 @@ class PetFSM extends ChangeNotifier {
       forceState(PetState.walkingFront);
     }
   }
-  
+
   /// Trigger pet buồn
   void makeSad() {
     forceState(PetState.sad);
   }
-  
+
   /// Trigger pet vui
   void makeHappy() {
     forceState(PetState.happy);
   }
-  
+
   // ═══════════════════════════════════════════
   // ZONE MANAGEMENT
   // ═══════════════════════════════════════════
-  
+
   /// Di chuyển đến zone cụ thể
   void moveToZone(PetZone targetZone) {
     if (_currentZone == targetZone) return;
-    
+
     _targetZone = targetZone;
-    
+
     // Chọn animation phù hợp dựa trên direction
-    final isMovingAway = targetZone.scale < _currentZone.scale; // Moving to smaller scale = away
-    
+    final isMovingAway =
+        targetZone.scale < _currentZone.scale; // Moving to smaller scale = away
+
     if (isMovingAway) {
       // Đi xa - về phía cottage
       transitionTo(PetState.walkingAway);
@@ -478,7 +481,7 @@ class PetFSM extends ChangeNotifier {
       // Đi gần - ra phía trước
       transitionTo(PetState.walkingFront);
     }
-    
+
     // Sau khi walking animation kết thúc, update zone
     Future.delayed(const Duration(seconds: 2), () {
       _currentZone = targetZone;
@@ -486,13 +489,13 @@ class PetFSM extends ChangeNotifier {
       notifyListeners();
     });
   }
-  
+
   /// Di chuyển đến zone ngẫu nhiên
   void moveToRandomZone() {
     final newZone = HomeZones.randomZone();
     moveToZone(newZone);
   }
-  
+
   /// Di chuyển ngang trong zone hiện tại
   void moveHorizontallyInZone() {
     transitionTo(PetState.walkingHorizontally);
@@ -507,9 +510,9 @@ class PetFSM extends ChangeNotifier {
 /// x, y là tọa độ normalized (0-1) của trọng tâm bottom của pet
 class PetZone {
   final String name;
-  final double x;          // tọa độ x normalized (0-1)
-  final double y;          // tọa độ y normalized (0-1), anchor bottom của pet
-  final double scale;      // tỷ lệ size pet (1.0 = 100%)
+  final double x; // tọa độ x normalized (0-1)
+  final double y; // tọa độ y normalized (0-1), anchor bottom của pet
+  final double scale; // tỷ lệ size pet (1.0 = 100%)
 
   const PetZone({
     required this.name,
@@ -559,6 +562,7 @@ class HomeZones {
     y: 0.15,
     scale: 1.0,
   );
+
   /// Danh sách tất cả các zone
   static const List<PetZone> all = [zone1, zone2, zone3, zone4, zone5];
 
@@ -583,7 +587,7 @@ class HomeZones {
 ///   width: 180,
 ///   height: 180,
 /// )
-/// 
+///
 /// // Transition (play once)
 /// PetAnimationWidget(
 ///   animation: PetAnimation.transition(PetTransition.idleToSleep),
@@ -596,7 +600,7 @@ class PetAnimationWidget extends StatefulWidget {
   final PetAnimation animation;
   final double width;
   final double height;
-  
+
   /// Callback khi transition hoàn thành (chỉ dùng cho transition)
   final VoidCallback? onTransitionComplete;
 
@@ -679,7 +683,7 @@ class _PetAnimationWidgetState extends State<PetAnimationWidget>
         vsync: this,
         duration: Duration(milliseconds: durationMs),
       );
-      
+
       // State: loop liên tục, Transition: play một lần rồi callback
       if (animation.isTransition) {
         _controller!.forward().then((_) {
@@ -718,8 +722,10 @@ class _PetAnimationWidgetState extends State<PetAnimationWidget>
       child: AnimatedBuilder(
         animation: _controller!,
         builder: (_, __) {
-          final frame =
-              (_controller!.value * config.frameCount).floor().clamp(0, config.frameCount - 1);
+          final frame = (_controller!.value * config.frameCount).floor().clamp(
+            0,
+            config.frameCount - 1,
+          );
           return CustomPaint(
             size: Size(widget.width, widget.height),
             painter: _SpritePainter(
@@ -786,10 +792,9 @@ class _SpritePainter extends CustomPainter {
       sheet,
       src,
       dst,
-      Paint()
-        ..filterQuality = FilterQuality.medium
-        // BlendMode.screen loại bỏ background đen
-        // ..blendMode = BlendMode.screen,
+      Paint()..filterQuality = FilterQuality.medium,
+      // BlendMode.screen loại bỏ background đen
+      // ..blendMode = BlendMode.screen,
     );
   }
 
@@ -838,7 +843,7 @@ class StatefulPetWidgetState extends State<StatefulPetWidget> {
     super.initState();
     _fsm = PetFSM(initialState: widget.initialState);
     _fsm.addListener(_updateAnimation);
-    
+
     if (widget.autoPlay) {
       _fsm.startAutoBehavior();
     }
@@ -939,7 +944,7 @@ class PetWithZoneWidgetState extends State<PetWithZoneWidget>
   late AnimationController _moveController;
   late Animation<double> _xAnimation;
   late Animation<double> _scaleAnimation;
-  
+
   double _currentX = 0.5; // Normalized position (0-1)
   double _targetX = 0.5;
   double _currentScale = 1.0;
@@ -949,50 +954,44 @@ class PetWithZoneWidgetState extends State<PetWithZoneWidget>
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize FSM
     final initialZone = widget.initialZone ?? HomeZones.zone3;
-    _fsm = PetFSM(
-      initialState: widget.initialState,
-      initialZone: initialZone,
-    );
+    _fsm = PetFSM(initialState: widget.initialState, initialZone: initialZone);
     _fsm.addListener(_onFSMUpdate);
-    
+
     // Initialize position
     _currentX = initialZone.x;
     _currentScale = initialZone.scale;
     _targetX = _currentX;
     _targetScale = _currentScale;
-    
+
     // Initialize animation controller for smooth movement
     _moveController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
-    _xAnimation = Tween<double>(begin: _currentX, end: _targetX)
-        .animate(CurvedAnimation(
-      parent: _moveController,
-      curve: Curves.easeInOut,
-    ));
-    
+
+    _xAnimation = Tween<double>(begin: _currentX, end: _targetX).animate(
+      CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+    );
+
     _scaleAnimation = Tween<double>(begin: _currentScale, end: _targetScale)
-        .animate(CurvedAnimation(
-      parent: _moveController,
-      curve: Curves.easeInOut,
-    ));
-    
+        .animate(
+          CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+        );
+
     _moveController.addListener(() {
       setState(() {
         _currentX = _xAnimation.value;
         _currentScale = _scaleAnimation.value;
       });
     });
-    
+
     if (widget.autoPlay) {
       _fsm.startAutoBehavior();
     }
-    
+
     if (widget.enableZoneMovement) {
       _scheduleRandomZoneMovement();
     }
@@ -1008,12 +1007,12 @@ class PetWithZoneWidgetState extends State<PetWithZoneWidget>
 
   void _onFSMUpdate() {
     setState(() {});
-    
+
     // Update position/scale khi zone thay đổi
     final zone = _fsm.currentZone;
     final state = _fsm.currentState;
-    
-    if (state == PetState.walkingAway || 
+
+    if (state == PetState.walkingAway ||
         state == PetState.walkingFront ||
         state == PetState.walkingHorizontally) {
       _moveToPosition(zone);
@@ -1024,38 +1023,35 @@ class PetWithZoneWidgetState extends State<PetWithZoneWidget>
     // Xác định vị trí mục tiêu - dùng x của zone (điểm cố định)
     final newX = zone.x;
     final newScale = zone.scale;
-    
+
     // Flip pet nếu đi sang trái
     _flipHorizontal = newX < _currentX;
-    
+
     // Animate to new position
     _targetX = newX;
     _targetScale = newScale;
-    
-    _xAnimation = Tween<double>(begin: _currentX, end: _targetX)
-        .animate(CurvedAnimation(
-      parent: _moveController,
-      curve: Curves.easeInOut,
-    ));
-    
+
+    _xAnimation = Tween<double>(begin: _currentX, end: _targetX).animate(
+      CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+    );
+
     _scaleAnimation = Tween<double>(begin: _currentScale, end: _targetScale)
-        .animate(CurvedAnimation(
-      parent: _moveController,
-      curve: Curves.easeInOut,
-    ));
-    
+        .animate(
+          CurvedAnimation(parent: _moveController, curve: Curves.easeInOut),
+        );
+
     _moveController.forward(from: 0);
   }
 
   void _scheduleRandomZoneMovement() {
     Future.delayed(Duration(seconds: 8 + _fsm._random.nextInt(7)), () {
       if (!mounted) return;
-      
+
       // 30% chance để đổi zone
       if (_fsm._random.nextDouble() < 0.3) {
         _fsm.moveToRandomZone();
       }
-      
+
       _scheduleRandomZoneMovement();
     });
   }
@@ -1082,11 +1078,11 @@ class PetWithZoneWidgetState extends State<PetWithZoneWidget>
         final screenWidth = constraints.maxWidth;
         final screenHeight = constraints.maxHeight;
         final zone = _fsm.currentZone;
-        
+
         // zone.y là vị trí normalized từ TOP (0=top, 1=bottom)
         // bottom của pet = (1 - zone.y) * screenHeight từ đáy màn hình
         final petBottom = (1 - zone.y) * screenHeight;
-        
+
         return AnimatedPositioned(
           duration: const Duration(milliseconds: 300),
           left: _currentX * screenWidth - (widget.width * _currentScale / 2),

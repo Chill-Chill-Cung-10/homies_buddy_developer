@@ -65,25 +65,33 @@ class AuthInputField extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: AppShapes.card,
-            borderSide:
-                const BorderSide(color: AppColors.textPrimary, width: 2),
+            borderSide: const BorderSide(
+              color: AppColors.textPrimary,
+              width: 2,
+            ),
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 20,
+          ),
         );
 
       case AuthFieldStyle.surface:
         return InputDecoration(
           labelText: labelText,
-          labelStyle:
-              const TextStyle(fontSize: 16, color: AppColors.textPrimary),
+          labelStyle: const TextStyle(
+            fontSize: 16,
+            color: AppColors.textPrimary,
+          ),
           hintText: hintText,
           hintStyle: const TextStyle(fontSize: 16),
           prefixIcon: Icon(prefixIcon, color: Colors.black, size: 24),
           filled: true,
           fillColor: AppColors.surfaceColor,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 20,
+          ),
           border: OutlineInputBorder(
             borderRadius: AppShapes.button,
             borderSide: BorderSide.none,
@@ -94,18 +102,18 @@ class AuthInputField extends StatelessWidget {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: AppShapes.button,
-            borderSide:
-                const BorderSide(color: AppColors.textPrimary, width: 2),
+            borderSide: const BorderSide(
+              color: AppColors.textPrimary,
+              width: 2,
+            ),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: AppShapes.button,
-            borderSide:
-                const BorderSide(color: AppColors.errorRed, width: 2),
+            borderSide: const BorderSide(color: AppColors.errorRed, width: 2),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: AppShapes.button,
-            borderSide:
-                const BorderSide(color: AppColors.errorRed, width: 2),
+            borderSide: const BorderSide(color: AppColors.errorRed, width: 2),
           ),
         );
     }

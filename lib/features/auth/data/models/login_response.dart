@@ -6,7 +6,7 @@ part 'login_response.g.dart';
 
 /// Login Response Model - Dữ liệu trả về từ server sau khi đăng nhập thành công
 @freezed
-class LoginResponse with _$LoginResponse {
+abstract class LoginResponse with _$LoginResponse {
   const factory LoginResponse({
     required String accessToken,
     required String refreshToken,

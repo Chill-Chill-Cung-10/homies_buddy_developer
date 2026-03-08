@@ -4,7 +4,7 @@ import '../../constants/app_text_styles.dart';
 import '../../constants/app_spacing.dart';
 
 /// [Loading Widget] — Various loading indicators.
-/// 
+///
 /// Collection of different loading indicator styles:
 /// - Circular (default)
 /// - Linear progress
@@ -53,7 +53,10 @@ class LoadingIndicator extends StatelessWidget {
         indicator = _BouncingBallsIndicator(color: indicatorColor, size: size);
         break;
       case LoadingIndicatorType.rotatingSquares:
-        indicator = _RotatingSquaresIndicator(color: indicatorColor, size: size);
+        indicator = _RotatingSquaresIndicator(
+          color: indicatorColor,
+          size: size,
+        );
         break;
     }
 
@@ -83,10 +86,7 @@ class _CircularIndicator extends StatelessWidget {
   final Color color;
   final double size;
 
-  const _CircularIndicator({
-    required this.color,
-    required this.size,
-  });
+  const _CircularIndicator({required this.color, required this.size});
 
   @override
   Widget build(BuildContext context) {
@@ -124,10 +124,7 @@ class _DotsIndicator extends StatefulWidget {
   final Color color;
   final double size;
 
-  const _DotsIndicator({
-    required this.color,
-    required this.size,
-  });
+  const _DotsIndicator({required this.color, required this.size});
 
   @override
   State<_DotsIndicator> createState() => _DotsIndicatorState();
@@ -190,10 +187,7 @@ class _BouncingBallsIndicator extends StatefulWidget {
   final Color color;
   final double size;
 
-  const _BouncingBallsIndicator({
-    required this.color,
-    required this.size,
-  });
+  const _BouncingBallsIndicator({required this.color, required this.size});
 
   @override
   State<_BouncingBallsIndicator> createState() =>
@@ -239,9 +233,7 @@ class _BouncingBallsIndicatorState extends State<_BouncingBallsIndicator>
                   width: widget.size * 0.25,
                   height: widget.size * 0.25,
                   decoration: BoxDecoration(
-                    color: widget.color.withValues(
-                      alpha: 0.6 + (bounce * 0.4),
-                    ),
+                    color: widget.color.withValues(alpha: 0.6 + (bounce * 0.4)),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -266,10 +258,7 @@ class _RotatingSquaresIndicator extends StatefulWidget {
   final Color color;
   final double size;
 
-  const _RotatingSquaresIndicator({
-    required this.color,
-    required this.size,
-  });
+  const _RotatingSquaresIndicator({required this.color, required this.size});
 
   @override
   State<_RotatingSquaresIndicator> createState() =>
@@ -305,7 +294,8 @@ class _RotatingSquaresIndicatorState extends State<_RotatingSquaresIndicator>
           height: widget.size,
           child: Stack(
             children: List.generate(4, (index) {
-              final angle = (_controller.value * 2 * 3.14159) + (index * 3.14159 / 2);
+              final angle =
+                  (_controller.value * 2 * 3.14159) + (index * 3.14159 / 2);
               final radius = widget.size * 0.3;
               final x = radius * (1 + (index % 2 == 0 ? 1 : -1) * 0.7);
               final y = radius * (1 + (index < 2 ? 1 : -1) * 0.7);

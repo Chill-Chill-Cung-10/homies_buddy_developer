@@ -16,59 +16,59 @@ final communityFeedProvider = StreamProvider<List<Post>>((ref) {
 });
 
 /// User's posts - stream
-final userPostsProvider = StreamProvider.family<List<Post>, String>(
-  (ref, userId) {
-    final repository = ref.watch(postRepositoryProvider);
-    return repository.getUserPosts(userId, limit: 20);
-  },
-);
+final userPostsProvider = StreamProvider.family<List<Post>, String>((
+  ref,
+  userId,
+) {
+  final repository = ref.watch(postRepositoryProvider);
+  return repository.getUserPosts(userId, limit: 20);
+});
 
 /// Get single post by ID - stream
-final postStreamProvider = StreamProvider.family<Post?, String>(
-  (ref, postId) {
-    final repository = ref.watch(postRepositoryProvider);
-    return repository.getPostStream(postId);
-  },
-);
+final postStreamProvider = StreamProvider.family<Post?, String>((ref, postId) {
+  final repository = ref.watch(postRepositoryProvider);
+  return repository.getPostStream(postId);
+});
 
 /// Get single post by ID - future (one-time)
-final postFutureProvider = FutureProvider.family<Post?, String>(
-  (ref, postId) {
-    final repository = ref.watch(postRepositoryProvider);
-    return repository.getPostById(postId);
-  },
-);
+final postFutureProvider = FutureProvider.family<Post?, String>((ref, postId) {
+  final repository = ref.watch(postRepositoryProvider);
+  return repository.getPostById(postId);
+});
 
 /// Check if user has reacted to a post
-final hasReactedPostProvider = FutureProvider.family<bool, String>(
-  (ref, postId) {
-    final repository = ref.watch(postRepositoryProvider);
-    return repository.hasReacted(postId);
-  },
-);
+final hasReactedPostProvider = FutureProvider.family<bool, String>((
+  ref,
+  postId,
+) {
+  final repository = ref.watch(postRepositoryProvider);
+  return repository.hasReacted(postId);
+});
 
 /// Get posts by hashtag
-final postsByHashtagProvider = StreamProvider.family<List<Post>, String>(
-  (ref, hashtag) {
-    final repository = ref.watch(postRepositoryProvider);
-    return repository.getPostsByHashtag(hashtag, limit: 30);
-  },
-);
+final postsByHashtagProvider = StreamProvider.family<List<Post>, String>((
+  ref,
+  hashtag,
+) {
+  final repository = ref.watch(postRepositoryProvider);
+  return repository.getPostsByHashtag(hashtag, limit: 30);
+});
 
 /// Get posts by mention
-final postsByMentionProvider = StreamProvider.family<List<Post>, String>(
-  (ref, username) {
-    final repository = ref.watch(postRepositoryProvider);
-    return repository.getPostsByMention(username, limit: 30);
-  },
-);
+final postsByMentionProvider = StreamProvider.family<List<Post>, String>((
+  ref,
+  username,
+) {
+  final repository = ref.watch(postRepositoryProvider);
+  return repository.getPostsByMention(username, limit: 30);
+});
 
 // =============================================================================
 // POST ACTIONS PROVIDER
 // =============================================================================
 
 /// Provider cho các actions liên quan đến posts
-/// 
+///
 /// Usage:
 /// ```dart
 /// final postActions = ref.read(postActionsProvider);
@@ -95,7 +95,7 @@ class PostActions {
   }) async {
     // Extract hashtags from content if not provided
     final extractedHashtags = hashtags ?? _extractHashtags(contentText);
-    
+
     // Extract mentions from content if not provided
     final extractedMentions = mentions ?? _extractMentions(contentText);
 
@@ -194,9 +194,7 @@ class PostCreationNotifier extends StateNotifier<PostCreationState> {
   }
 
   void addMediaFile(MediaFile file) {
-    state = state.copyWith(
-      mediaFiles: [...state.mediaFiles, file],
-    );
+    state = state.copyWith(mediaFiles: [...state.mediaFiles, file]);
   }
 
   void removeMediaFile(int index) {
@@ -224,5 +222,5 @@ class PostCreationNotifier extends StateNotifier<PostCreationState> {
 /// Provider cho post creation state
 final postCreationProvider =
     StateNotifierProvider<PostCreationNotifier, PostCreationState>((ref) {
-  return PostCreationNotifier();
-});
+      return PostCreationNotifier();
+    });

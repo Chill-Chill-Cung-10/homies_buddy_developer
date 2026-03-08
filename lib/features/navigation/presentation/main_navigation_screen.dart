@@ -39,10 +39,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       currentIndex: _currentIndex,
       onNavigate: _onNavigate,
       child: Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          children: _screens,
-        ),
+        body: IndexedStack(index: _currentIndex, children: _screens),
       ),
     );
   }

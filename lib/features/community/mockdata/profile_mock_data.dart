@@ -1,6 +1,7 @@
 /// [Refactored] Split into mock_users.dart, mock_user_posts.dart.
 /// This file delegates to those for backward compat.
 library;
+
 import '../../../data/models/user_model.dart';
 import 'mock_users.dart';
 
@@ -17,4 +18,3 @@ class ProfileMockData {
   static UserModel? getUserByUsername(String username) =>
       MockUsers.getUserByUsername(username);
 }
-

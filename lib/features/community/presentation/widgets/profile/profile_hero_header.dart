@@ -1,21 +1,18 @@
 /// [Refactored] Phase 3.1 — Extracted from personal_profile_screen.dart
 /// Hero header with fullscreen cover image, gradient overlays, and user info
 library;
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
 import '../../../../../core/constants/app_shapes.dart';
-import '../../../../../core/utils/formatters.dart';
 import '../../../../../data/models/user_model.dart';
 
 class ProfileHeroHeader extends StatelessWidget {
   final UserModel user;
 
-  const ProfileHeroHeader({
-    super.key,
-    required this.user,
-  });
+  const ProfileHeroHeader({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +28,7 @@ class ProfileHeroHeader extends StatelessWidget {
       leading: _buildBackButton(context),
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
-        stretchModes: const [
-          StretchMode.zoomBackground,
-          StretchMode.fadeTitle,
-        ],
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -66,8 +60,21 @@ class ProfileHeroHeader extends StatelessWidget {
   }
 
   Widget _buildCoverImage() {
+    final coverUrl = user.coverUrl;
+    final avatarUrl = user.avatarUrl;
+    final imageUrl = (coverUrl != null && coverUrl.isNotEmpty) 
+        ? coverUrl 
+        : (avatarUrl.isNotEmpty ? avatarUrl : null);
+    
+    if (imageUrl == null) {
+      return Container(
+        color: AppColors.surfaceColor,
+        child: const Icon(Icons.image, size: 48, color: AppColors.textHint),
+      );
+    }
+    
     return CachedNetworkImage(
-      imageUrl: user.coverUrl ?? user.avatarUrl,
+      imageUrl: imageUrl,
       fit: BoxFit.cover,
       placeholder: (context, url) => Container(
         color: AppColors.surfaceColor,
@@ -146,23 +153,30 @@ class ProfileHeroHeader extends StatelessWidget {
                   border: Border.all(color: AppColors.accentOrange, width: 2),
                 ),
                 child: ClipOval(
-                  child: CachedNetworkImage(
-                    imageUrl: user.avatarUrl,
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      width: 48,
-                      height: 48,
-                      color: AppColors.surfaceColor,
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      width: 48,
-                      height: 48,
-                      color: AppColors.surfaceColor,
-                      child: const Icon(Icons.person, size: 24),
-                    ),
-                  ),
+                  child: user.avatarUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: user.avatarUrl,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 48,
+                            height: 48,
+                            color: AppColors.surfaceColor,
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: 48,
+                            height: 48,
+                            color: AppColors.surfaceColor,
+                            child: const Icon(Icons.person, size: 24),
+                          ),
+                        )
+                      : Container(
+                          width: 48,
+                          height: 48,
+                          color: AppColors.surfaceColor,
+                          child: const Icon(Icons.person, size: 24, color: AppColors.textHint),
+                        ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -178,29 +192,7 @@ class ProfileHeroHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          if (user.hasFeaturedHeader)
-            Text(
-              limitWords(user.headline!, 10),
-              style: const TextStyle(
-                fontSize: 42,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                height: 1.0,
-                letterSpacing: -1,
-              ),
-            ),
-          if (user.hasFeaturedHeader) const SizedBox(height: 12),
-          if (user.bio != null && user.bio!.isNotEmpty)
-            Text(
-              limitWords(user.bio!, 40),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Colors.white.withValues(alpha: 0.9),
-                height: 1.4,
-              ),
-            ),
+
         ],
       ),
     );

@@ -5,7 +5,7 @@ import '../../../../core/constants/app_text_styles.dart';
 import '../../data/models/models.dart';
 
 /// Conversation Card Widget
-/// 
+///
 /// Displays a conversation item in the chat list
 class ConversationCard extends StatelessWidget {
   final Conversation conversation;
@@ -71,7 +71,7 @@ class ConversationCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 14),
-                
+
                 // Name and message preview
                 Expanded(
                   child: Column(
@@ -106,14 +106,17 @@ class ConversationCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                
+
                 // Time and unread badge
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      timeago.format(conversation.lastUpdated, locale: 'en_short'),
+                      timeago.format(
+                        conversation.lastUpdated,
+                        locale: 'en_short',
+                      ),
                       style: AppTextStyles.caption.copyWith(
                         color: conversation.hasUnread
                             ? AppColors.accentOrange

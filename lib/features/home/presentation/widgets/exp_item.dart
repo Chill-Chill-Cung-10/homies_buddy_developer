@@ -4,11 +4,7 @@ class ExpBar extends StatelessWidget {
   final int current; // số block đã fill
   final int total;
 
-  const ExpBar({
-    super.key, 
-    required this.current,
-    this.total = 8,
-  });
+  const ExpBar({super.key, required this.current, this.total = 8});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +21,7 @@ class ExpBar extends StatelessWidget {
                 color: Colors.brown.withOpacity(0.08),
                 blurRadius: 10,
                 offset: Offset(0, 4),
-              )
+              ),
             ],
           ),
           child: Row(
@@ -45,9 +41,7 @@ class ExpBar extends StatelessWidget {
                       width: 18,
                       height: 8,
                       decoration: BoxDecoration(
-                        color: isActive
-                            ? Color(0xFFE6B98A)
-                            : Color(0xFFDCC5AA),
+                        color: isActive ? Color(0xFFE6B98A) : Color(0xFFDCC5AA),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     );
@@ -76,7 +70,7 @@ class ExpBar extends StatelessWidget {
                   BoxShadow(
                     color: Colors.brown.withOpacity(0.1),
                     blurRadius: 6,
-                  )
+                  ),
                 ],
               ),
               child: Padding(

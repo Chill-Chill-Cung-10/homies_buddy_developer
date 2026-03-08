@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.5 — Extracted from profile_mock_data.dart
 /// Mock user posts data
 library;
+
 import '../../../data/models/post_model.dart';
 import '../../../data/models/media_file_model.dart';
 import '../../../data/models/enums/post_privacy.dart';
@@ -20,6 +21,7 @@ class MockUserPosts {
       mediaFiles: [
         MediaFile(
           id: 'pm1',
+          postId: 'p_user1_1',
           mediaType: MediaType.image,
           mediaAspectRatio: 16 / 9,
           mediaUrl: 'https://picsum.photos/800/450?random=1',
@@ -30,7 +32,6 @@ class MockUserPosts {
       ],
       reactsCount: 2500,
       commentCount: 4,
-      isLikedByMe: true,
       privacy: PostPrivacy.public,
     ),
     Post(
@@ -45,6 +46,7 @@ class MockUserPosts {
       mediaFiles: [
         MediaFile(
           id: 'pm2',
+          postId: 'p_user1_2',
           mediaType: MediaType.image,
           mediaAspectRatio: 4 / 3,
           mediaUrl: 'https://picsum.photos/800/600?random=50',
@@ -55,7 +57,6 @@ class MockUserPosts {
       ],
       reactsCount: 1800,
       commentCount: 2,
-      isLikedByMe: false,
       privacy: PostPrivacy.public,
     ),
   ];
@@ -73,6 +74,7 @@ class MockUserPosts {
       mediaFiles: [
         MediaFile(
           id: 'pm3',
+          postId: 'p_user2_1',
           mediaType: MediaType.image,
           mediaAspectRatio: 4 / 3,
           mediaUrl: 'https://picsum.photos/800/600?random=2',
@@ -83,7 +85,6 @@ class MockUserPosts {
       ],
       reactsCount: 1230,
       commentCount: 3,
-      isLikedByMe: false,
       privacy: PostPrivacy.public,
     ),
   ];
@@ -101,6 +102,7 @@ class MockUserPosts {
       mediaFiles: [
         MediaFile(
           id: 'pm4',
+          postId: 'p_user3_1',
           mediaType: MediaType.image,
           mediaAspectRatio: 1.0,
           mediaUrl: 'https://picsum.photos/800/800?random=3',
@@ -111,7 +113,6 @@ class MockUserPosts {
       ],
       reactsCount: 3450,
       commentCount: 4,
-      isLikedByMe: true,
       privacy: PostPrivacy.friends,
     ),
   ];

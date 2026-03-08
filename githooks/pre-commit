@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+# Block common secret patterns before commit.
+PATTERN='sb_publishable__|sb_secret_|SUPABASE_ANON_KEY\s*[:=]|SUPABASE_SERVICE_ROLE_KEY\s*[:=]|https://[a-z0-9-]+\.supabase\.co'
+
+if git diff --cached --text | grep -E "$PATTERN" >/dev/null 2>&1; then
+  echo "[BLOCKED] Potential secret detected in staged changes."
+  echo "Remove credentials from code and use --dart-define or secret manager."
+  exit 1
+fi
+
+exit 0

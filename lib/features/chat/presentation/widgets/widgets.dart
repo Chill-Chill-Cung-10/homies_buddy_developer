@@ -1,5 +1,5 @@
 /// Chat Widgets - Barrel export file
-/// 
+///
 /// Import all chat widgets with one line
 library;
 

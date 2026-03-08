@@ -7,15 +7,12 @@ import '../widgets/widgets.dart';
 import 'chat_detail_setting_screen.dart';
 
 /// Chat Detail Screen
-/// 
+///
 /// Displays conversation messages in a warm, cozy interface
 class ChatDetailScreen extends StatefulWidget {
   final Conversation conversation;
 
-  const ChatDetailScreen({
-    super.key,
-    required this.conversation,
-  });
+  const ChatDetailScreen({super.key, required this.conversation});
 
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
@@ -31,7 +28,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     super.initState();
     _conversation = widget.conversation;
     _messages = ChatMockData.getMessagesForConversation(widget.conversation.id);
-    
+
     // Scroll to bottom after frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
@@ -103,7 +100,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         setState(() {
           final index = _messages.indexWhere((m) => m.id == newMessage.id);
           if (index != -1) {
-            _messages[index] = newMessage.copyWith(status: MessageStatus.delivered);
+            _messages[index] = newMessage.copyWith(
+              status: MessageStatus.delivered,
+            );
           }
         });
       }
@@ -180,18 +179,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.more_vert,
-              color: AppColors.iconColor,
-            ),
+            icon: Icon(Icons.more_vert, color: AppColors.iconColor),
             onPressed: _navigateToSettings,
           ),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.cardGradient),
         child: Column(
           children: [
             // Messages List
@@ -215,12 +209,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       itemCount: _messages.length,
                       itemBuilder: (context, index) {
                         final message = _messages[index];
-                        final isMe = message.senderId == ChatMockData.currentUserId;
-                        
-                        return MessageBubble(
-                          message: message,
-                          isMe: isMe,
-                        );
+                        final isMe =
+                            message.senderId == ChatMockData.currentUserId;
+
+                        return MessageBubble(message: message, isMe: isMe);
                       },
                     ),
             ),

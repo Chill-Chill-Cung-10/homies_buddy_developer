@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.1 — Extracted from personal_profile_screen.dart
 /// Post feed sliver list using SocialPostCard
 library;
+
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
@@ -49,22 +50,19 @@ class ProfilePostFeed extends StatelessWidget {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final post = posts[index];
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppShapes.paddingM),
-            child: SocialPostCard(
-              post: post,
-              onLike: () => onLike(index),
-              onComment: () => onComment(post),
-              onAvatarTap: () {},
-              onPostTap: () {},
-            ),
-          );
-        },
-        childCount: posts.length,
-      ),
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final post = posts[index];
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppShapes.paddingM),
+          child: SocialPostCard(
+            post: post,
+            onLike: () => onLike(index),
+            onComment: () => onComment(post),
+            onAvatarTap: () {},
+            onPostTap: () {},
+          ),
+        );
+      }, childCount: posts.length),
     );
   }
 }

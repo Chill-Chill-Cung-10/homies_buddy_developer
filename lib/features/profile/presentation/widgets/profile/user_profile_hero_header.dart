@@ -2,12 +2,12 @@
 /// Giống ProfileHeroHeader nhưng dùng SpinningNavButton thay vì nút back,
 /// và có icon settings ở góc trên bên phải.
 library;
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
 import '../../../../../core/constants/app_spacing.dart';
-import '../../../../../core/utils/formatters.dart';
 import '../../../../../core/widgets/spinning_nav_button.dart';
 import '../../../../../data/models/user_model.dart';
 
@@ -36,15 +36,10 @@ class UserProfileHeroHeader extends StatelessWidget {
         padding: EdgeInsets.all(4),
         child: SpinningNavButton(iconColor: Colors.white),
       ),
-      actions: [
-        _buildSettingsButton(),
-      ],
+      actions: [_buildSettingsButton()],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.parallax,
-        stretchModes: const [
-          StretchMode.zoomBackground,
-          StretchMode.fadeTitle,
-        ],
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -69,15 +64,32 @@ class UserProfileHeroHeader extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.all(4),
       child: IconButton(
-        icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
+        icon: const Icon(
+          Icons.settings_outlined,
+          color: Colors.white,
+          size: 24,
+        ),
         onPressed: onSettingsTap,
       ),
     );
   }
 
   Widget _buildCoverImage() {
+    final coverUrl = user.coverUrl;
+    final avatarUrl = user.avatarUrl;
+    final imageUrl = (coverUrl != null && coverUrl.isNotEmpty) 
+        ? coverUrl 
+        : (avatarUrl.isNotEmpty ? avatarUrl : null);
+    
+    if (imageUrl == null) {
+      return Container(
+        color: AppColors.surfaceColor,
+        child: const Icon(Icons.image, size: 48, color: AppColors.textHint),
+      );
+    }
+    
     return CachedNetworkImage(
-      imageUrl: user.coverUrl ?? user.avatarUrl,
+      imageUrl: imageUrl,
       fit: BoxFit.cover,
       placeholder: (context, url) => Container(
         color: AppColors.surfaceColor,
@@ -156,23 +168,30 @@ class UserProfileHeroHeader extends StatelessWidget {
                   border: Border.all(color: AppColors.accentOrange, width: 2),
                 ),
                 child: ClipOval(
-                  child: CachedNetworkImage(
-                    imageUrl: user.avatarUrl,
-                    width: 48,
-                    height: 48,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      width: 48,
-                      height: 48,
-                      color: AppColors.surfaceColor,
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      width: 48,
-                      height: 48,
-                      color: AppColors.surfaceColor,
-                      child: const Icon(Icons.person, size: 24),
-                    ),
-                  ),
+                  child: user.avatarUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: user.avatarUrl,
+                          width: 48,
+                          height: 48,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            width: 48,
+                            height: 48,
+                            color: AppColors.surfaceColor,
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: 48,
+                            height: 48,
+                            color: AppColors.surfaceColor,
+                            child: const Icon(Icons.person, size: 24),
+                          ),
+                        )
+                      : Container(
+                          width: 48,
+                          height: 48,
+                          color: AppColors.surfaceColor,
+                          child: const Icon(Icons.person, size: 24, color: AppColors.textHint),
+                        ),
                 ),
               ),
               const SizedBox(width: AppSpacing.s),
@@ -188,29 +207,7 @@ class UserProfileHeroHeader extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          if (user.hasFeaturedHeader)
-            Text(
-              limitWords(user.headline!, 10),
-              style: const TextStyle(
-                fontSize: 42,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                height: 1.0,
-                letterSpacing: -1,
-              ),
-            ),
-          if (user.hasFeaturedHeader) const SizedBox(height: AppSpacing.s),
-          if (user.bio != null && user.bio!.isNotEmpty)
-            Text(
-              limitWords(user.bio!, 40),
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Colors.white.withValues(alpha: 0.9),
-                height: 1.4,
-              ),
-            ),
+
         ],
       ),
     );

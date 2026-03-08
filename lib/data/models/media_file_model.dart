@@ -5,17 +5,25 @@ part 'media_file_model.freezed.dart';
 part 'media_file_model.g.dart';
 
 /// Media File Model - Thông tin về file media trong bài post
-/// 
+///
 /// Bao gồm ảnh, video, hoặc album với đầy đủ metadata
-/// như kích thước, aspect ratio, và duration cho video
+/// như kích thước, aspect ratio, và duration cho video.
+/// Metadata chỉ — file binary thực lưu trên Firebase Storage
 @freezed
-class MediaFile with _$MediaFile {
+abstract class MediaFile with _$MediaFile {
   const factory MediaFile({
     required String id,
+
+    /// ⭐ **Thêm mới** — Post ID chủ sở hữu media
+    required String postId,
+
     String? thumbnailUrl,
     required MediaType mediaType,
     required double mediaAspectRatio,
+
+    /// URL media chính (từ Firebase Storage)
     required String mediaUrl,
+
     required int width,
     required int height,
     int? durationSeconds,

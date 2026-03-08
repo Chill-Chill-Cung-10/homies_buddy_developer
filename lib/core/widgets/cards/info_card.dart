@@ -26,24 +26,14 @@ class InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.paddingM),
       decoration: BoxDecoration(
-        color: backgroundColor ??
-            AppColors.primaryPink.withValues(alpha: 0.3),
+        color: backgroundColor ?? AppColors.primaryPink.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
-          Icon(
-            icon,
-            color: iconColor ?? AppColors.textSecondary,
-            size: 20,
-          ),
+          Icon(icon, color: iconColor ?? AppColors.textSecondary, size: 20),
           const SizedBox(width: AppSpacing.s),
-          Expanded(
-            child: Text(
-              message,
-              style: AppTextStyles.bodySmall,
-            ),
-          ),
+          Expanded(child: Text(message, style: AppTextStyles.bodySmall)),
         ],
       ),
     );

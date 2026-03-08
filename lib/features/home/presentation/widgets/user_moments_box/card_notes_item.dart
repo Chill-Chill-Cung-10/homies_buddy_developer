@@ -133,10 +133,7 @@ class CardNoteItem extends StatelessWidget {
 
   /// Text content section
   Widget _buildTextContent() {
-    return Text(
-      note.textContent,
-      style: AppTextStyles.bodyLarge,
-    );
+    return Text(note.textContent, style: AppTextStyles.bodyLarge);
   }
 
   /// Media content - hiển thị grid ảnh/video

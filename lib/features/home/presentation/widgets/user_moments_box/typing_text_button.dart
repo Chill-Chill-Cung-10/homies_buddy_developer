@@ -76,7 +76,8 @@ class _TypingTextButtonState extends State<TypingTextButton> {
   void _tick() {
     _typingTimer = Timer(
       Duration(
-          milliseconds: _isTyping ? widget.typingSpeed : widget.erasingSpeed),
+        milliseconds: _isTyping ? widget.typingSpeed : widget.erasingSpeed,
+      ),
       () {
         if (!mounted) return;
 
@@ -90,12 +91,14 @@ class _TypingTextButtonState extends State<TypingTextButton> {
             });
             _tick();
           } else {
-            _typingTimer = Timer(Duration(milliseconds: widget.pauseDuration),
-                () {
-              if (!mounted) return;
-              _isTyping = false;
-              _tick();
-            });
+            _typingTimer = Timer(
+              Duration(milliseconds: widget.pauseDuration),
+              () {
+                if (!mounted) return;
+                _isTyping = false;
+                _tick();
+              },
+            );
           }
         } else {
           if (_charIndex > 0) {
@@ -123,12 +126,12 @@ class _TypingTextButtonState extends State<TypingTextButton> {
       onTap: widget.onTap,
       child: Container(
         height: widget.height,
-        padding: widget.padding ??
-            const EdgeInsets.symmetric(horizontal: 20),
+        padding: widget.padding ?? const EdgeInsets.symmetric(horizontal: 20),
         decoration: BoxDecoration(
           color: widget.backgroundColor,
           borderRadius: widget.borderRadius ?? BorderRadius.circular(20),
-          boxShadow: widget.boxShadow ??
+          boxShadow:
+              widget.boxShadow ??
               [
                 BoxShadow(
                   color: Colors.brown.withOpacity(0.1),
@@ -147,7 +150,8 @@ class _TypingTextButtonState extends State<TypingTextButton> {
                     children: [
                       TextSpan(
                         text: _displayText,
-                        style: widget.textStyle ??
+                        style:
+                            widget.textStyle ??
                             TextStyle(
                               fontSize: 16,
                               color: widget.textColor,

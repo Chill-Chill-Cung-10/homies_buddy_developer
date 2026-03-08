@@ -20,7 +20,8 @@ class ChatDetailSettingScreen extends StatefulWidget {
   });
 
   @override
-  State<ChatDetailSettingScreen> createState() => _ChatDetailSettingScreenState();
+  State<ChatDetailSettingScreen> createState() =>
+      _ChatDetailSettingScreenState();
 }
 
 class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
@@ -34,8 +35,9 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
 
   void _updateConversation(Conversation updated) {
     // Update mock data list
-    final index = ChatMockData.mockConversations
-        .indexWhere((c) => c.id == updated.id);
+    final index = ChatMockData.mockConversations.indexWhere(
+      (c) => c.id == updated.id,
+    );
     if (index != -1) {
       ChatMockData.mockConversations[index] = updated;
     }
@@ -47,16 +49,15 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
 
   void _navigateToProfile() {
     // Convert 'user_02' → 'user2' to match ProfileMockData keys
-    final participantId = _conversation.participantIds
-        .firstWhere((id) => id != ChatMockData.currentUserId,
-            orElse: () => _conversation.participantIds.last);
+    final participantId = _conversation.participantIds.firstWhere(
+      (id) => id != ChatMockData.currentUserId,
+      orElse: () => _conversation.participantIds.last,
+    );
     final userId = participantId.replaceAll(RegExp(r'_0'), '');
     final user = ProfileMockData.getUserByAuthorId(userId);
 
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => PersonalProfileScreen(user: user),
-      ),
+      MaterialPageRoute(builder: (_) => PersonalProfileScreen(user: user)),
     );
   }
 
@@ -70,7 +71,9 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
       final confirm = await showDialog<bool>(
         context: context,
         builder: (ctx) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Text(
             'Tắt thông báo',
             style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w600),
@@ -82,18 +85,24 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Huỷ', style: TextStyle(color: AppColors.textSecondary)),
+              child: Text(
+                'Huỷ',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(ctx, true),
-              child: Text('Bật lại',
-                  style: TextStyle(color: AppColors.accentOrange)),
+              child: Text(
+                'Bật lại',
+                style: TextStyle(color: AppColors.accentOrange),
+              ),
             ),
           ],
         ),
       );
       if (confirm == true) {
-        _updateConversation(_conversation.copyWith(clearMute: true));
+        // Clear mute by setting mutedUntil to null
+        _updateConversation(_conversation.copyWith(mutedUntil: null));
       }
       return;
     }
@@ -102,7 +111,9 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Text(
             'Tắt thông báo',
             style: AppTextStyles.h3.copyWith(fontWeight: FontWeight.w600),
@@ -123,7 +134,10 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Huỷ', style: TextStyle(color: AppColors.textSecondary)),
+              child: Text(
+                'Huỷ',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
             TextButton(
               onPressed: () {
@@ -134,10 +148,13 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
                   );
                 }
               },
-              child: Text('OK',
-                  style: TextStyle(
-                      color: AppColors.accentOrange,
-                      fontWeight: FontWeight.w600)),
+              child: Text(
+                'OK',
+                style: TextStyle(
+                  color: AppColors.accentOrange,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),
@@ -167,39 +184,47 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
           style: AppTextStyles.bodyMedium,
           decoration: InputDecoration(
             hintText: placeholder,
-            hintStyle: AppTextStyles.bodyMedium
-                .copyWith(color: AppColors.textSecondary),
+            hintStyle: AppTextStyles.bodyMedium.copyWith(
+              color: AppColors.textSecondary,
+            ),
             filled: true,
             fillColor: AppColors.backgroundPost.withOpacity(0.6),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Huỷ', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Huỷ',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               final newNick = controller.text.trim();
               if (newNick.isEmpty) {
-                // Clear nickname
-                _updateConversation(_conversation.copyWith(clearNickname: true));
+                // Clear nickname by setting it to null
+                _updateConversation(_conversation.copyWith(nickname: null));
               } else {
-                _updateConversation(
-                    _conversation.copyWith(nickname: newNick));
+                _updateConversation(_conversation.copyWith(nickname: newNick));
               }
             },
-            child: Text('OK',
-                style: TextStyle(
-                    color: AppColors.accentOrange,
-                    fontWeight: FontWeight.w600)),
+            child: Text(
+              'OK',
+              style: TextStyle(
+                color: AppColors.accentOrange,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
@@ -219,8 +244,11 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios,
-              color: AppColors.textPrimary, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
@@ -249,54 +277,54 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
 
               // ── Options ───────────────────────────────────────────────
               Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.textSecondary.withOpacity(0.08),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    _buildOptionTile(
-                      icon: Icons.person_outline_rounded,
-                      label: 'Xem hồ sơ',
-                      subtitle: _conversation.participantName,
-                      onTap: _navigateToProfile,
-                      showDivider: true,
-                    ),
-                    _buildOptionTile(
-                      icon: _conversation.isMuted
-                          ? Icons.notifications_off_rounded
-                          : Icons.notifications_none_rounded,
-                      label: 'Thông báo',
-                      subtitle: _conversation.isMuted
-                          ? 'Đang tắt đến ${_muteUntilText()}'
-                          : 'Đang bật',
-                      onTap: _showMuteDialog,
-                      showDivider: true,
-                    ),
-                    _buildOptionTile(
-                      icon: Icons.edit_outlined,
-                      label: 'Biệt danh',
-                      subtitle: _conversation.nickname?.isNotEmpty == true
-                          ? _conversation.nickname!
-                          : 'Chưa đặt biệt danh',
-                      onTap: _showNicknameDialog,
-                      showDivider: false,
-                    ),
-                  ],
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.textSecondary.withOpacity(0.08),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      _buildOptionTile(
+                        icon: Icons.person_outline_rounded,
+                        label: 'Xem hồ sơ',
+                        subtitle: _conversation.participantName,
+                        onTap: _navigateToProfile,
+                        showDivider: true,
+                      ),
+                      _buildOptionTile(
+                        icon: _conversation.isMuted
+                            ? Icons.notifications_off_rounded
+                            : Icons.notifications_none_rounded,
+                        label: 'Thông báo',
+                        subtitle: _conversation.isMuted
+                            ? 'Đang tắt đến ${_muteUntilText()}'
+                            : 'Đang bật',
+                        onTap: _showMuteDialog,
+                        showDivider: true,
+                      ),
+                      _buildOptionTile(
+                        icon: Icons.edit_outlined,
+                        label: 'Biệt danh',
+                        subtitle: _conversation.nickname?.isNotEmpty == true
+                            ? _conversation.nickname!
+                            : 'Chưa đặt biệt danh',
+                        onTap: _showNicknameDialog,
+                        showDivider: false,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -382,8 +410,7 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
                       color: AppColors.accentOrange.withOpacity(0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(icon,
-                        color: AppColors.accentOrange, size: 20),
+                    child: Icon(icon, color: AppColors.accentOrange, size: 20),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -409,8 +436,11 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
                       ],
                     ),
                   ),
-                  Icon(Icons.chevron_right_rounded,
-                      color: AppColors.textSecondary, size: 20),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  ),
                 ],
               ),
             ),
@@ -420,7 +450,9 @@ class _ChatDetailSettingScreenState extends State<ChatDetailSettingScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Divider(
-                height: 1, color: AppColors.textSecondary.withOpacity(0.12)),
+              height: 1,
+              color: AppColors.textSecondary.withOpacity(0.12),
+            ),
           ),
       ],
     );
@@ -458,10 +490,10 @@ enum _MuteDuration {
   DateTime get until {
     final now = DateTime.now();
     return switch (this) {
-      _MuteDuration.oneHour   => now.add(const Duration(hours: 1)),
+      _MuteDuration.oneHour => now.add(const Duration(hours: 1)),
       _MuteDuration.fourHours => now.add(const Duration(hours: 4)),
       _MuteDuration.eightHours => now.add(const Duration(hours: 8)),
-      _MuteDuration.forever   => DateTime(9999),
+      _MuteDuration.forever => DateTime(9999),
     };
   }
 }

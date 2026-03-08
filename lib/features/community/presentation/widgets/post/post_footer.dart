@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.2 — Extracted from social_post_card.dart
 /// Footer: heart reaction button with scale animation + comment button
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../../core/constants/app_colors.dart';
@@ -54,13 +55,11 @@ class _PostFooterState extends State<PostFooter>
   }
 
   void _handleLike() {
-    if (widget.post.isLikedByMe) {
+    // isLikedByMe is now computed from POST_LIKES junction table
+    // Heart animation plays regardless - actual like status from state
+    _heartAnimationController.forward().then((_) {
       _heartAnimationController.reverse();
-    } else {
-      _heartAnimationController.forward().then((_) {
-        _heartAnimationController.reverse();
-      });
-    }
+    });
     widget.onLike?.call();
   }
 
@@ -78,9 +77,8 @@ class _PostFooterState extends State<PostFooter>
                 ScaleTransition(
                   scale: _heartScaleAnimation,
                   child: SvgPicture.asset(
-                    widget.post.isLikedByMe
-                        ? 'assets/images/icons/heart_reactions_on.svg'
-                        : 'assets/images/icons/heart_reactions_off.svg',
+                    // isLikedByMe computed from POST_LIKES via state
+                    'assets/images/icons/heart_reactions_off.svg',
                     width: 24,
                     height: 24,
                   ),

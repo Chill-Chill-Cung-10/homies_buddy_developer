@@ -68,10 +68,7 @@ class UserMomentsBox extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text(
-              'Share your first moment!',
-              style: AppTextStyles.caption,
-            ),
+            Text('Share your first moment!', style: AppTextStyles.caption),
           ],
         ),
       ),

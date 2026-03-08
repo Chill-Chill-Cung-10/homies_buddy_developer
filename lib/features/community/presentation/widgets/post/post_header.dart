@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.2 — Extracted from social_post_card.dart
 /// Post header: avatar, author name (with mentions), time, privacy icon, more options
 library;
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -43,13 +44,21 @@ class PostHeader extends StatelessWidget {
                   width: 40,
                   height: 40,
                   color: AppColors.surfaceColor,
-                  child: const Icon(Icons.person, size: 20, color: AppColors.textHint),
+                  child: const Icon(
+                    Icons.person,
+                    size: 20,
+                    color: AppColors.textHint,
+                  ),
                 ),
                 errorWidget: (context, url, error) => Container(
                   width: 40,
                   height: 40,
                   color: AppColors.surfaceColor,
-                  child: const Icon(Icons.person, size: 20, color: AppColors.textHint),
+                  child: const Icon(
+                    Icons.person,
+                    size: 20,
+                    color: AppColors.textHint,
+                  ),
                 ),
               ),
             ),

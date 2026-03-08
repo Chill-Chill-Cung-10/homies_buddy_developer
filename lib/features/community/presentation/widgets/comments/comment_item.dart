@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.3 — Extracted from comment_overlay.dart
 /// Single comment item: avatar, bubble, react button, time + highlight animation
 library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -23,7 +24,10 @@ class CommentItem extends StatelessWidget {
     required this.comment,
     this.isHighlighted = false,
     this.highlightOpacity = 0.2,
-    this.highlightPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+    this.highlightPadding = const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 4,
+    ),
     this.commentKey,
     this.onReact,
   });
@@ -118,15 +122,12 @@ class CommentItem extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset(
-                              comment.isReactedByMe
-                                  ? 'assets/images/icons/heart_reactions_on.svg'
-                                  : 'assets/images/icons/heart_reactions_off.svg',
+                              // isReactedByMe computed from COMMENT_REACTS via state
+                              'assets/images/icons/heart_reactions_off.svg',
                               width: 14,
                               height: 14,
                               colorFilter: ColorFilter.mode(
-                                comment.isReactedByMe
-                                    ? AppColors.errorRed
-                                    : AppColors.iconColor,
+                                AppColors.iconColor,
                                 BlendMode.srcIn,
                               ),
                             ),
@@ -137,12 +138,8 @@ class CommentItem extends StatelessWidget {
                                     ? 'Thích ${formatCount(comment.reactCount)}'
                                     : 'Thích',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: comment.isReactedByMe
-                                      ? AppColors.errorRed
-                                      : AppColors.textHint,
-                                  fontWeight: comment.isReactedByMe
-                                      ? FontWeight.w600
-                                      : FontWeight.normal,
+                                  color: AppColors.textHint,
+                                  fontWeight: FontWeight.normal,
                                 ),
                                 overflow: TextOverflow.ellipsis,
                               ),

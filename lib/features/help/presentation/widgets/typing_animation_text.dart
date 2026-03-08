@@ -53,9 +53,6 @@ class _TypingAnimationTextState extends State<TypingAnimationText> {
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      _displayedText,
-      style: widget.style,
-    );
+    return Text(_displayedText, style: widget.style);
   }
 }

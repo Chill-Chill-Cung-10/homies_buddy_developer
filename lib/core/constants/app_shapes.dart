@@ -30,7 +30,7 @@ class AppShapes {
   // ── Icon Sizes ──
   static const double iconS = 16.0;
   static const double iconM = 24.0;
-  static const double iconL  = 32.0;
+  static const double iconL = 32.0;
   static const double iconXL = 48.0;
 
   // ── Card Dimensions ──

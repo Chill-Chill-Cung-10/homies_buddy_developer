@@ -4,8 +4,5 @@ class PasswordRequirement {
   final String label;
   final bool isMet;
 
-  PasswordRequirement({
-    required this.label,
-    required this.isMet,
-  });
+  PasswordRequirement({required this.label, required this.isMet});
 }

@@ -1,12 +1,12 @@
 /// Message Status Enum
-/// 
+///
 /// Represents the delivery and read status of a message
 enum MessageStatus {
-  sending,   // Message is being sent
-  sent,      // Message sent to server
+  sending, // Message is being sent
+  sent, // Message sent to server
   delivered, // Message delivered to recipient
-  seen,      // Message seen by recipient
-  failed,    // Message failed to send
+  seen, // Message seen by recipient
+  failed, // Message failed to send
 }
 
 extension MessageStatusExtension on MessageStatus {

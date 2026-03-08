@@ -4,11 +4,12 @@ part 'comment_model.freezed.dart';
 part 'comment_model.g.dart';
 
 /// Comment Model - Bình luận trong bài post
-/// 
+///
 /// Chứa thông tin về comment bao gồm nội dung, tác giả,
-/// và số lượng react
+/// và số lượng react. Trạng thái `isReactedByMe` là computed field
+/// được query từ `COMMENT_REACTS` junction table.
 @freezed
-class Comment with _$Comment {
+abstract class Comment with _$Comment {
   const factory Comment({
     required String commentId,
     required String postId,
@@ -19,7 +20,7 @@ class Comment with _$Comment {
     required DateTime createdAt,
     DateTime? updatedAt,
     required int reactCount,
-    required bool isReactedByMe,
+    // ❌ isReactedByMe REMOVED — computed field (query từ COMMENT_REACTS)
   }) = _Comment;
 
   factory Comment.fromJson(Map<String, dynamic> json) =>

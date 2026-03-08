@@ -26,9 +26,7 @@ class AuthSubmitButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.textPrimary,
           minimumSize: const Size(double.infinity, 56),
-          shape: RoundedRectangleBorder(
-            borderRadius: AppShapes.button,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
         ),
         child: isLoading
             ? const SizedBox(

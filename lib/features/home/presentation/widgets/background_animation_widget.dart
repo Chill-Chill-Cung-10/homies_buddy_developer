@@ -4,7 +4,7 @@ enum BackgroundTime { earlyMorning, morning, afternoon, night }
 
 class ImageBackgroundWidget extends StatefulWidget {
   final BackgroundTime timeOfDay;
-  
+
   const ImageBackgroundWidget({super.key, required this.timeOfDay});
 
   @override
@@ -43,9 +43,12 @@ class _ImageBackgroundWidgetState extends State<ImageBackgroundWidget> {
   */
 
   static const Map<BackgroundTime, String> _backgroundAssets = {
-    BackgroundTime.earlyMorning: 'assets/images/home/background/peter_house_early_morning.png',
-    BackgroundTime.morning: 'assets/images/home/background/peter_house_morning.png',
-    BackgroundTime.afternoon: 'assets/images/home/background/peter_house_afternoon.png',
+    BackgroundTime.earlyMorning:
+        'assets/images/home/background/peter_house_early_morning.png',
+    BackgroundTime.morning:
+        'assets/images/home/background/peter_house_morning.png',
+    BackgroundTime.afternoon:
+        'assets/images/home/background/peter_house_afternoon.png',
     BackgroundTime.night: 'assets/images/home/background/peter_house_night.png',
   };
 
@@ -134,7 +137,7 @@ class _ImageBackgroundWidgetState extends State<ImageBackgroundWidget> {
         */
       ],
     );
-    
+
     // To re-enable tap debug, wrap the Stack above with:
     // return GestureDetector(
     //   onTapDown: (details) => _onTapDown(details, screenSize),

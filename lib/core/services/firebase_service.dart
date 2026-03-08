@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 /// Firebase Service - Single source of truth cho Firebase instances
-/// 
+///
 /// Cung cấp các instance đã được initialize của Firebase services
 /// để sử dụng trong repositories và providers.
 class FirebaseService {
@@ -60,6 +60,5 @@ class FirebaseService {
   /// Transaction helper
   Future<T> runTransaction<T>(
     Future<T> Function(Transaction) transactionHandler,
-  ) =>
-      firestore.runTransaction(transactionHandler);
+  ) => firestore.runTransaction(transactionHandler);
 }

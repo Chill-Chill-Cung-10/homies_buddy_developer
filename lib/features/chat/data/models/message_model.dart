@@ -1,45 +1,74 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'message_type.dart';
 import 'message_status.dart';
 
+part 'message_model.freezed.dart';
+part 'message_model.g.dart';
+
 /// Message Model
-/// 
+///
 /// Represents a single message in a conversation
-class Message {
-  final String id;
-  final String conversationId;
-  final String senderId;
-  final String content;
-  final MessageType type;
-  final DateTime createdAt;
-  final MessageStatus status;
+@freezed
+abstract class Message with _$Message {
+  const factory Message({
+    required String id,
+    required String conversationId,
+    required String senderId,
+    required String content,
 
-  const Message({
-    required this.id,
-    required this.conversationId,
-    required this.senderId,
-    required this.content,
-    required this.type,
-    required this.createdAt,
-    required this.status,
-  });
+    /// ⭐ **Thêm mới** — Danh sách URL media (thay cho single image)
+    @Default([]) List<String> mediaUrls,
 
-  Message copyWith({
-    String? id,
-    String? conversationId,
-    String? senderId,
-    String? content,
-    MessageType? type,
-    DateTime? createdAt,
-    MessageStatus? status,
-  }) {
-    return Message(
-      id: id ?? this.id,
-      conversationId: conversationId ?? this.conversationId,
-      senderId: senderId ?? this.senderId,
-      content: content ?? this.content,
-      type: type ?? this.type,
-      createdAt: createdAt ?? this.createdAt,
-      status: status ?? this.status,
-    );
+    required MessageType type,
+    required DateTime createdAt,
+    required MessageStatus status,
+  }) = _Message;
+
+  factory Message.fromJson(Map<String, dynamic> json) =>
+      _$MessageFromJson(json);
+}
+
+/// Extension để thêm các helper methods
+extension MessageX on Message {
+  /// Kiểm tra xem có media không
+  bool get hasMedia => mediaUrls.isNotEmpty;
+
+  /// Kiểm tra xem message có đã gửi thành công không
+  bool get isSent =>
+      status == MessageStatus.sent ||
+      status == MessageStatus.delivered ||
+      status == MessageStatus.seen;
+
+  /// Kiểm tra xem message có đang gửi không
+  bool get isSending => status == MessageStatus.sending;
+
+  /// Kiểm tra xem message có bị lỗi không
+  bool get isFailed => status == MessageStatus.failed;
+
+  /// Kiểm tra xem message có tình trạng "seen" không
+  bool get isSeen => status == MessageStatus.seen;
+
+  /// Lấy thời gian message dạng "time ago"
+  String get timeAgo {
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} ngày trước';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} giờ trước';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} phút trước';
+    } else {
+      return 'Vừa xong';
+    }
+  }
+
+  /// Lấy preview message (cắt ngắn nếu quá dài)
+  String get preview {
+    if (content.length > 50) {
+      return '${content.substring(0, 50)}...';
+    }
+    return content;
   }
 }

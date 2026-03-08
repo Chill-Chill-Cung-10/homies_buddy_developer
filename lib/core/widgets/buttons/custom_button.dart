@@ -36,9 +36,7 @@ class CustomButton extends StatelessWidget {
             height: 24,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                AppColors.textPrimary,
-              ),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.textPrimary),
             ),
           )
         : Row(
@@ -68,11 +66,10 @@ class CustomButton extends StatelessWidget {
             backgroundColor: AppColors.buttonPrimary,
             foregroundColor: AppColors.textPrimary,
             elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: AppShapes.button,
+            shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
+            disabledBackgroundColor: AppColors.buttonPrimary.withValues(
+              alpha: 0.5,
             ),
-            disabledBackgroundColor:
-                AppColors.buttonPrimary.withValues(alpha: 0.5),
           ),
           child: buttonChild,
         );
@@ -84,11 +81,10 @@ class CustomButton extends StatelessWidget {
             backgroundColor: AppColors.buttonSecondary,
             foregroundColor: AppColors.textPrimary,
             elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: AppShapes.button,
+            shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
+            disabledBackgroundColor: AppColors.buttonSecondary.withValues(
+              alpha: 0.5,
             ),
-            disabledBackgroundColor:
-                AppColors.buttonSecondary.withValues(alpha: 0.5),
           ),
           child: buttonChild,
         );
@@ -99,9 +95,7 @@ class CustomButton extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textPrimary,
             side: const BorderSide(color: AppColors.textSecondary),
-            shape: RoundedRectangleBorder(
-              borderRadius: AppShapes.button,
-            ),
+            shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
           ),
           child: buttonChild,
         );
@@ -109,9 +103,7 @@ class CustomButton extends StatelessWidget {
       case ButtonType.text:
         button = TextButton(
           onPressed: isLoading ? null : onPressed,
-          style: TextButton.styleFrom(
-            foregroundColor: AppColors.primaryGreen,
-          ),
+          style: TextButton.styleFrom(foregroundColor: AppColors.primaryGreen),
           child: buttonChild,
         );
         break;

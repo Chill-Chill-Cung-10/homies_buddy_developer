@@ -6,7 +6,7 @@ part of 'post_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$PostImpl _$$PostImplFromJson(Map<String, dynamic> json) => _$PostImpl(
+_Post _$PostFromJson(Map<String, dynamic> json) => _Post(
   authorName: json['authorName'] as String,
   authorId: json['authorId'] as String,
   authorAvatar: json['authorAvatar'] as String,
@@ -27,27 +27,24 @@ _$PostImpl _$$PostImplFromJson(Map<String, dynamic> json) => _$PostImpl(
       .toList(),
   reactsCount: (json['reactsCount'] as num).toInt(),
   commentCount: (json['commentCount'] as num).toInt(),
-  isLikedByMe: json['isLikedByMe'] as bool,
   privacy: $enumDecode(_$PostPrivacyEnumMap, json['privacy']),
 );
 
-Map<String, dynamic> _$$PostImplToJson(_$PostImpl instance) =>
-    <String, dynamic>{
-      'authorName': instance.authorName,
-      'authorId': instance.authorId,
-      'authorAvatar': instance.authorAvatar,
-      'postId': instance.postId,
-      'createdAt': instance.createdAt.toIso8601String(),
-      'updatedAt': instance.updatedAt?.toIso8601String(),
-      'contentText': instance.contentText,
-      'hashtags': instance.hashtags,
-      'mentions': instance.mentions,
-      'mediaFiles': instance.mediaFiles,
-      'reactsCount': instance.reactsCount,
-      'commentCount': instance.commentCount,
-      'isLikedByMe': instance.isLikedByMe,
-      'privacy': _$PostPrivacyEnumMap[instance.privacy]!,
-    };
+Map<String, dynamic> _$PostToJson(_Post instance) => <String, dynamic>{
+  'authorName': instance.authorName,
+  'authorId': instance.authorId,
+  'authorAvatar': instance.authorAvatar,
+  'postId': instance.postId,
+  'createdAt': instance.createdAt.toIso8601String(),
+  'updatedAt': instance.updatedAt?.toIso8601String(),
+  'contentText': instance.contentText,
+  'hashtags': instance.hashtags,
+  'mentions': instance.mentions,
+  'mediaFiles': instance.mediaFiles,
+  'reactsCount': instance.reactsCount,
+  'commentCount': instance.commentCount,
+  'privacy': _$PostPrivacyEnumMap[instance.privacy]!,
+};
 
 const _$PostPrivacyEnumMap = {
   PostPrivacy.public: 'public',

@@ -5,7 +5,7 @@ part 'login_request.g.dart';
 
 /// Login Request Model - Dữ liệu gửi lên server khi đăng nhập
 @freezed
-class LoginRequest with _$LoginRequest {
+abstract class LoginRequest with _$LoginRequest {
   const factory LoginRequest({
     required String email,
     required String password,

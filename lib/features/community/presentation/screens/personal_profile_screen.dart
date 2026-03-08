@@ -4,6 +4,7 @@
 ///   widgets/profile/profile_buddies_section.dart
 ///   widgets/profile/profile_post_feed.dart
 library;
+
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_shapes.dart';
@@ -22,10 +23,7 @@ import '../widgets/profile/profile_post_feed.dart';
 class PersonalProfileScreen extends StatefulWidget {
   final UserModel user;
 
-  const PersonalProfileScreen({
-    super.key,
-    required this.user,
-  });
+  const PersonalProfileScreen({super.key, required this.user});
 
   @override
   State<PersonalProfileScreen> createState() => _PersonalProfileScreenState();
@@ -75,9 +73,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
           ProfileHeroHeader(user: _user),
 
           // Layout 2: Detail content
-          SliverToBoxAdapter(
-            child: _buildDetailSection(),
-          ),
+          SliverToBoxAdapter(child: _buildDetailSection()),
 
           // Post feed
           ProfilePostFeed(
@@ -86,10 +82,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
               setState(() {
                 final post = _user.posts[index];
                 final updatedPost = post.copyWith(
-                  isLikedByMe: !post.isLikedByMe,
-                  reactsCount: post.isLikedByMe
-                      ? post.reactsCount - 1
-                      : post.reactsCount + 1,
+                  // isLikedByMe computed from POST_LIKES junction table
+                  reactsCount: post.reactsCount, // Will update via repository
                 );
                 final posts = List<Post>.from(_user.posts);
                 posts[index] = updatedPost;
@@ -101,10 +95,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
             },
           ),
 
-          // Bottom spacing  
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
+          // Bottom spacing
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );
@@ -113,19 +105,14 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   /// Layout 2: Detail section with header, buddies, and posts
   Widget _buildDetailSection() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
-      ),
+      decoration: BoxDecoration(gradient: AppColors.cardGradient),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppShapes.paddingL),
 
           // Profile stats + follow button
-          ProfileStatsSection(
-            user: _user,
-            onFollowToggle: _toggleFollow,
-          ),
+          ProfileStatsSection(user: _user, onFollowToggle: _toggleFollow),
 
           const SizedBox(height: AppShapes.paddingL),
 

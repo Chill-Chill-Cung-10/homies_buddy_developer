@@ -8,10 +8,7 @@ import '../../data/models/help_chat_model.dart';
 class ChatBubble extends StatelessWidget {
   final HelpChatMessage message;
 
-  const ChatBubble({
-    super.key,
-    required this.message,
-  });
+  const ChatBubble({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +82,7 @@ class ChatBubble extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.surfaceColor,
-            border: Border.all(
-              color: AppColors.primaryPeach,
-              width: 1.5,
-            ),
+            border: Border.all(color: AppColors.primaryPeach, width: 1.5),
           ),
           child: const Center(
             child: Text('🌱', style: TextStyle(fontSize: 16)),
@@ -161,19 +155,12 @@ class ChatBubble extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               color: AppColors.surfaceColor,
-              border: Border.all(
-                color: AppColors.primaryPeach,
-                width: 1,
-              ),
+              border: Border.all(color: AppColors.primaryPeach, width: 1),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(11),
               child: const Center(
-                child: Icon(
-                  Icons.image,
-                  color: AppColors.textHint,
-                  size: 32,
-                ),
+                child: Icon(Icons.image, color: AppColors.textHint, size: 32),
               ),
             ),
           );

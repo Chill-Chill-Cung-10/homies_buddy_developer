@@ -17,75 +17,80 @@ final currentUserProfileProvider = StreamProvider<UserModel?>((ref) {
 });
 
 /// Get user profile by ID (stream)
-final userProfileProvider = StreamProvider.family<UserModel?, String>(
-  (ref, userId) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.getUserStream(userId);
-  },
-);
+final userProfileProvider = StreamProvider.family<UserModel?, String>((
+  ref,
+  userId,
+) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.getUserStream(userId);
+});
 
 /// Get user profile by ID (future - one-time fetch)
-final userProfileFutureProvider = FutureProvider.family<UserModel?, String>(
-  (ref, userId) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.getUserById(userId);
-  },
-);
+final userProfileFutureProvider = FutureProvider.family<UserModel?, String>((
+  ref,
+  userId,
+) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.getUserById(userId);
+});
 
 /// Check if username is available
-final usernameAvailableProvider = FutureProvider.family<bool, String>(
-  (ref, username) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.checkUsernameAvailable(username);
-  },
-);
+final usernameAvailableProvider = FutureProvider.family<bool, String>((
+  ref,
+  username,
+) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.checkUsernameAvailable(username);
+});
 
 /// Check if following a user
-final isFollowingProvider = FutureProvider.family<bool, String>(
-  (ref, userId) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.isFollowing(userId);
-  },
-);
+final isFollowingProvider = FutureProvider.family<bool, String>((ref, userId) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.isFollowing(userId);
+});
 
 /// Get followers of a user (stream)
-final followersProvider = StreamProvider.family<List<UserModel>, String>(
-  (ref, userId) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.getFollowers(userId);
-  },
-);
+final followersProvider = StreamProvider.family<List<UserModel>, String>((
+  ref,
+  userId,
+) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.getFollowers(userId);
+});
 
 /// Get following list of a user (stream)
-final followingProvider = StreamProvider.family<List<UserModel>, String>(
-  (ref, userId) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.getFollowing(userId);
-  },
-);
+final followingProvider = StreamProvider.family<List<UserModel>, String>((
+  ref,
+  userId,
+) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.getFollowing(userId);
+});
 
 /// Get homies/buddies of a user (stream)
-final homiesProvider = StreamProvider.family<List<UserModel>, String>(
-  (ref, userId) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.getHomies(userId);
-  },
-);
+final homiesProvider = StreamProvider.family<List<UserModel>, String>((
+  ref,
+  userId,
+) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.getHomies(userId);
+});
 
 /// Search users
-final userSearchProvider = FutureProvider.family<List<UserModel>, String>(
-  (ref, query) {
-    final repository = ref.watch(userRepositoryProvider);
-    return repository.searchUsers(query);
-  },
-);
+final userSearchProvider = FutureProvider.family<List<UserModel>, String>((
+  ref,
+  query,
+) {
+  final repository = ref.watch(userRepositoryProvider);
+  return repository.searchUsers(query);
+});
 
 // =============================================================================
 // USER ACTIONS PROVIDER
 // =============================================================================
 
 /// Provider cho các actions liên quan đến user
-/// 
+///
 /// Usage:
 /// ```dart
 /// final userActions = ref.read(userActionsProvider);
@@ -112,7 +117,10 @@ class UserActions {
   }
 
   /// Update user profile
-  Future<void> updateProfile(String userId, Map<String, dynamic> updates) async {
+  Future<void> updateProfile(
+    String userId,
+    Map<String, dynamic> updates,
+  ) async {
     await repository.updateUserProfile(userId, updates);
   }
 

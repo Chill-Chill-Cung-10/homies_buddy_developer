@@ -6,21 +6,22 @@ part of 'media_file_model.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$MediaFileImpl _$$MediaFileImplFromJson(Map<String, dynamic> json) =>
-    _$MediaFileImpl(
-      id: json['id'] as String,
-      thumbnailUrl: json['thumbnailUrl'] as String?,
-      mediaType: $enumDecode(_$MediaTypeEnumMap, json['mediaType']),
-      mediaAspectRatio: (json['mediaAspectRatio'] as num).toDouble(),
-      mediaUrl: json['mediaUrl'] as String,
-      width: (json['width'] as num).toInt(),
-      height: (json['height'] as num).toInt(),
-      durationSeconds: (json['durationSeconds'] as num?)?.toInt(),
-    );
+_MediaFile _$MediaFileFromJson(Map<String, dynamic> json) => _MediaFile(
+  id: json['id'] as String,
+  postId: json['postId'] as String,
+  thumbnailUrl: json['thumbnailUrl'] as String?,
+  mediaType: $enumDecode(_$MediaTypeEnumMap, json['mediaType']),
+  mediaAspectRatio: (json['mediaAspectRatio'] as num).toDouble(),
+  mediaUrl: json['mediaUrl'] as String,
+  width: (json['width'] as num).toInt(),
+  height: (json['height'] as num).toInt(),
+  durationSeconds: (json['durationSeconds'] as num?)?.toInt(),
+);
 
-Map<String, dynamic> _$$MediaFileImplToJson(_$MediaFileImpl instance) =>
+Map<String, dynamic> _$MediaFileToJson(_MediaFile instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'postId': instance.postId,
       'thumbnailUrl': instance.thumbnailUrl,
       'mediaType': _$MediaTypeEnumMap[instance.mediaType]!,
       'mediaAspectRatio': instance.mediaAspectRatio,

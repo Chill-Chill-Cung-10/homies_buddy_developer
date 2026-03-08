@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.6 — Moved from features/community/presentation/
 /// Notification is an independent feature, not a community sub-feature.
 library;
+
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
@@ -12,7 +13,7 @@ import '../widgets/notification_item.dart';
 import '../../../community/presentation/widgets/comment_overlay.dart';
 
 /// Notification Screen - Màn hình hiển thị danh sách thông báo
-/// 
+///
 /// Instagram-style notification screen với scrollable list
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -43,7 +44,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
     // Parse deepLink and navigate
     final params = _parseDeepLink(notification.deepLink);
-    
+
     switch (params['type']) {
       case 'profile':
         _navigateToProfile(params['userId']!);
@@ -57,7 +58,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Unknown notification type: ${notification.deepLink}'),
+            content: Text(
+              'Unknown notification type: ${notification.deepLink}',
+            ),
             backgroundColor: AppColors.errorRed,
           ),
         );
@@ -68,11 +71,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Map<String, String> _parseDeepLink(String deepLink) {
     final uri = Uri.parse(deepLink);
     final segments = uri.pathSegments;
-    
+
     // Format: /community/post/1 → {type: 'post', postId: '1'}
     // Format: /community/post/1/comment/c1_1 → {type: 'comment', postId: '1', commentId: 'c1_1'}
     // Format: /profile/user4 → {type: 'profile', userId: 'user4'}
-    
+
     if (segments.contains('profile')) {
       return {'type': 'profile', 'userId': segments.last};
     } else if (segments.contains('comment')) {
@@ -84,14 +87,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
     } else if (segments.contains('post')) {
       return {'type': 'post', 'postId': segments[2]};
     }
-    
+
     return {'type': 'unknown'};
   }
 
   /// Navigate to user profile
   void _navigateToProfile(String userId) {
     Navigator.pop(context); // Back to Community
-    
+
     // TODO: Implement proper Profile tab navigation
     // This requires access to the main tab controller/navigator
     // For now, show a message
@@ -113,10 +116,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
       (p) => p?.postId == postId,
       orElse: () => null,
     );
-    
+
     if (post != null) {
       Navigator.pop(context); // Back to Community
-      
+
       // Open comment overlay after short delay
       Future.delayed(const Duration(milliseconds: 300), () {
         showCommentOverlay(context, post);
@@ -138,17 +141,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
       (p) => p?.postId == postId,
       orElse: () => null,
     );
-    
+
     if (post != null) {
       Navigator.pop(context); // Back to Community
-      
+
       // Open comment overlay with highlight after short delay
       Future.delayed(const Duration(milliseconds: 300), () {
-        showCommentOverlay(
-          context,
-          post,
-          highlightCommentId: commentId,
-        );
+        showCommentOverlay(context, post, highlightCommentId: commentId);
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -166,16 +165,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
       backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: AppColors.iconColor,
-          ),
+          icon: const Icon(Icons.arrow_back, color: AppColors.iconColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Notifications',
-          style: AppTextStyles.h2,
-        ),
+        title: const Text('Notifications', style: AppTextStyles.h2),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -199,16 +192,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
           const SizedBox(height: 16),
           Text(
             'No notifications yet',
-            style: AppTextStyles.h3.copyWith(
-              color: AppColors.textHint,
-            ),
+            style: AppTextStyles.h3.copyWith(color: AppColors.textHint),
           ),
           const SizedBox(height: 8),
           Text(
             'When you get notifications, they\'ll show up here',
-            style: AppTextStyles.bodyMedium.copyWith(
-              color: AppColors.textHint,
-            ),
+            style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textHint),
             textAlign: TextAlign.center,
           ),
         ],
@@ -220,10 +209,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
   Widget _buildNotificationList() {
     return ListView.separated(
       itemCount: _notifications.length,
-      separatorBuilder: (context, index) => Divider(
-        height: 1,
-        color: AppColors.textHint.withValues(alpha: 0.1),
-      ),
+      separatorBuilder: (context, index) =>
+          Divider(height: 1, color: AppColors.textHint.withValues(alpha: 0.1)),
       itemBuilder: (context, index) {
         final notification = _notifications[index];
         return NotificationItem(

@@ -3,7 +3,7 @@ import '../../data/models/comment_model.dart';
 import '../../core/services/firebase_service.dart';
 
 /// Comment Repository - Quản lý comments trên posts
-/// 
+///
 /// Handles:
 /// - Create/Update/Delete comments
 /// - Get comments với pagination
@@ -12,7 +12,7 @@ class CommentRepository {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Get comments của một post
-  /// 
+  ///
   /// [sortBy] - 'createdAt' (mới nhất) hoặc 'reactCount' (nhiều react nhất)
   Stream<List<Comment>> getComments(
     String postId, {
@@ -36,7 +36,8 @@ class CommentRepository {
           ...doc.data(),
           'commentId': doc.id,
           'postId': postId,
-          'createdAt': (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+          'createdAt':
+              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
               DateTime.now(),
           'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
         });
@@ -55,7 +56,7 @@ class CommentRepository {
   }
 
   /// Create new comment
-  /// 
+  ///
   /// Cloud Function sẽ tự động:
   /// - +1 commentCount của post
   /// - Tạo notification cho post author
@@ -67,8 +68,9 @@ class CommentRepository {
 
     try {
       // Get author info
-      final authorDoc =
-          await _firebaseService.usersCollection.doc(currentUserId).get();
+      final authorDoc = await _firebaseService.usersCollection
+          .doc(currentUserId)
+          .get();
       final authorData = authorDoc.data();
 
       // Create comment document
@@ -102,9 +104,11 @@ class CommentRepository {
 
     try {
       // Check ownership
-      final commentDoc =
-          await _firebaseService.postComments(postId).doc(commentId).get();
-      
+      final commentDoc = await _firebaseService
+          .postComments(postId)
+          .doc(commentId)
+          .get();
+
       if (commentDoc.data()?['authorId'] != currentUserId) {
         throw CommentRepositoryException('Not authorized to edit this comment');
       }
@@ -119,7 +123,7 @@ class CommentRepository {
   }
 
   /// Delete comment
-  /// 
+  ///
   /// Cloud Function sẽ tự động -1 commentCount
   Future<void> deleteComment(String postId, String commentId) async {
     final currentUserId = _firebaseService.currentUserId;
@@ -129,11 +133,15 @@ class CommentRepository {
 
     try {
       // Check ownership
-      final commentDoc =
-          await _firebaseService.postComments(postId).doc(commentId).get();
-      
+      final commentDoc = await _firebaseService
+          .postComments(postId)
+          .doc(commentId)
+          .get();
+
       if (commentDoc.data()?['authorId'] != currentUserId) {
-        throw CommentRepositoryException('Not authorized to delete this comment');
+        throw CommentRepositoryException(
+          'Not authorized to delete this comment',
+        );
       }
 
       await _firebaseService.postComments(postId).doc(commentId).delete();
@@ -143,7 +151,7 @@ class CommentRepository {
   }
 
   /// Toggle react on comment
-  /// 
+  ///
   /// NOTE: Comment reacts được lưu trong subcollection comments/{id}/reacts
   /// tương tự posts
   Future<void> toggleReact(String postId, String commentId) async {
@@ -164,17 +172,15 @@ class CommentRepository {
       if (doc.exists) {
         // Already reacted -> unreact
         await reactRef.delete();
-        
+
         // -1 reactCount
         await _firebaseService.postComments(postId).doc(commentId).update({
           'reactCount': FieldValue.increment(-1),
         });
       } else {
         // Not reacted yet -> react
-        await reactRef.set({
-          'reactedAt': FieldValue.serverTimestamp(),
-        });
-        
+        await reactRef.set({'reactedAt': FieldValue.serverTimestamp()});
+
         // +1 reactCount
         await _firebaseService.postComments(postId).doc(commentId).update({
           'reactCount': FieldValue.increment(1),

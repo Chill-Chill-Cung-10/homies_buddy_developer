@@ -4,7 +4,7 @@ part 'user_model.freezed.dart';
 part 'user_model.g.dart';
 
 /// [Refactored] Phase 2.3 — Auth-specific user model (lightweight).
-/// 
+///
 /// Dùng cho authentication state (AuthState.authenticated).
 /// Khác với `lib/data/models/user_model.dart` (community social profile model)
 /// chứa thêm posts, followers, homies, etc.
@@ -18,17 +18,18 @@ part 'user_model.g.dart';
 /// - toString
 /// - JSON serialization
 @freezed
-class UserModel with _$UserModel {
+abstract class UserModel with _$UserModel {
   const factory UserModel({
     required String id,
     required String email,
-    required String fullName,
-    String? avatarUrl,
-    String? phoneNumber,
-    DateTime? dateOfBirth,
-    @Default(false) bool isEmailVerified,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    @JsonKey(name: 'full_name') required String fullName,
+    required String username,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    @JsonKey(name: 'phone_number') String? phoneNumber,
+    @JsonKey(name: 'date_of_birth') DateTime? dateOfBirth,
+    @JsonKey(name: 'is_email_verified') @Default(false) bool isEmailVerified,
+    @JsonKey(name: 'created_at') DateTime? createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
   }) = _UserModel;
 
   /// Tạo UserModel từ JSON (từ API response)
@@ -44,16 +45,14 @@ typedef AuthUser = UserModel;
 extension UserModelX on UserModel {
   /// Kiểm tra xem user đã hoàn thiện profile chưa
   bool get isProfileComplete {
-    return fullName.isNotEmpty && 
-           phoneNumber != null && 
-           dateOfBirth != null;
+    return fullName.isNotEmpty && phoneNumber != null && dateOfBirth != null;
   }
-  
+
   /// Lấy tên hiển thị (fullName hoặc email nếu chưa có tên)
   String get displayName {
     return fullName.isNotEmpty ? fullName : email.split('@').first;
   }
-  
+
   /// Lấy initial của tên (để hiển thị avatar placeholder)
   String get initials {
     if (fullName.isEmpty) {

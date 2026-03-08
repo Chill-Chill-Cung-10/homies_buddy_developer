@@ -50,21 +50,13 @@ class SpinningNavButton extends StatefulWidget {
 
   /// The four fixed navigation destinations.
   static const List<NavItem> navItems = [
-    NavItem(
-      icon: Icons.home_outlined,
-      selectedIcon: Icons.home,
-      label: 'Home',
-    ),
+    NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: 'Home'),
     NavItem(
       icon: Icons.people_outline,
       selectedIcon: Icons.people,
       label: 'Community',
     ),
-    NavItem(
-      icon: Icons.help_outline,
-      selectedIcon: Icons.help,
-      label: 'Help',
-    ),
+    NavItem(icon: Icons.help_outline, selectedIcon: Icons.help, label: 'Help'),
     NavItem(
       icon: Icons.person_outline,
       selectedIcon: Icons.person,
@@ -158,8 +150,7 @@ class _SpinningNavButtonState extends State<SpinningNavButton>
                   onTap: _closeMenu,
                   behavior: HitTestBehavior.opaque,
                   child: Container(
-                    color:
-                        Colors.black.withOpacity(0.12 * _controller.value),
+                    color: Colors.black.withOpacity(0.12 * _controller.value),
                   ),
                 ),
               ),
@@ -239,8 +230,7 @@ class _SpinningNavButtonState extends State<SpinningNavButton>
                 ),
                 onPressed: _toggleMenu,
                 padding: EdgeInsets.zero,
-                constraints:
-                    const BoxConstraints(minWidth: 44, minHeight: 44),
+                constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
               ),
             ),
           );
@@ -309,9 +299,7 @@ class _NavItemWidget extends StatelessWidget {
                       ),
                       child: Icon(
                         isSelected ? item.selectedIcon : item.icon,
-                        color: isSelected
-                            ? Colors.white
-                            : AppColors.iconColor,
+                        color: isSelected ? Colors.white : AppColors.iconColor,
                         size: 22,
                       ),
                     ),

@@ -5,14 +5,14 @@ import 'package:path/path.dart' as path;
 import 'firebase_service.dart';
 
 /// Storage Service - Handle upload/download media files
-/// 
+///
 /// Hỗ trợ upload avatar, cover, post media với auto-compress
 /// và generate thumbnails cho images.
 class StorageService {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Upload avatar của user
-  /// 
+  ///
   /// Tự động compress xuống max 512x512, quality 85%
   /// Returns: Download URL của avatar
   Future<String> uploadAvatar(XFile image, String userId) async {
@@ -34,7 +34,7 @@ class StorageService {
   }
 
   /// Upload cover photo của user
-  /// 
+  ///
   /// Compress xuống max 1920x1080, quality 90%
   /// Returns: Download URL của cover
   Future<String> uploadCover(XFile image, String userId) async {
@@ -55,11 +55,11 @@ class StorageService {
   }
 
   /// Upload media cho post (ảnh hoặc video)
-  /// 
+  ///
   /// [postId] - ID của post
   /// [files] - List XFile (từ image_picker)
   /// [generateThumbnails] - Tự động tạo thumbnail cho video (default: true)
-  /// 
+  ///
   /// Returns: List of download URLs (bao gồm cả thumbnails nếu có)
   Future<List<MediaUploadResult>> uploadPostMedia(
     String postId,
@@ -85,11 +85,13 @@ class StorageService {
 
           // TODO: Generate thumbnail from video (cần thêm video_thumbnail package)
           // For now, return null for thumbnailUrl
-          results.add(MediaUploadResult(
-            mediaUrl: videoUrl,
-            thumbnailUrl: null,
-            isVideo: true,
-          ));
+          results.add(
+            MediaUploadResult(
+              mediaUrl: videoUrl,
+              thumbnailUrl: null,
+              isVideo: true,
+            ),
+          );
         } else {
           // Upload image with compression
           final compressedImage = await _compressImage(file, maxWidth: 1920);
@@ -112,11 +114,13 @@ class StorageService {
             );
           }
 
-          results.add(MediaUploadResult(
-            mediaUrl: imageUrl,
-            thumbnailUrl: thumbnailUrl,
-            isVideo: false,
-          ));
+          results.add(
+            MediaUploadResult(
+              mediaUrl: imageUrl,
+              thumbnailUrl: thumbnailUrl,
+              isVideo: false,
+            ),
+          );
         }
       } catch (e) {
         throw StorageException('Failed to upload media $i: $e');

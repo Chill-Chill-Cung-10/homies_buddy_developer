@@ -3,7 +3,7 @@ import '../../data/models/user_model.dart';
 import '../../core/services/firebase_service.dart';
 
 /// User Repository - Quản lý operations liên quan đến user profiles
-/// 
+///
 /// Handles:
 /// - CRUD user profiles
 /// - Follow/Unfollow
@@ -18,10 +18,7 @@ class UserRepository {
       final doc = await _firebaseService.usersCollection.doc(userId).get();
       if (!doc.exists) return null;
 
-      return UserModel.fromJson({
-        ...doc.data()!,
-        'id': doc.id,
-      });
+      return UserModel.fromJson({...doc.data()!, 'id': doc.id});
     } catch (e) {
       throw UserRepositoryException('Failed to get user: $e');
     }
@@ -31,15 +28,12 @@ class UserRepository {
   Stream<UserModel?> getUserStream(String userId) {
     return _firebaseService.usersCollection.doc(userId).snapshots().map((doc) {
       if (!doc.exists) return null;
-      return UserModel.fromJson({
-        ...doc.data()!,
-        'id': doc.id,
-      });
+      return UserModel.fromJson({...doc.data()!, 'id': doc.id});
     });
   }
 
   /// Create new user profile
-  /// 
+  ///
   /// Được gọi sau khi Firebase Auth successful
   Future<void> createUserProfile(UserModel user) async {
     try {
@@ -74,13 +68,16 @@ class UserRepository {
   }
 
   /// Update user profile
-  Future<void> updateUserProfile(String userId, Map<String, dynamic> updates) async {
+  Future<void> updateUserProfile(
+    String userId,
+    Map<String, dynamic> updates,
+  ) async {
     try {
       // If updating username, check availability
       if (updates.containsKey('username')) {
         final newUsername = updates['username'] as String;
         final currentUser = await getUserById(userId);
-        
+
         if (currentUser?.username != newUsername) {
           final isAvailable = await checkUsernameAvailable(newUsername);
           if (!isAvailable) {
@@ -108,7 +105,9 @@ class UserRepository {
   /// Check if username is available
   Future<bool> checkUsernameAvailable(String username) async {
     try {
-      final doc = await _firebaseService.usernamesCollection.doc(username).get();
+      final doc = await _firebaseService.usernamesCollection
+          .doc(username)
+          .get();
       return !doc.exists;
     } catch (e) {
       throw UserRepositoryException('Failed to check username: $e');
@@ -116,7 +115,7 @@ class UserRepository {
   }
 
   /// Follow a user
-  /// 
+  ///
   /// Cloud Function sẽ tự động:
   /// - +1 followingCount của current user
   /// - +1 followerCount của target user
@@ -133,20 +132,14 @@ class UserRepository {
 
     try {
       // Add to current user's following list
-      await _firebaseService
-          .userFollowing(currentUserId)
-          .doc(targetUserId)
-          .set({
-        'followedAt': FieldValue.serverTimestamp(),
-      });
+      await _firebaseService.userFollowing(currentUserId).doc(targetUserId).set(
+        {'followedAt': FieldValue.serverTimestamp()},
+      );
 
       // Add to target user's followers list
-      await _firebaseService
-          .userFollowers(targetUserId)
-          .doc(currentUserId)
-          .set({
-        'followedAt': FieldValue.serverTimestamp(),
-      });
+      await _firebaseService.userFollowers(targetUserId).doc(currentUserId).set(
+        {'followedAt': FieldValue.serverTimestamp()},
+      );
     } catch (e) {
       throw UserRepositoryException('Failed to follow user: $e');
     }
@@ -200,17 +193,17 @@ class UserRepository {
         .limit(limit)
         .snapshots()
         .asyncMap((snapshot) async {
-      final followerIds = snapshot.docs.map((doc) => doc.id).toList();
-      
-      // Fetch user profiles
-      final users = <UserModel>[];
-      for (final followerId in followerIds) {
-        final user = await getUserById(followerId);
-        if (user != null) users.add(user);
-      }
-      
-      return users;
-    });
+          final followerIds = snapshot.docs.map((doc) => doc.id).toList();
+
+          // Fetch user profiles
+          final users = <UserModel>[];
+          for (final followerId in followerIds) {
+            final user = await getUserById(followerId);
+            if (user != null) users.add(user);
+          }
+
+          return users;
+        });
   }
 
   /// Get following list
@@ -221,17 +214,17 @@ class UserRepository {
         .limit(limit)
         .snapshots()
         .asyncMap((snapshot) async {
-      final followingIds = snapshot.docs.map((doc) => doc.id).toList();
-      
-      // Fetch user profiles
-      final users = <UserModel>[];
-      for (final followingId in followingIds) {
-        final user = await getUserById(followingId);
-        if (user != null) users.add(user);
-      }
-      
-      return users;
-    });
+          final followingIds = snapshot.docs.map((doc) => doc.id).toList();
+
+          // Fetch user profiles
+          final users = <UserModel>[];
+          for (final followingId in followingIds) {
+            final user = await getUserById(followingId);
+            if (user != null) users.add(user);
+          }
+
+          return users;
+        });
   }
 
   /// Search users by username or full name
@@ -250,10 +243,7 @@ class UserRepository {
 
       // Convert to UserModel list
       final users = usernameResults.docs
-          .map((doc) => UserModel.fromJson({
-                ...doc.data(),
-                'id': doc.id,
-              }))
+          .map((doc) => UserModel.fromJson({...doc.data(), 'id': doc.id}))
           .toList();
 
       return users;
@@ -263,7 +253,7 @@ class UserRepository {
   }
 
   /// Get user's homies (buddies/friends)
-  /// 
+  ///
   /// For now, returns following list
   /// TODO: Implement proper friends/buddies system
   Stream<List<UserModel>> getHomies(String userId) {

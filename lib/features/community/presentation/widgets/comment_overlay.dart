@@ -34,28 +34,31 @@ class _CommentOverlayState extends State<CommentOverlay> {
   final FocusNode _commentFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _commentKeys = {};
-  
+
   late List<Comment> _comments;
   late Post _post; // Local post state for managing reactions
   CommentSortOption _selectedSortOption = CommentSortOption.latest;
   String? _currentHighlightedCommentId;
   double _highlightOpacity = 0.2; // Opacity for smooth fade-out
-  EdgeInsets _highlightPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4); // Padding for smooth size transition
+  EdgeInsets _highlightPadding = const EdgeInsets.symmetric(
+    horizontal: 8,
+    vertical: 4,
+  ); // Padding for smooth size transition
   Timer? _highlightTimer;
-  
+
   @override
   void initState() {
     super.initState();
     _currentHighlightedCommentId = widget.highlightCommentId;
     _post = widget.post; // Initialize local post state
     _loadComments();
-    
+
     // Scroll to highlighted comment after build
     if (widget.highlightCommentId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToHighlightedComment();
       });
-      
+
       // Start fade-out timer (2.5 seconds hold, then 800ms fade)
       _highlightTimer = Timer(const Duration(milliseconds: 2000), () {
         if (mounted) {
@@ -64,7 +67,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
             _highlightOpacity = 0.0;
             _highlightPadding = EdgeInsets.zero; // Remove padding smoothly
           });
-          
+
           // After fade-out animation completes, remove highlight
           Future.delayed(const Duration(milliseconds: 800), () {
             if (mounted) {
@@ -72,7 +75,10 @@ class _CommentOverlayState extends State<CommentOverlay> {
                 _currentHighlightedCommentId = null;
                 // Reset for next time
                 _highlightOpacity = 0.2;
-                _highlightPadding = const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+                _highlightPadding = const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 4,
+                );
               });
             }
           });
@@ -96,10 +102,10 @@ class _CommentOverlayState extends State<CommentOverlay> {
     _highlightTimer?.cancel();
     super.dispose();
   }
-  
+
   void _scrollToHighlightedComment() {
     if (widget.highlightCommentId == null) return;
-    
+
     final key = _commentKeys[widget.highlightCommentId];
     if (key?.currentContext != null) {
       Scrollable.ensureVisible(
@@ -122,7 +128,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
 
   void _handleSendComment() {
     if (_commentController.text.trim().isEmpty) return;
-    
+
     // TODO: Implement send comment logic
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -131,20 +137,22 @@ class _CommentOverlayState extends State<CommentOverlay> {
         backgroundColor: AppColors.accentOrange,
       ),
     );
-    
+
     _commentController.clear();
     _commentFocusNode.unfocus();
   }
 
   void _handleCommentReact(Comment comment) {
+    // isReactedByMe is now computed from COMMENT_REACTS junction table
+    // Update logic will be handled via repository/state management
     setState(() {
-      final index = _comments.indexWhere((c) => c.commentId == comment.commentId);
+      final index = _comments.indexWhere(
+        (c) => c.commentId == comment.commentId,
+      );
       if (index != -1) {
         _comments[index] = comment.copyWith(
-          isReactedByMe: !comment.isReactedByMe,
-          reactCount: comment.isReactedByMe
-              ? comment.reactCount - 1
-              : comment.reactCount + 1,
+          reactCount:
+              comment.reactCount + 1, // Placeholder - will be updated via state
         );
       }
     });
@@ -164,7 +172,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
         children: [
           // Drag Handle
           _buildDragHandle(),
-          
+
           // Scrollable content (Post Preview + Comments)
           Expanded(
             child: SingleChildScrollView(
@@ -174,16 +182,18 @@ class _CommentOverlayState extends State<CommentOverlay> {
                 children: [
                   // Post Preview using SocialPostCard
                   _buildPostPreview(),
-                  
+
                   // Divider
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: AppShapes.paddingM),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppShapes.paddingM,
+                    ),
                     child: const Divider(height: 1, color: AppColors.textHint),
                   ),
-                  
+
                   // Comment Input & Filter Section
                   _buildCommentInputSection(),
-                  
+
                   // Comments List
                   _buildCommentsList(),
                 ],
@@ -213,12 +223,13 @@ class _CommentOverlayState extends State<CommentOverlay> {
     return CommentPostPreview(
       post: _post,
       onLike: () {
+        // isLikedByMe is now computed from POST_LIKES junction table
+        // Update logic will be handled via repository/state management
         setState(() {
           _post = _post.copyWith(
-            isLikedByMe: !_post.isLikedByMe,
-            reactsCount: _post.isLikedByMe
-                ? _post.reactsCount - 1
-                : _post.reactsCount + 1,
+            reactsCount:
+                _post.reactsCount +
+                1, // Placeholder - will be updated via state
           );
         });
       },
@@ -276,7 +287,7 @@ class _CommentOverlayState extends State<CommentOverlay> {
         ),
       );
     }
-    
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -288,12 +299,12 @@ class _CommentOverlayState extends State<CommentOverlay> {
       itemBuilder: (context, index) {
         final comment = _comments[index];
         final isHighlighted = _currentHighlightedCommentId == comment.commentId;
-        
+
         // Create GlobalKey for this comment if it's highlighted
         if (isHighlighted && !_commentKeys.containsKey(comment.commentId)) {
           _commentKeys[comment.commentId] = GlobalKey();
         }
-        
+
         return CommentItem(
           comment: comment,
           isHighlighted: isHighlighted,
@@ -319,9 +330,7 @@ void showCommentOverlay(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => CommentOverlay(
-      post: post,
-      highlightCommentId: highlightCommentId,
-    ),
+    builder: (context) =>
+        CommentOverlay(post: post, highlightCommentId: highlightCommentId),
   );
 }

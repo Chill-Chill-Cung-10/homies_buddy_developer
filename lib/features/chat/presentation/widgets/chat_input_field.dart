@@ -3,7 +3,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 
 /// Chat Input Field Widget
-/// 
+///
 /// Message input area with send button
 class ChatInputField extends StatefulWidget {
   final Function(String) onSendMessage;
@@ -76,7 +76,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 constraints: const BoxConstraints(),
               ),
             const SizedBox(width: 8),
-            
+
             // Text input field
             Expanded(
               child: Container(
@@ -105,7 +105,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
               ),
             ),
             const SizedBox(width: 8),
-            
+
             // Send button
             GestureDetector(
               onTap: _hasText ? _sendMessage : null,
@@ -118,11 +118,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                       : AppColors.accentOrange.withOpacity(0.3),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.send_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
+                child: Icon(Icons.send_rounded, color: Colors.white, size: 20),
               ),
             ),
           ],

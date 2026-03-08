@@ -16,7 +16,7 @@ import 'widgets/comment_overlay.dart';
 import 'screens/personal_profile_screen.dart';
 
 /// Community Screen với Lazy Loading và Pagination
-/// 
+///
 /// Features:
 /// - Infinite scroll pagination
 /// - Pull to refresh
@@ -31,39 +31,38 @@ class CommunityScreen extends StatefulWidget {
 
 class _CommunityScreenState extends State<CommunityScreen>
     with PaginationMixin<Post, CommunityScreen> {
-  
   // Repository để fetch posts (trong thực tế sẽ dùng Firebase/API)
   // final _postRepository = PostRepository();
-  
+
   @override
   int get itemsPerPage => 10;
-  
+
   @override
   double get loadMoreThreshold => 0.8; // Load khi scroll 80%
-  
+
   String? _error;
-  
+
   @override
   Future<void> loadInitialItems() async {
     setState(() {
       isLoading = true;
       _error = null;
     });
-    
+
     try {
       // TODO: Replace with actual API call
       // final posts = await _postRepository.getFeed(
       //   page: 0,
       //   limit: itemsPerPage,
       // );
-      
+
       // Simulate network delay
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       // Mock data for now
       final allPosts = CommunityMockData.mockPosts;
       final posts = allPosts.take(itemsPerPage).toList();
-      
+
       setState(() {
         items.clear();
         items.addAll(posts);
@@ -79,28 +78,28 @@ class _CommunityScreenState extends State<CommunityScreen>
       debugPrint('Error loading posts: $e');
     }
   }
-  
+
   @override
   Future<void> loadMoreItems() async {
     if (isLoading || !hasMore) return;
-    
+
     setState(() => isLoading = true);
-    
+
     try {
       // TODO: Replace with actual API call
       // final posts = await _postRepository.getFeed(
       //   page: currentPage + 1,
       //   limit: itemsPerPage,
       // );
-      
+
       // Simulate network delay
       await Future.delayed(const Duration(milliseconds: 600));
-      
+
       // Mock pagination
       final allPosts = CommunityMockData.mockPosts;
       final startIndex = (currentPage + 1) * itemsPerPage;
       final endIndex = startIndex + itemsPerPage;
-      
+
       if (startIndex >= allPosts.length) {
         setState(() {
           hasMore = false;
@@ -108,12 +107,12 @@ class _CommunityScreenState extends State<CommunityScreen>
         });
         return;
       }
-      
+
       final posts = allPosts.sublist(
         startIndex,
         endIndex > allPosts.length ? allPosts.length : endIndex,
       );
-      
+
       setState(() {
         items.addAll(posts);
         currentPage++;
@@ -126,17 +125,14 @@ class _CommunityScreenState extends State<CommunityScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to load more posts: $e'),
-            action: SnackBarAction(
-              label: 'Retry',
-              onPressed: loadMoreItems,
-            ),
+            action: SnackBarAction(label: 'Retry', onPressed: loadMoreItems),
           ),
         );
       }
       debugPrint('Error loading more posts: $e');
     }
   }
-  
+
   void _navigateToProfile(BuildContext context, String authorId) {
     final user = ProfileMockData.getUserByAuthorId(authorId);
     Navigator.of(context).push(
@@ -145,7 +141,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       ),
     );
   }
-  
+
   void _navigateToProfileByUsername(BuildContext context, String mention) {
     final user = ProfileMockData.getUserByUsername(mention);
     if (user != null) {
@@ -163,23 +159,21 @@ class _CommunityScreenState extends State<CommunityScreen>
       );
     }
   }
-  
+
   void _handleLike(int index) {
     setState(() {
       final post = items[index];
       final updatedPost = post.copyWith(
-        isLikedByMe: !post.isLikedByMe,
-        reactsCount: post.isLikedByMe
-            ? post.reactsCount - 1
-            : post.reactsCount + 1,
+        // isLikedByMe computed from POST_LIKES junction table
+        reactsCount: post.reactsCount, // Will update via repository
       );
       items[index] = updatedPost;
     });
-    
+
     // TODO: Call API to update like status
     // await _postRepository.toggleLike(post.postId);
   }
-  
+
   void _handleComment(Post post) {
     showCommentOverlay(context, post);
   }
@@ -188,21 +182,13 @@ class _CommunityScreenState extends State<CommunityScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const SpinningNavButton(
-          iconColor: AppColors.textPrimary,
-        ),
-        title: const Text(
-          'Feeds',
-          style: AppTextStyles.h2,
-        ),
+        leading: const SpinningNavButton(iconColor: AppColors.textPrimary),
+        title: const Text('Feeds', style: AppTextStyles.h2),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.search,
-              color: AppColors.iconColor,
-            ),
+            icon: const Icon(Icons.search, color: AppColors.iconColor),
             onPressed: () {
               // TODO: Implement search
             },
@@ -214,18 +200,17 @@ class _CommunityScreenState extends State<CommunityScreen>
             textColor: Colors.white,
             offset: const Offset(-4, 4),
             child: IconButton(
-              icon: const Icon(
-                Icons.notifications,
-                color: AppColors.iconColor,
-              ),
+              icon: const Icon(Icons.notifications, color: AppColors.iconColor),
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationScreen(),
-                  ),
-                ).then((_) {
-                  setState(() {});
-                });
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationScreen(),
+                      ),
+                    )
+                    .then((_) {
+                      setState(() {});
+                    });
               },
             ),
           ),
@@ -241,36 +226,33 @@ class _CommunityScreenState extends State<CommunityScreen>
                 color: AppColors.iconColor,
               ),
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ChatListScreen(),
-                  ),
-                ).then((_) {
-                  setState(() {});
-                });
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) => const ChatListScreen(),
+                      ),
+                    )
+                    .then((_) {
+                      setState(() {});
+                    });
               },
             ),
           ),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.cardGradient),
         child: _buildBody(),
       ),
     );
   }
-  
+
   Widget _buildBody() {
     // Error state
     if (_error != null && items.isEmpty) {
-      return ErrorStateWidget(
-        message: _error,
-        onRetry: loadInitialItems,
-      );
+      return ErrorStateWidget(message: _error, onRetry: loadInitialItems);
     }
-    
+
     // Initial loading state
     if (isLoading && items.isEmpty) {
       return ListView.builder(
@@ -279,7 +261,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         itemBuilder: (context, index) => const PostCardSkeleton(),
       );
     }
-    
+
     // Empty state
     if (items.isEmpty) {
       return const EmptyStateWidget(
@@ -288,7 +270,7 @@ class _CommunityScreenState extends State<CommunityScreen>
         icon: Icons.feed_outlined,
       );
     }
-    
+
     // List with items
     return RefreshIndicator(
       color: AppColors.accentOrange,
@@ -296,7 +278,13 @@ class _CommunityScreenState extends State<CommunityScreen>
       child: ListView.builder(
         controller: scrollController,
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        itemCount: items.length + (isLoading ? 1 : hasMore ? 1 : 1),
+        itemCount:
+            items.length +
+            (isLoading
+                ? 1
+                : hasMore
+                ? 1
+                : 1),
         itemBuilder: (context, index) {
           // Loading indicator at bottom
           if (index >= items.length) {
@@ -305,14 +293,12 @@ class _CommunityScreenState extends State<CommunityScreen>
                 message: 'Loading more posts...',
               );
             } else if (!hasMore) {
-              return const EndOfListWidget(
-                message: "You're all caught up! 🎉",
-              );
+              return const EndOfListWidget(message: "You're all caught up! 🎉");
             } else {
               return const SizedBox.shrink();
             }
           }
-          
+
           final post = items[index];
           return SocialPostCard(
             post: post,
@@ -320,7 +306,8 @@ class _CommunityScreenState extends State<CommunityScreen>
             onComment: () => _handleComment(post),
             onAvatarTap: () => _navigateToProfile(context, post.authorId),
             onAuthorNameTap: () => _navigateToProfile(context, post.authorId),
-            onMentionTap: (mention) => _navigateToProfileByUsername(context, mention),
+            onMentionTap: (mention) =>
+                _navigateToProfileByUsername(context, mention),
           );
         },
       ),

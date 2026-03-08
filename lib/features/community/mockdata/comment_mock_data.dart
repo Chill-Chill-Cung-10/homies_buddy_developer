@@ -27,7 +27,6 @@ class CommentMockData {
       contentText: 'Xin chào tôi cũng muốn có chú chó như thế này',
       createdAt: DateTime.now().subtract(const Duration(minutes: 18)),
       reactCount: 4950,
-      isReactedByMe: true,
     ),
     Comment(
       commentId: 'c1_2',
@@ -38,7 +37,6 @@ class CommentMockData {
       contentText: 'Wow! Amazing photo! 😍',
       createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
       reactCount: 23,
-      isReactedByMe: false,
     ),
     Comment(
       commentId: 'c1_3',
@@ -49,7 +47,6 @@ class CommentMockData {
       contentText: 'Such a cutie! What breed is this? 🐕',
       createdAt: DateTime.now().subtract(const Duration(minutes: 10)),
       reactCount: 8,
-      isReactedByMe: true,
     ),
     Comment(
       commentId: 'c1_4',
@@ -60,7 +57,6 @@ class CommentMockData {
       contentText: 'Love this! 💕',
       createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
       reactCount: 2,
-      isReactedByMe: false,
     ),
 
     // Comments cho Post 2 (Buddy the Golden post)
@@ -73,7 +69,6 @@ class CommentMockData {
       contentText: 'Beautiful day indeed! ☀️',
       createdAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 45)),
       reactCount: 45,
-      isReactedByMe: true,
     ),
     Comment(
       commentId: 'c2_2',
@@ -84,7 +79,6 @@ class CommentMockData {
       contentText: 'Which park is this? Looks amazing!',
       createdAt: DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
       reactCount: 12,
-      isReactedByMe: false,
     ),
     Comment(
       commentId: 'c2_3',
@@ -95,7 +89,6 @@ class CommentMockData {
       contentText: 'My dog loves this park too! We should meet up sometime 🐾',
       createdAt: DateTime.now().subtract(const Duration(minutes: 45)),
       reactCount: 18,
-      isReactedByMe: true,
     ),
 
     // Comments cho Post 3 (Luna & Max post)
@@ -108,7 +101,6 @@ class CommentMockData {
       contentText: 'The best duo! 📸✨',
       createdAt: DateTime.now().subtract(const Duration(hours: 4, minutes: 30)),
       reactCount: 67,
-      isReactedByMe: false,
     ),
     Comment(
       commentId: 'c3_2',
@@ -119,7 +111,6 @@ class CommentMockData {
       contentText: 'Where did you get this photoshoot done? Need details! 😍',
       createdAt: DateTime.now().subtract(const Duration(hours: 3)),
       reactCount: 34,
-      isReactedByMe: true,
     ),
     Comment(
       commentId: 'c3_3',
@@ -130,7 +121,6 @@ class CommentMockData {
       contentText: 'Beautiful shot! Professional level 📷',
       createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 15)),
       reactCount: 21,
-      isReactedByMe: false,
     ),
     Comment(
       commentId: 'c3_4',
@@ -141,7 +131,6 @@ class CommentMockData {
       contentText: 'This is goals! 🎯',
       createdAt: DateTime.now().subtract(const Duration(hours: 1)),
       reactCount: 9,
-      isReactedByMe: true,
     ),
   ];
 

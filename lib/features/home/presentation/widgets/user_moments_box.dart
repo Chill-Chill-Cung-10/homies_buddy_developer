@@ -41,9 +41,7 @@ class _UserMomentsBoxState extends State<UserMomentsBox> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withOpacity(0.3),
-      builder: (context) => MomentsModalContent(
-        imagePicker: _imagePicker,
-      ),
+      builder: (context) => MomentsModalContent(imagePicker: _imagePicker),
     ).whenComplete(() {
       if (mounted) {
         setState(() => isOpenModal = false);
@@ -79,5 +77,3 @@ class _UserMomentsBoxState extends State<UserMomentsBox> {
     );
   }
 }
-
- 

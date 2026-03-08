@@ -6,11 +6,12 @@ part 'post_model.freezed.dart';
 part 'post_model.g.dart';
 
 /// Post Model - Bài viết trong Community
-/// 
+///
 /// Chứa đầy đủ thông tin về bài post bao gồm nội dung,
-/// media files, tương tác (react, comment), và thông tin tác giả
+/// media files, tương tác (react, comment), và thông tin tác giả.
+/// Trạng thái `isLikedByMe` là computed field được query từ `POST_LIKES` junction table.
 @freezed
-class Post with _$Post {  
+abstract class Post with _$Post {
   const factory Post({
     required String authorName,
     required String authorId,
@@ -24,7 +25,7 @@ class Post with _$Post {
     required List<MediaFile> mediaFiles,
     required int reactsCount,
     required int commentCount,
-    required bool isLikedByMe,
+    // ❌ isLikedByMe REMOVED — computed field (query từ POST_LIKES)
     required PostPrivacy privacy,
   }) = _Post;
 

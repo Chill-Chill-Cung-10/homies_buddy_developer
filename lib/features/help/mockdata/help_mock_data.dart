@@ -3,7 +3,8 @@ import '../data/models/help_chat_model.dart';
 /// Mock data for Ask For Help screen
 class HelpMockData {
   /// Welcome message
-  static const String welcomeMessage = "Hi there! How can I help you grow today?";
+  static const String welcomeMessage =
+      "Hi there! How can I help you grow today?";
 
   /// Help suggestion cards
   static const List<HelpSuggestion> helpSuggestions = [
@@ -33,18 +34,24 @@ class HelpMockData {
   static String getBotResponse(String userMessage) {
     final lower = userMessage.toLowerCase();
 
-    if (lower.contains('water') || lower.contains('fern') || lower.contains('plant')) {
+    if (lower.contains('water') ||
+        lower.contains('fern') ||
+        lower.contains('plant')) {
       return "Great question! 🌿 For ferns, water every 3 days and keep the soil moist but not soggy. "
           "Place them in indirect sunlight and mist the leaves occasionally for best results!";
     }
-    if (lower.contains('brush') || lower.contains('sheep') || lower.contains('groom')) {
+    if (lower.contains('brush') ||
+        lower.contains('sheep') ||
+        lower.contains('groom')) {
       return "Brushing your pet regularly is wonderful! 🐑 For daily grooming:\n"
           "• Use a soft-bristle brush\n"
           "• Brush in the direction of fur growth\n"
           "• Check for tangles and mats\n"
           "• Make it a bonding experience!";
     }
-    if (lower.contains('health') || lower.contains('check') || lower.contains('vet')) {
+    if (lower.contains('health') ||
+        lower.contains('check') ||
+        lower.contains('vet')) {
       return "Pet health is so important! 🏥 Here are monthly tips:\n"
           "• Check ears, eyes, and teeth\n"
           "• Monitor weight changes\n"
@@ -58,7 +65,9 @@ class HelpMockData {
           "• Be consistent with commands\n"
           "• Practice patience and celebrate small wins!";
     }
-    if (lower.contains('hello') || lower.contains('hi') || lower.contains('hey')) {
+    if (lower.contains('hello') ||
+        lower.contains('hi') ||
+        lower.contains('hey')) {
       return "Hello there! 👋 I'm your Homies Buddy assistant. "
           "I can help with plant care, pet grooming, training tips, and more. What would you like to know?";
     }
@@ -73,73 +82,98 @@ class HelpMockData {
   static List<HelpConversationHistory> get conversationHistories => [
     HelpConversationHistory(
       id: 'conv_1',
+      userId: 'current_user',
       title: 'Fern Care Tips',
       preview: 'How often should I water my fern?',
       lastMessageAt: DateTime.now().subtract(const Duration(hours: 2)),
       messages: [
         HelpChatMessage(
           id: 'msg_1_1',
+          conversationId: 'conv_1',
           text: 'How often should I water my fern?',
           isUser: true,
-          timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 5)),
+          timestamp: DateTime.now().subtract(
+            const Duration(hours: 2, minutes: 5),
+          ),
         ),
         HelpChatMessage(
           id: 'msg_1_2',
+          conversationId: 'conv_1',
           text: getBotResponse('water fern'),
           isUser: false,
-          timestamp: DateTime.now().subtract(const Duration(hours: 2, minutes: 4)),
+          timestamp: DateTime.now().subtract(
+            const Duration(hours: 2, minutes: 4),
+          ),
         ),
         HelpChatMessage(
           id: 'msg_1_3',
+          conversationId: 'conv_1',
           text: 'Thank you! That helps a lot.',
           isUser: true,
           timestamp: DateTime.now().subtract(const Duration(hours: 2)),
         ),
         HelpChatMessage(
           id: 'msg_1_4',
+          conversationId: 'conv_1',
           text: getBotResponse('thank'),
           isUser: false,
-          timestamp: DateTime.now().subtract(const Duration(hours: 1, minutes: 59)),
+          timestamp: DateTime.now().subtract(
+            const Duration(hours: 1, minutes: 59),
+          ),
         ),
       ],
     ),
     HelpConversationHistory(
       id: 'conv_2',
+      userId: 'current_user',
       title: 'Pet Training',
       preview: 'How do I start training my puppy?',
       lastMessageAt: DateTime.now().subtract(const Duration(days: 1)),
       messages: [
         HelpChatMessage(
           id: 'msg_2_1',
+          conversationId: 'conv_2',
           text: 'How do I start training my puppy?',
           isUser: true,
-          timestamp: DateTime.now().subtract(const Duration(days: 1, minutes: 10)),
+          timestamp: DateTime.now().subtract(
+            const Duration(days: 1, minutes: 10),
+          ),
         ),
         HelpChatMessage(
           id: 'msg_2_2',
+          conversationId: 'conv_2',
           text: getBotResponse('training basics'),
           isUser: false,
-          timestamp: DateTime.now().subtract(const Duration(days: 1, minutes: 9)),
+          timestamp: DateTime.now().subtract(
+            const Duration(days: 1, minutes: 9),
+          ),
         ),
       ],
     ),
     HelpConversationHistory(
       id: 'conv_3',
+      userId: 'current_user',
       title: 'Health Checkup',
       preview: 'When should I take my cat to the vet?',
       lastMessageAt: DateTime.now().subtract(const Duration(days: 3)),
       messages: [
         HelpChatMessage(
           id: 'msg_3_1',
+          conversationId: 'conv_3',
           text: 'When should I take my cat to the vet?',
           isUser: true,
-          timestamp: DateTime.now().subtract(const Duration(days: 3, minutes: 5)),
+          timestamp: DateTime.now().subtract(
+            const Duration(days: 3, minutes: 5),
+          ),
         ),
         HelpChatMessage(
           id: 'msg_3_2',
+          conversationId: 'conv_3',
           text: getBotResponse('health check vet'),
           isUser: false,
-          timestamp: DateTime.now().subtract(const Duration(days: 3, minutes: 4)),
+          timestamp: DateTime.now().subtract(
+            const Duration(days: 3, minutes: 4),
+          ),
         ),
       ],
     ),

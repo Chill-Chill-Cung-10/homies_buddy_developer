@@ -19,12 +19,16 @@ class AppColors {
   // ──────────────────────────────────────────────
   /// Pastel hồng cam — `secondary` trong theme cũ
   static const Color pastelPink = Color(0xFFF7B7A3);
+
   /// Pastel xanh dương nhẹ
   static const Color pastelBlue = Color(0xFF9FD3F2);
+
   /// Pastel xanh lá — trùng primaryGreen, giữ alias cho readability
   static const Color pastelGreen = Color(0xFF9ED6A0);
+
   /// Pastel nâu ấm
   static const Color pastelBrown = Color(0xFFC9A27E);
+
   /// Pastel vàng
   static const Color pastelYellow = Color(0xFFFFE29A);
 
@@ -34,6 +38,7 @@ class AppColors {
   static const Color backgroundLight = Color(0xFFFFF8F5);
   static const Color backgroundPost = Color(0xFFFFFFFF);
   static const Color backgroundPeach = Color(0xFFF5D5C8);
+
   /// Background beige ấm (từ theme cũ `background`)
   static const Color backgroundBeige = Color(0xFFFFF3E8);
   static const Color cardBackground = Color(0xFFFFF5EE);
@@ -45,6 +50,7 @@ class AppColors {
   static const Color textPrimary = Color(0xFF5D4E37);
   static const Color textSecondary = Color(0xFF8B7355);
   static const Color textHint = Color(0xFFBDA88F);
+
   /// Placeholder text (nhạt hơn textHint)
   static const Color textPlaceholder = Color(0xFFC8B2A3);
   static const Color textBlackContrast = Color(0xFFFFFFFF);
@@ -56,6 +62,7 @@ class AppColors {
   static const Color buttonPrimary = Color(0xFFE8C4A7);
   static const Color buttonSecondary = Color(0xFFD4E5C9);
   static const Color iconColor = Color(0xFF9C8672);
+
   /// Border nhẹ cho card / input (từ theme cũ `border`)
   static const Color borderLight = Color(0xFFF0D9C5);
 

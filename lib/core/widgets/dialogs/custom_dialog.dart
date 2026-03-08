@@ -24,9 +24,7 @@ class CustomDialog {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppShapes.button,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
         title: Row(
           children: [
             const Icon(
@@ -64,16 +62,10 @@ class CustomDialog {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppShapes.button,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
         title: Row(
           children: [
-            const Icon(
-              Icons.error,
-              color: AppColors.errorRed,
-              size: 28,
-            ),
+            const Icon(Icons.error, color: AppColors.errorRed, size: 28),
             const SizedBox(width: AppSpacing.s),
             Text(title, style: AppTextStyles.h3),
           ],
@@ -106,9 +98,7 @@ class CustomDialog {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppShapes.button,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
         title: Text(title, style: AppTextStyles.h3),
         content: Text(message, style: AppTextStyles.bodyMedium),
         actions: [

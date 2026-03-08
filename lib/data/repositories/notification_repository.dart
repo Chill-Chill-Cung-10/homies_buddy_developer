@@ -3,7 +3,7 @@ import '../../data/models/notification_model.dart';
 import '../../core/services/firebase_service.dart';
 
 /// Notification Repository - Quản lý notifications
-/// 
+///
 /// Handles:
 /// - Get user notifications
 /// - Mark as read/unread
@@ -13,7 +13,7 @@ class NotificationRepository {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Get notifications của current user
-  /// 
+  ///
   /// Realtime stream với pagination
   Stream<List<NotificationModel>> getNotifications({
     DocumentSnapshot? lastDoc,
@@ -38,7 +38,8 @@ class NotificationRepository {
         return NotificationModel.fromJson({
           ...doc.data(),
           'notificationId': doc.id,
-          'createdAt': (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+          'createdAt':
+              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
               DateTime.now(),
         });
       }).toList();
@@ -113,7 +114,9 @@ class NotificationRepository {
           .doc(notificationId)
           .delete();
     } catch (e) {
-      throw NotificationRepositoryException('Failed to delete notification: $e');
+      throw NotificationRepositoryException(
+        'Failed to delete notification: $e',
+      );
     }
   }
 
@@ -136,7 +139,9 @@ class NotificationRepository {
       }
       await batch.commit();
     } catch (e) {
-      throw NotificationRepositoryException('Failed to delete all notifications: $e');
+      throw NotificationRepositoryException(
+        'Failed to delete all notifications: $e',
+      );
     }
   }
 }

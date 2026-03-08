@@ -56,10 +56,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         labelText: widget.label,
         hintText: widget.hint,
         prefixIcon: widget.prefixIcon != null
-            ? Icon(
-                widget.prefixIcon,
-                color: AppColors.textSecondary,
-              )
+            ? Icon(widget.prefixIcon, color: AppColors.textSecondary)
             : null,
         suffixIcon: widget.suffixIcon,
         filled: true,
@@ -74,24 +71,15 @@ class _CustomTextFieldState extends State<CustomTextField> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppShapes.button,
-          borderSide: const BorderSide(
-            color: AppColors.primaryGreen,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppColors.primaryGreen, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: AppShapes.button,
-          borderSide: const BorderSide(
-            color: AppColors.errorRed,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppColors.errorRed, width: 2),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: AppShapes.button,
-          borderSide: const BorderSide(
-            color: AppColors.errorRed,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppColors.errorRed, width: 2),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: AppShapes.button,

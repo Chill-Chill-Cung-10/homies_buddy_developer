@@ -6,6 +6,7 @@ class CozyCalendar extends StatefulWidget {
   @override
   _CozyCalendarState createState() => _CozyCalendarState();
 }
+
 class _CozyCalendarState extends State<CozyCalendar> {
   DateTime currentMonth = DateTime(2026, 4);
   DateTime? selectedDate = DateTime.now(); // Mặc định chọn ngày hiện tại
@@ -31,12 +32,20 @@ class _CozyCalendarState extends State<CozyCalendar> {
                 if (details.primaryVelocity! > 0) {
                   // Swipe right -> tháng trước
                   setState(() {
-                    currentMonth = DateTime(currentMonth.year, currentMonth.month - 1, 1);
+                    currentMonth = DateTime(
+                      currentMonth.year,
+                      currentMonth.month - 1,
+                      1,
+                    );
                   });
                 } else if (details.primaryVelocity! < 0) {
                   // Swipe left -> tháng sau
                   setState(() {
-                    currentMonth = DateTime(currentMonth.year, currentMonth.month + 1, 1);
+                    currentMonth = DateTime(
+                      currentMonth.year,
+                      currentMonth.month + 1,
+                      1,
+                    );
                   });
                 }
               },
@@ -51,10 +60,10 @@ class _CozyCalendarState extends State<CozyCalendar> {
               ),
             ),
           ),
-          
+
           // Khoảng cách giữa header và grid
           SizedBox(height: 16),
-          
+
           // Grid Component - độc lập
           Container(
             decoration: BoxDecoration(
@@ -66,12 +75,20 @@ class _CozyCalendarState extends State<CozyCalendar> {
                 if (details.primaryVelocity! > 0) {
                   // Swipe right -> tháng trước
                   setState(() {
-                    currentMonth = DateTime(currentMonth.year, currentMonth.month - 1, 1);
+                    currentMonth = DateTime(
+                      currentMonth.year,
+                      currentMonth.month - 1,
+                      1,
+                    );
                   });
                 } else if (details.primaryVelocity! < 0) {
                   // Swipe left -> tháng sau
                   setState(() {
-                    currentMonth = DateTime(currentMonth.year, currentMonth.month + 1, 1);
+                    currentMonth = DateTime(
+                      currentMonth.year,
+                      currentMonth.month + 1,
+                      1,
+                    );
                   });
                 }
               },
@@ -83,26 +100,27 @@ class _CozyCalendarState extends State<CozyCalendar> {
                 child: AnimatedOpacity(
                   duration: Duration(milliseconds: 250),
                   opacity: isExpanded ? 1.0 : 0.0,
-                  child: isExpanded 
-                    ? Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Column(
-                          children: [
-                            _buildWeekDays(),
-                            SizedBox(height: 8),
-                            _buildGrid(days),
-                          ],
-                        ),
-                      )
-                    : SizedBox.shrink(),
+                  child: isExpanded
+                      ? Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Column(
+                            children: [
+                              _buildWeekDays(),
+                              SizedBox(height: 8),
+                              _buildGrid(days),
+                            ],
+                          ),
+                        )
+                      : SizedBox.shrink(),
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );
   }
+
   // ================= HEADER =================
   Widget _buildHeader() {
     return GestureDetector(
@@ -121,8 +139,11 @@ class _CozyCalendarState extends State<CozyCalendar> {
             constraints: BoxConstraints(),
             onPressed: () {
               setState(() {
-                currentMonth =
-                    DateTime(currentMonth.year, currentMonth.month, currentMonth.day - 1);
+                currentMonth = DateTime(
+                  currentMonth.year,
+                  currentMonth.month,
+                  currentMonth.day - 1,
+                );
               });
             },
           ),
@@ -140,7 +161,11 @@ class _CozyCalendarState extends State<CozyCalendar> {
             constraints: BoxConstraints(),
             onPressed: () {
               setState(() {
-                currentMonth = DateTime(currentMonth.year, currentMonth.month, currentMonth.day + 1);
+                currentMonth = DateTime(
+                  currentMonth.year,
+                  currentMonth.month,
+                  currentMonth.day + 1,
+                );
               });
             },
           ),
@@ -156,13 +181,12 @@ class _CozyCalendarState extends State<CozyCalendar> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: days
-          .map((d) => Text(
-                d,
-                style: TextStyle(
-                  color: Colors.brown.shade300,
-                  fontSize: 12,
-                ),
-              ))
+          .map(
+            (d) => Text(
+              d,
+              style: TextStyle(color: Colors.brown.shade300, fontSize: 12),
+            ),
+          )
           .toList(),
     );
   }
@@ -196,9 +220,7 @@ class _CozyCalendarState extends State<CozyCalendar> {
           child: AnimatedContainer(
             duration: Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? Color(0xFFF2D6B3)
-                  : Colors.transparent,
+              color: isSelected ? Color(0xFFF2D6B3) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: FittedBox(
@@ -209,10 +231,7 @@ class _CozyCalendarState extends State<CozyCalendar> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      "${day.day}",
-                      style: TextStyle(fontSize: 10),
-                    ),
+                    Text("${day.day}", style: TextStyle(fontSize: 10)),
                     _buildMood(day),
                   ],
                 ),
@@ -256,8 +275,7 @@ class _CozyCalendarState extends State<CozyCalendar> {
   List<DateTime?> _generateDays(DateTime month) {
     final firstDay = DateTime(month.year, month.month, 1);
     final weekday = firstDay.weekday; // 1 = Mon
-    final daysInMonth =
-        DateTime(month.year, month.month + 1, 0).day;
+    final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
 
     List<DateTime?> result = [];
 
@@ -276,8 +294,19 @@ class _CozyCalendarState extends State<CozyCalendar> {
 
   String _monthName(int m) {
     const names = [
-      "", "Jan", "Feb", "Mar", "Apr", "May",
-      "Jun", "July", "Aug", "Sep", "Oct", "Nov", "Dec"
+      "",
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "July",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
     ];
     return names[m];
   }

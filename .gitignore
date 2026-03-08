@@ -45,6 +45,15 @@ app.*.map.json
 /android/app/release
 
 .env
+.env.*
+!.env.example
+
+# Local Flutter dart-define files (keep only example in git)
+dart_define*.json
+!dart_define.example.json
+
+# Common local secret dumps
+*.secrets
 
 ./instructions/*
 

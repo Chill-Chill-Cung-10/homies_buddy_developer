@@ -3,7 +3,7 @@ import '../../constants/app_colors.dart';
 import '../../constants/app_spacing.dart';
 
 /// [Loading Widget] — Shimmer effect cho lazy loading content.
-/// 
+///
 /// Tạo hiệu ứng shimmer (ánh sáng di chuyển) trên placeholder
 /// để thể hiện content đang được tải.
 class ShimmerLoading extends StatefulWidget {
@@ -67,8 +67,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
     }
 
     final baseColor = widget.baseColor ?? AppColors.cardBackground;
-    final highlightColor =
-        widget.highlightColor ?? AppColors.backgroundLight;
+    final highlightColor = widget.highlightColor ?? AppColors.backgroundLight;
 
     return AnimatedBuilder(
       animation: _animation,
@@ -78,11 +77,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
             return LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                baseColor,
-                highlightColor,
-                baseColor,
-              ],
+              colors: [baseColor, highlightColor, baseColor],
               stops: [
                 (_animation.value - 1).clamp(0.0, 1.0),
                 _animation.value.clamp(0.0, 1.0),
@@ -128,11 +123,7 @@ class ShimmerListItem extends StatelessWidget {
   final double? height;
   final EdgeInsets? padding;
 
-  const ShimmerListItem({
-    super.key,
-    this.height,
-    this.padding,
-  });
+  const ShimmerListItem({super.key, this.height, this.padding});
 
   @override
   Widget build(BuildContext context) {
@@ -185,12 +176,7 @@ class ShimmerCard extends StatelessWidget {
   final double height;
   final EdgeInsets? margin;
 
-  const ShimmerCard({
-    super.key,
-    this.width,
-    this.height = 200,
-    this.margin,
-  });
+  const ShimmerCard({super.key, this.width, this.height = 200, this.margin});
 
   @override
   Widget build(BuildContext context) {
@@ -244,10 +230,7 @@ class ShimmerCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.m),
           // Content lines
-          const ShimmerBox(
-            width: double.infinity,
-            height: 12,
-          ),
+          const ShimmerBox(width: double.infinity, height: 12),
           const SizedBox(height: AppSpacing.s),
           ShimmerBox(
             width: MediaQuery.of(context).size.width * 0.8,

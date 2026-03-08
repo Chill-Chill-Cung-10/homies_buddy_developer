@@ -7,7 +7,7 @@ import '../widgets/widgets.dart';
 import 'chat_detail_screen.dart';
 
 /// Chat List Screen
-/// 
+///
 /// Displays list of conversations in a cozy, home-style interface
 class ChatListScreen extends StatefulWidget {
   const ChatListScreen({super.key});
@@ -67,18 +67,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
           children: [
             Text(
               'Messages',
-              style: AppTextStyles.h2.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(width: 4),
           ],
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.cardGradient),
         child: Column(
           children: [
             // Search Bar
@@ -103,7 +99,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                     ),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                            icon: Icon(Icons.close, color: AppColors.textSecondary, size: 20),
+                            icon: Icon(
+                              Icons.close,
+                              color: AppColors.textSecondary,
+                              size: 20,
+                            ),
                             onPressed: () {
                               _searchController.clear();
                             },
@@ -133,7 +133,11 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.search_off, size: 56, color: AppColors.textSecondary.withOpacity(0.4)),
+                            Icon(
+                              Icons.search_off,
+                              size: 56,
+                              color: AppColors.textSecondary.withOpacity(0.4),
+                            ),
                             const SizedBox(height: 12),
                             Text(
                               'No conversations found',
@@ -145,37 +149,41 @@ class _ChatListScreenState extends State<ChatListScreen> {
                         ),
                       )
                     : ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  itemCount: _filteredConversations.length,
-                  itemBuilder: (context, index) {
-                    final conversation = _filteredConversations[index];
-                    return ConversationCard(
-                      conversation: conversation,
-                      onTap: () {
-                        // Mark as read when opening
-                        ChatMockData.markConversationAsRead(conversation.id);
-                        
-                        // Navigate to chat detail
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => ChatDetailScreen(
-                              conversation: conversation,
-                            ),
-                          ),
-                        ).then((_) {
-                          // Refresh list after returning to pick up any updates (nickname, etc.)
-                          setState(() {
-                            _loadConversations();
-                            _onSearchChanged(); // Reapply search filter if active
-                          });
-                        });
-                      },
-                    );
-                  },
-                ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        itemCount: _filteredConversations.length,
+                        itemBuilder: (context, index) {
+                          final conversation = _filteredConversations[index];
+                          return ConversationCard(
+                            conversation: conversation,
+                            onTap: () {
+                              // Mark as read when opening
+                              ChatMockData.markConversationAsRead(
+                                conversation.id,
+                              );
+
+                              // Navigate to chat detail
+                              Navigator.of(context)
+                                  .push(
+                                    MaterialPageRoute(
+                                      builder: (context) => ChatDetailScreen(
+                                        conversation: conversation,
+                                      ),
+                                    ),
+                                  )
+                                  .then((_) {
+                                    // Refresh list after returning to pick up any updates (nickname, etc.)
+                                    setState(() {
+                                      _loadConversations();
+                                      _onSearchChanged(); // Reapply search filter if active
+                                    });
+                                  });
+                            },
+                          );
+                        },
+                      ),
               ),
             ),
           ],

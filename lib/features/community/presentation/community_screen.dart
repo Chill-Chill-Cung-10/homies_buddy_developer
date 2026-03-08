@@ -3,6 +3,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/spinning_nav_button.dart';
 import '../mockdata/community_mock_data.dart';
+
 /// [Refactored] Phase 3.6 — Import notification from its own feature module
 import '../../notifications/data/notification_mock_data.dart';
 import '../mockdata/profile_mock_data.dart';
@@ -10,11 +11,12 @@ import 'widgets/social_post_card.dart';
 import 'widgets/comment_overlay.dart';
 import '../../notifications/presentation/screens/notification_screen.dart';
 import 'screens/personal_profile_screen.dart';
+import 'screens/create_post_screen.dart';
 import '../../chat/presentation/screens/chat_list_screen.dart';
 import '../../chat/mockdata/chat_mock_data.dart';
 
 /// Community Screen - Community Feed với Social Post Cards
-/// 
+///
 /// Hiển thị feed của các bài post từ community
 class CommunityScreen extends StatefulWidget {
   const CommunityScreen({super.key});
@@ -53,10 +55,12 @@ class _CommunityScreenState extends State<CommunityScreen> {
     });
 
     try {
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+      await Future.delayed(
+        const Duration(milliseconds: 500),
+      ); // Simulate network delay
       final allPosts = CommunityMockData.mockPosts;
       final initialPosts = allPosts.take(_postsPerPage).toList();
-      
+
       setState(() {
         _posts.addAll(initialPosts);
         _currentPage = 1;
@@ -79,13 +83,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
     });
 
     try {
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate network delay
+      await Future.delayed(
+        const Duration(milliseconds: 500),
+      ); // Simulate network delay
       final allPosts = CommunityMockData.mockPosts;
       final startIndex = _currentPage * _postsPerPage;
       final endIndex = startIndex + _postsPerPage;
-      
+
       final morePosts = allPosts.skip(startIndex).take(_postsPerPage).toList();
-      
+
       setState(() {
         _posts.addAll(morePosts);
         _currentPage++;
@@ -148,21 +154,13 @@ class _CommunityScreenState extends State<CommunityScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: const SpinningNavButton(
-          iconColor: AppColors.textPrimary,
-        ),
-        title: const Text(
-          'Feeds',
-          style: AppTextStyles.h2,
-        ),
+        leading: const SpinningNavButton(iconColor: AppColors.textPrimary),
+        title: const Text('Feeds', style: AppTextStyles.h2),
         backgroundColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(
-              Icons.search,
-              color: AppColors.iconColor,
-            ),
+            icon: const Icon(Icons.search, color: AppColors.iconColor),
             onPressed: () {
               // TODO: Implement search
             },
@@ -174,20 +172,19 @@ class _CommunityScreenState extends State<CommunityScreen> {
             textColor: Colors.white,
             offset: const Offset(-4, 4),
             child: IconButton(
-              icon: const Icon(
-                Icons.notifications,
-                color: AppColors.iconColor,
-              ),
+              icon: const Icon(Icons.notifications, color: AppColors.iconColor),
               onPressed: () {
                 // Navigate to Notification Screen
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationScreen(),
-                  ),
-                ).then((_) {
-                  // Refresh badge count after returning from notifications
-                  setState(() {});
-                });
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) => const NotificationScreen(),
+                      ),
+                    )
+                    .then((_) {
+                      // Refresh badge count after returning from notifications
+                      setState(() {});
+                    });
               },
             ),
           ),
@@ -204,23 +201,23 @@ class _CommunityScreenState extends State<CommunityScreen> {
               ),
               onPressed: () {
                 // Navigate to Chat List Screen
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const ChatListScreen(),
-                  ),
-                ).then((_) {
-                  // Refresh badge count after returning from chat
-                  setState(() {});
-                });
+                Navigator.of(context)
+                    .push(
+                      MaterialPageRoute(
+                        builder: (context) => const ChatListScreen(),
+                      ),
+                    )
+                    .then((_) {
+                      // Refresh badge count after returning from chat
+                      setState(() {});
+                    });
               },
             ),
           ),
         ],
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-        ),
+        decoration: BoxDecoration(gradient: AppColors.cardGradient),
         child: RefreshIndicator(
           color: AppColors.accentOrange,
           onRefresh: _refreshPosts,
@@ -232,7 +229,10 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 )
               : ListView.builder(
                   controller: _scrollController,
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 16,
+                  ),
                   itemCount: _posts.length + 1, // +1 for loading indicator
                   itemBuilder: (context, index) {
                     // Show loading indicator at bottom
@@ -302,13 +302,15 @@ class _CommunityScreenState extends State<CommunityScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Create new post
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreatePostScreen(),
+            ),
+          );
         },
         backgroundColor: AppColors.accentOrange,
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

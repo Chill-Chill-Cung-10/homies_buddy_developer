@@ -92,6 +92,8 @@ class _MomentsModalContentState extends State<MomentsModalContent> {
     // Tạo note mới và thêm vào đầu danh sách
     final newNote = MomentNote(
       id: 'note_${DateTime.now().millisecondsSinceEpoch}',
+      userId:
+          'user_current', // Current user ID - should come from auth provider
       authorName: 'Me',
       authorAvatarUrl: 'https://i.pravatar.cc/150?img=3',
       createdAt: DateTime.now(),
@@ -172,9 +174,7 @@ class _MomentsModalContentState extends State<MomentsModalContent> {
                     const SizedBox(height: 20),
                     const Divider(height: 1, color: AppColors.surfaceColor),
                     const SizedBox(height: 16),
-                    ..._postedNotes.map((note) => CardNoteItem(
-                      note: note,
-                    )),
+                    ..._postedNotes.map((note) => CardNoteItem(note: note)),
                   ],
                 ],
               ),
@@ -212,10 +212,7 @@ class _MomentsModalContentState extends State<MomentsModalContent> {
               controller: _textController,
               maxLines: 3,
               minLines: 1,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.brown.shade700,
-              ),
+              style: TextStyle(fontSize: 15, color: Colors.brown.shade700),
               decoration: InputDecoration(
                 hintText: widget.hintText,
                 hintStyle: TextStyle(
@@ -223,8 +220,10 @@ class _MomentsModalContentState extends State<MomentsModalContent> {
                   color: Colors.brown.shade400,
                 ),
                 border: InputBorder.none,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 15),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 15,
+                ),
                 isDense: true,
               ),
             ),

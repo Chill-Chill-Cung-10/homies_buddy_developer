@@ -4,16 +4,16 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 enum NotificationType {
   @JsonValue('react')
   react,
-  
+
   @JsonValue('comment')
   comment,
-  
+
   @JsonValue('follow')
   follow,
-  
+
   @JsonValue('mention')
   mention,
-  
+
   @JsonValue('share')
   share;
 

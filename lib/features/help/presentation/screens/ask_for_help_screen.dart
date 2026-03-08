@@ -12,7 +12,7 @@ import '../widgets/help_suggestion_card.dart';
 import '../widgets/conversation_history_sidebar.dart';
 import '../widgets/typing_animation_text.dart';
 
-/// Ask For Help Screen - Chat assistant with mascot, 
+/// Ask For Help Screen - Chat assistant with mascot,
 /// typing animation, help cards, and conversation history
 class AskForHelpScreen extends StatefulWidget {
   const AskForHelpScreen({super.key});
@@ -33,6 +33,14 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
   bool _isBotTyping = false;
   final List<HelpChatMessage> _messages = [];
   final List<String> _attachedImages = [];
+  late String _currentConversationId;
+
+  @override
+  void initState() {
+    super.initState();
+    // Generate a unique conversation ID for this chat session
+    _currentConversationId = 'conv_${DateTime.now().millisecondsSinceEpoch}';
+  }
 
   @override
   void dispose() {
@@ -49,6 +57,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
 
     final userMessage = HelpChatMessage(
       id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+      conversationId: _currentConversationId,
       text: text.trim(),
       isUser: true,
       timestamp: DateTime.now(),
@@ -70,6 +79,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
       if (!mounted) return;
       final botResponse = HelpChatMessage(
         id: 'msg_bot_${DateTime.now().millisecondsSinceEpoch}',
+        conversationId: _currentConversationId,
         text: HelpMockData.getBotResponse(text),
         isUser: false,
         timestamp: DateTime.now(),
@@ -89,6 +99,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
   void _loadConversation(HelpConversationHistory conversation) {
     setState(() {
       _isNewChat = false;
+      _currentConversationId = conversation.id;
       _messages.clear();
       _messages.addAll(conversation.messages);
     });
@@ -149,9 +160,17 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
                     color: AppColors.primaryGreen.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.camera_alt, color: AppColors.textPrimary),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-                title: Text('Take Photo', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w500)),
+                title: Text(
+                  'Take Photo',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -164,9 +183,17 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
                     color: AppColors.accentOrange.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.photo_library, color: AppColors.textPrimary),
+                  child: const Icon(
+                    Icons.photo_library,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
-                title: Text('Choose Image', style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w500)),
+                title: Text(
+                  'Choose Image',
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -193,9 +220,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
       ),
       backgroundColor: Colors.transparent,
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.backgroundGradient,
-        ),
+        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Column(
             children: [
@@ -221,9 +246,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
       ),
       child: Row(
         children: [
-          const SpinningNavButton(
-            iconColor: AppColors.textPrimary,
-          ),
+          const SpinningNavButton(iconColor: AppColors.textPrimary),
           const Expanded(
             child: Text(
               'Ask For Help',
@@ -277,10 +300,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: AppColors.surfaceColor,
-            border: Border.all(
-              color: AppColors.primaryPeach,
-              width: 1.5,
-            ),
+            border: Border.all(color: AppColors.primaryPeach, width: 1.5),
           ),
           child: const Center(
             child: Text('🌱', style: TextStyle(fontSize: 16)),
@@ -530,11 +550,7 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
             child: Stack(
               children: [
                 Center(
-                  child: Icon(
-                    Icons.image,
-                    color: AppColors.textHint,
-                    size: 28,
-                  ),
+                  child: Icon(Icons.image, color: AppColors.textHint, size: 28),
                 ),
                 Positioned(
                   top: 0,
@@ -552,7 +568,11 @@ class _AskForHelpScreenState extends State<AskForHelpScreen> {
                         color: AppColors.errorRed,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, size: 12, color: Colors.white),
+                      child: const Icon(
+                        Icons.close,
+                        size: 12,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -589,9 +609,10 @@ class _BouncingDotsState extends State<_BouncingDots>
     });
 
     _animations = _controllers.map((controller) {
-      return Tween<double>(begin: 0, end: -6).animate(
-        CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-      );
+      return Tween<double>(
+        begin: 0,
+        end: -6,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
     }).toList();
 
     // Stagger the animations

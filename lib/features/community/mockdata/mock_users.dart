@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.5 — Extracted from profile_mock_data.dart
 /// Mock user data: UserModel definitions + lookup
 library;
+
 import '../../../data/models/user_model.dart';
 import 'mock_user_posts.dart';
 
@@ -12,8 +13,9 @@ class MockUsers {
 
   /// Lấy UserModel theo username (cho mention tap)
   static UserModel? getUserByUsername(String username) {
-    final cleanUsername =
-        username.startsWith('@') ? username.substring(1) : username;
+    final cleanUsername = username.startsWith('@')
+        ? username.substring(1)
+        : username;
     try {
       return usersMap.values.firstWhere(
         (user) => user.username.toLowerCase() == cleanUsername.toLowerCase(),
@@ -31,8 +33,6 @@ class MockUsers {
       fullName: 'Unknown User',
       avatarUrl: 'https://picsum.photos/150/150?random=999',
       coverUrl: 'https://picsum.photos/800/1200?random=999',
-      headline: 'Welcome',
-      bio: 'Hello world!',
       location: 'Unknown',
       followerCount: 0,
       followingCount: 0,
@@ -47,8 +47,6 @@ class MockUsers {
     fullName: 'Jack Roserna',
     avatarUrl: 'https://picsum.photos/150/150?random=301',
     coverUrl: 'https://picsum.photos/800/1200?random=301',
-    headline: 'ADVENTURE SEEKER',
-    bio: 'Life is short, explore the world with your furry friends!',
     location: 'New York, USA',
     followerCount: 3200,
     followingCount: 180,
@@ -61,8 +59,6 @@ class MockUsers {
     fullName: 'Haiia Nguyen',
     avatarUrl: 'https://picsum.photos/150/150?random=302',
     coverUrl: 'https://picsum.photos/800/1200?random=302',
-    headline: 'PET LOVER',
-    bio: 'Spreading love one paw at a time.',
     location: 'Ho Chi Minh, Vietnam',
     followerCount: 1499,
     followingCount: 220,
@@ -75,9 +71,6 @@ class MockUsers {
     fullName: 'Homies Buddy Official',
     avatarUrl: 'https://picsum.photos/150/150?random=401',
     coverUrl: 'https://picsum.photos/800/1200?random=401',
-    headline: 'CONNECTING PETS',
-    bio:
-        'Official Homies Buddy account. Building community for pet lovers worldwide.',
     location: 'Global',
     followerCount: 25000,
     followingCount: 500,
@@ -90,8 +83,6 @@ class MockUsers {
     fullName: 'Buddy',
     avatarUrl: 'https://picsum.photos/150/150?random=402',
     coverUrl: 'https://picsum.photos/800/1200?random=402',
-    headline: 'GOOD BOY',
-    bio: 'Just a good boy living my best life!',
     location: 'Everywhere',
     followerCount: 8500,
     followingCount: 150,
@@ -106,9 +97,6 @@ class MockUsers {
       fullName: 'Salahhh Home',
       avatarUrl: 'https://picsum.photos/800/450?random=10',
       coverUrl: 'https://picsum.photos/800/1200?random=10',
-      headline: 'YOGA IN LIFE',
-      bio:
-          'To the degree that we look clearly and compassionately at ourselves, we feel confident and fearless about looking into someone else\'s eyes.',
       location: 'California, USA',
       humanBuddies: [jackUser, haiiaUser],
       followerCount: 1499,
@@ -122,8 +110,6 @@ class MockUsers {
       fullName: 'Buddy the Golden',
       avatarUrl: 'https://picsum.photos/150/150?random=102',
       coverUrl: 'https://picsum.photos/800/1200?random=20',
-      headline: 'GOLDEN DAYS',
-      bio: 'Living my best life with my hooman. Fetch is life!',
       location: 'Texas, USA',
       humanBuddies: [jackUser],
       followerCount: 2100,
@@ -137,8 +123,6 @@ class MockUsers {
       fullName: 'Luna & Max',
       avatarUrl: 'https://picsum.photos/150/150?random=103',
       coverUrl: 'https://picsum.photos/800/1200?random=30',
-      headline: 'BEST FRIENDS',
-      bio: 'Two paws, one heart. Adventures and naps together.',
       location: 'London, UK',
       humanBuddies: [haiiaUser],
       followerCount: 8700,
@@ -152,8 +136,6 @@ class MockUsers {
       fullName: 'Charlie the Corgi',
       avatarUrl: 'https://picsum.photos/150/150?random=104',
       coverUrl: 'https://picsum.photos/800/1200?random=40',
-      headline: 'CORGI LIFE',
-      bio: 'Short legs, big heart. Trained and fabulous!',
       location: 'Sydney, Australia',
       humanBuddies: [jackUser, haiiaUser],
       followerCount: 1500,
@@ -167,8 +149,6 @@ class MockUsers {
       fullName: 'Milo the Cat',
       avatarUrl: 'https://picsum.photos/150/150?random=105',
       coverUrl: 'https://picsum.photos/800/1200?random=50',
-      headline: 'NAP KING',
-      bio: 'Professional napper. Part-time food taster.',
       location: 'Tokyo, Japan',
       humanBuddies: [],
       followerCount: 950,

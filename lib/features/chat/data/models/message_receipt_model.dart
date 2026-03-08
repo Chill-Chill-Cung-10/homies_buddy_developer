@@ -1,30 +1,32 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'message_receipt_model.freezed.dart';
+part 'message_receipt_model.g.dart';
+
 /// Message Receipt Model
-/// 
+///
 /// Tracks when a message was delivered and seen by a user
-class MessageReceipt {
-  final String messageId;
-  final String userId;
-  final DateTime? deliveredAt;
-  final DateTime? seenAt;
-
-  const MessageReceipt({
-    required this.messageId,
-    required this.userId,
-    this.deliveredAt,
-    this.seenAt,
-  });
-
-  MessageReceipt copyWith({
-    String? messageId,
-    String? userId,
+@freezed
+abstract class MessageReceipt with _$MessageReceipt {
+  const factory MessageReceipt({
+    required String messageId,
+    required String userId,
     DateTime? deliveredAt,
     DateTime? seenAt,
-  }) {
-    return MessageReceipt(
-      messageId: messageId ?? this.messageId,
-      userId: userId ?? this.userId,
-      deliveredAt: deliveredAt ?? this.deliveredAt,
-      seenAt: seenAt ?? this.seenAt,
-    );
-  }
+  }) = _MessageReceipt;
+
+  factory MessageReceipt.fromJson(Map<String, dynamic> json) =>
+      _$MessageReceiptFromJson(json);
+}
+
+/// Extension để thêm các helper methods
+extension MessageReceiptX on MessageReceipt {
+  /// Kiểm tra xem message đã delivered chưa
+  bool get isDelivered => deliveredAt != null;
+
+  /// Kiểm tra xem message đã seen chưa
+  bool get isSeen => seenAt != null;
+
+  /// Composite ID để tracking
+  String get compositeId => '$messageId:$userId';
 }

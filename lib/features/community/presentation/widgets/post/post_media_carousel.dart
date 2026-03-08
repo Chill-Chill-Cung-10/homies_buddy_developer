@@ -1,6 +1,7 @@
 /// [Refactored] Phase 3.2 — Extracted from social_post_card.dart
 /// Media carousel: single image, video thumbnail, or multi-image carousel
 library;
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -11,10 +12,7 @@ import '../../../../../data/models/media_file_model.dart';
 class PostMediaCarousel extends StatefulWidget {
   final List<MediaFile> mediaFiles;
 
-  const PostMediaCarousel({
-    super.key,
-    required this.mediaFiles,
-  });
+  const PostMediaCarousel({super.key, required this.mediaFiles});
 
   @override
   State<PostMediaCarousel> createState() => _PostMediaCarouselState();
@@ -107,7 +105,11 @@ class _PostMediaCarouselState extends State<PostMediaCarousel> {
                 color: Colors.black.withValues(alpha: 0.6),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
+              child: const Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 32,
+              ),
             ),
           ),
           if (media.durationSeconds != null)

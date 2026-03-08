@@ -19,8 +19,8 @@ class NavigationProvider extends InheritedWidget {
   /// Obtain the nearest [NavigationProvider] ancestor.
   /// Throws if none is found.
   static NavigationProvider of(BuildContext context) {
-    final result =
-        context.dependOnInheritedWidgetOfExactType<NavigationProvider>();
+    final result = context
+        .dependOnInheritedWidgetOfExactType<NavigationProvider>();
     assert(result != null, 'No NavigationProvider found in context');
     return result!;
   }

@@ -1,7 +1,7 @@
 import '../data/models/models.dart';
 
 /// Chat Mock Data
-/// 
+///
 /// Provides sample data for conversations and messages
 class ChatMockData {
   // Current user ID
@@ -107,7 +107,8 @@ class ChatMockData {
       id: 'msg_05',
       conversationId: 'conv_01',
       senderId: 'user_01',
-      content: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400',
+      content:
+          'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400',
       type: MessageType.image,
       createdAt: DateTime.now().subtract(const Duration(hours: 2, minutes: 40)),
       status: MessageStatus.seen,

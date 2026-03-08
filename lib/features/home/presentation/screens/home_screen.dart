@@ -47,17 +47,16 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // ── Background crossfade ──
           Positioned.fill(
-            child: ImageBackgroundWidget(
-              timeOfDay: _currentTimeOfDay,
-            ),
+            child: ImageBackgroundWidget(timeOfDay: _currentTimeOfDay),
           ),
 
           // ── Pet Animation (thay Image.asset bằng PetAnimationWidget) ──
           Positioned(
             left: 0,
             right: 0,
-            top: screenSize.height * 0.38,
-            child: Center(
+            top: screenSize.height * 0.6,
+            child: Align(
+              alignment: const Alignment(0.54, 0), // Dịch sang phải một chút
               child: PetAnimationWidget(
                 // Đổi animation theo mood hiện tại
                 animation: PetAnimation.state(_moodToState[_currentMood]!),
@@ -85,7 +84,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   margin: const EdgeInsets.only(top: 17),
                   child: IconButton(
-                    icon: const Icon(Icons.grid_view_rounded, color: Colors.white),
+                    icon: const Icon(
+                      Icons.grid_view_rounded,
+                      color: Colors.white,
+                    ),
                     onPressed: () {},
                   ),
                 ),
@@ -175,7 +177,9 @@ class _TimeButton extends StatelessWidget {
               : Colors.white.withOpacity(0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isActive ? AppColors.accentOrange : Colors.white.withOpacity(0.5),
+            color: isActive
+                ? AppColors.accentOrange
+                : Colors.white.withOpacity(0.5),
             width: isActive ? 2 : 1,
           ),
           boxShadow: isActive

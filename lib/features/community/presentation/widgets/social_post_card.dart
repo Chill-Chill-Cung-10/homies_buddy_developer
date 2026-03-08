@@ -18,10 +18,13 @@ class SocialPostCard extends StatelessWidget {
   final VoidCallback? onComment;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onPostTap;
+
   /// Callback when author name is tapped
   final VoidCallback? onAuthorNameTap;
+
   /// Callback when a mention is tapped, receives the mention string (e.g. '@haiia')
   final ValueChanged<String>? onMentionTap;
+
   /// When true, the comment button is highlighted (e.g. in comment overlay mode)
   /// and its tap interaction is disabled
   final bool isCommentHighlighted;
@@ -65,7 +68,8 @@ class SocialPostCard extends StatelessWidget {
           ),
 
           // Content Text
-          if (post.contentText.isNotEmpty) PostContent(contentText: post.contentText),
+          if (post.contentText.isNotEmpty)
+            PostContent(contentText: post.contentText),
 
           // Media (Image/Video/Album)
           if (post.hasMedia) PostMediaCarousel(mediaFiles: post.mediaFiles),

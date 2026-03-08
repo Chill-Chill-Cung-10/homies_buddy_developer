@@ -1,8 +1,8 @@
 /// Message Type Enum
-/// 
+///
 /// Represents the type of content in a message
 enum MessageType {
-  text,  // Text message
+  text, // Text message
   image, // Image message
 }
 

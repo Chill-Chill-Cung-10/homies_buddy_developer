@@ -6,12 +6,13 @@ part 'register_request.g.dart';
 
 /// Register Request Model - Dữ liệu gửi lên server khi đăng ký
 @freezed
-class RegisterRequest with _$RegisterRequest {
+abstract class RegisterRequest with _$RegisterRequest {
   const factory RegisterRequest({
     required String email,
     required String password,
     required String confirmPassword,
     required String fullName,
+    required String username,
     String? phoneNumber,
     @Default(false) bool acceptTerms,
   }) = _RegisterRequest;
@@ -43,6 +44,22 @@ extension RegisterRequestX on RegisterRequest {
     }
     if (fullName.length < 2) {
       return 'Họ tên phải có ít nhất 2 ký tự';
+    }
+    return null;
+  }
+
+  /// Validate username
+  String? validateUsername() {
+    if (username.isEmpty) {
+      return 'Username không được để trống';
+    }
+    if (username.length < 3) {
+      return 'Username phải có ít nhất 3 ký tự';
+    }
+    // Username chỉ chứa chữ, số, underscore và dấu chấm
+    final usernameRegex = RegExp(r'^[a-zA-Z0-9_.]+$');
+    if (!usernameRegex.hasMatch(username)) {
+      return 'Username chỉ được chứa chữ, số, dấu chấm và gạch dưới';
     }
     return null;
   }
@@ -101,6 +118,7 @@ extension RegisterRequestX on RegisterRequest {
   bool get isValid {
     return validateEmail() == null &&
         validateFullName() == null &&
+        validateUsername() == null &&
         validatePassword() == null &&
         validateConfirmPassword() == null &&
         validatePhoneNumber() == null &&

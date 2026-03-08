@@ -62,10 +62,7 @@ class MediaGridItem extends StatelessWidget {
                     ),
                   ),
                 )
-              : Image.file(
-                  File(file.path),
-                  fit: BoxFit.cover,
-                ),
+              : Image.file(File(file.path), fit: BoxFit.cover),
         ),
         if (showRemoveButton)
           Positioned(

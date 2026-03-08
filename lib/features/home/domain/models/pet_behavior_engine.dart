@@ -17,40 +17,32 @@ import 'dart:math' as math;
 
 /// Các hành vi có thể có của pet (giới hạn 8 trạng thái)
 enum PetBehavior {
-  sleep,      // Ngủ (năng lượng thấp)
-  happy,      // Vui vẻ
-  tired,      // Mệt mỏi
-  idle,       // Đứng im, quan sát
-  sad,        // Buồn (phản ứng với user tone)
-  lookAway,   // Quay đi (bị bỏ rơi lâu)
-  curious,    // Tò mò
-  startled,   // Giật mình, lo lắng
+  sleep, // Ngủ (năng lượng thấp)
+  happy, // Vui vẻ
+  tired, // Mệt mỏi
+  idle, // Đứng im, quan sát
+  sad, // Buồn (phản ứng với user tone)
+  lookAway, // Quay đi (bị bỏ rơi lâu)
+  curious, // Tò mò
+  startled, // Giật mình, lo lắng
 }
 
 /// Personality archetype - quyết định tốc độ suy giảm năng lượng
 enum PersonalityType {
-  lazy,   // λ = 0.035 - decay nhanh nhất
-  calm,   // λ = 0.020 - decay trung bình
-  hyper,  // λ = 0.010 - decay chậm nhất
+  lazy, // λ = 0.035 - decay nhanh nhất
+  calm, // λ = 0.020 - decay trung bình
+  hyper, // λ = 0.010 - decay chậm nhất
 }
 
 /// Cảm xúc của user (từ AI phân tích note)
-enum UserTone {
-  verySad,
-  sad,
-  anxious,
-  angry,
-  neutral,
-  happy,
-  veryHappy,
-}
+enum UserTone { verySad, sad, anxious, angry, neutral, happy, veryHappy }
 
 /// Xu hướng cảm xúc của user theo thời gian
 enum EmotionalTrend {
-  improving,  // Đang tốt lên
-  declining,  // Đang tồi đi
-  volatile,   // Thất thường
-  stable,     // Ổn định
+  improving, // Đang tốt lên
+  declining, // Đang tồi đi
+  volatile, // Thất thường
+  stable, // Ổn định
 }
 
 // ────────────────────────────────────────────────────────────
@@ -158,7 +150,7 @@ class EnergyDecayEngine {
   static double getCircadianModifier(int hour) {
     // Bảng modifier theo giờ
     if (hour >= 0 && hour <= 5) return -0.28; // Ngủ sâu ban đêm
-    if (hour >= 6 && hour <= 8) return 0.12;  // Thức dậy buổi sáng
+    if (hour >= 6 && hour <= 8) return 0.12; // Thức dậy buổi sáng
     if (hour >= 9 && hour <= 11) return 0.05; // Buổi sáng bình thường
     if (hour >= 12 && hour <= 14) return -0.18; // Ngủ trưa
     if (hour >= 15 && hour <= 17) return 0.10; // Chiều tích cực
@@ -168,7 +160,7 @@ class EnergyDecayEngine {
   }
 
   /// Tính toán năng lượng hiện tại của pet
-  /// 
+  ///
   /// Formula: E(t) = E₀ × e^(-λt) + circadian + noise
   /// - E₀: baseline energy
   /// - λ: decay rate (phụ thuộc personality)
@@ -208,9 +200,7 @@ class EnergyDecayEngine {
 class BehaviorWeightEngine {
   /// Khởi tạo weights mặc định cho tất cả behaviors
   static Map<PetBehavior, double> _initializeWeights() {
-    return {
-      for (var behavior in PetBehavior.values) behavior: 1.0,
-    };
+    return {for (var behavior in PetBehavior.values) behavior: 1.0};
   }
 
   /// Factor 1: Personality - ảnh hưởng từ tính cách bẩm sinh
@@ -355,10 +345,7 @@ class BehaviorWeightEngine {
   }
 
   /// Factor 6: Streak - số ngày liên tiếp viết note
-  static void _applyStreakFactor(
-    Map<PetBehavior, double> weights,
-    int streak,
-  ) {
+  static void _applyStreakFactor(Map<PetBehavior, double> weights, int streak) {
     if (streak >= 30) {
       // Rất thân thiết
       weights[PetBehavior.happy] = weights[PetBehavior.happy]! * 1.8;
@@ -370,10 +357,7 @@ class BehaviorWeightEngine {
   }
 
   /// Factor 7: Visits Today - số lần truy cập hôm nay
-  static void _applyVisitsFactor(
-    Map<PetBehavior, double> weights,
-    int visits,
-  ) {
+  static void _applyVisitsFactor(Map<PetBehavior, double> weights, int visits) {
     if (visits >= 5) {
       // Quá nhiều lần - hơi mệt mỏi
       weights[PetBehavior.lookAway] = weights[PetBehavior.lookAway]! * 1.8;
@@ -438,7 +422,8 @@ class BehaviorModifierEngine {
     UserContext userContext,
   ) {
     // Chỉ áp dụng khi user rất buồn hoặc lo lắng VÀ severity cao
-    final isVeryDistressed = (userContext.currentTone == UserTone.verySad ||
+    final isVeryDistressed =
+        (userContext.currentTone == UserTone.verySad ||
             userContext.currentTone == UserTone.anxious) &&
         userContext.severityLevel >= 4;
 
@@ -478,7 +463,7 @@ class PetBehaviorEngine {
   }
 
   /// Main pipeline: Quyết định hành vi tiếp theo của pet
-  /// 
+  ///
   /// Returns: (behavior, energy, weights) để debug/logging
   (PetBehavior, double, Map<PetBehavior, double>) decideBehavior({
     required PetState pet,

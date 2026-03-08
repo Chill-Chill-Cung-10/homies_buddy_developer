@@ -75,12 +75,7 @@ class ConversationHistorySidebar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Text(
-            'History',
-            style: AppTextStyles.h2.copyWith(
-              fontSize: 20,
-            ),
-          ),
+          Text('History', style: AppTextStyles.h2.copyWith(fontSize: 20)),
           const Spacer(),
           GestureDetector(
             onTap: () => Navigator.of(context).pop(),
@@ -112,9 +107,7 @@ class ConversationHistorySidebar extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               'Start chatting to see history',
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.textHint,
-              ),
+              style: AppTextStyles.caption.copyWith(color: AppColors.textHint),
             ),
           ],
         ),
@@ -173,10 +166,7 @@ class _ConversationTile extends StatelessWidget {
   final HelpConversationHistory conversation;
   final VoidCallback onTap;
 
-  const _ConversationTile({
-    required this.conversation,
-    required this.onTap,
-  });
+  const _ConversationTile({required this.conversation, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

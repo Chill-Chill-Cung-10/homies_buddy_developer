@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../providers/auth_providers.dart';
 import '../widgets/auth_input_field.dart';
 import '../widgets/auth_submit_button.dart';
 
-/// [Refactored] Phase 2.1 — Sử dụng AuthInputField, AuthSubmitButton.
-/// Forgot Password Screen
-/// Màn hình để người dùng yêu cầu reset password qua email
-class ForgotPasswordScreen extends StatefulWidget {
+/// [Refactored] Phase 2.1 — Forgot Password Screen with Firebase Auth integration
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   bool _isLoading = false;
@@ -39,24 +40,27 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return null;
   }
 
-  /// Handle send reset link  
+  /// Handle send reset link
   Future<void> _handleSendResetLink() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) return;
 
-      // TODO: Integrate with service layer
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+    setState(() => _isLoading = true);
 
-      setState(() {
-        _isLoading = false;
-      });
+    final authActions = ref.read(authActionsProvider);
+    final success = await authActions.sendPasswordReset(_emailController.text.trim());
 
-      if (mounted) {
-        // Show success dialog
+    setState(() => _isLoading = false);
+
+    if (mounted) {
+      if (success) {
         _showSuccessDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to send reset email. Please try again.'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
       }
     }
   }
@@ -67,13 +71,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppShapes.button,
-        ),
-        title: const Text(
-          'Email Sent!',
-          style: AppTextStyles.h3,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
+        title: const Text('Email Sent!', style: AppTextStyles.h3),
         content: Text(
           'We\'ve sent a password reset link to ${_emailController.text}. Please check your email.',
           style: AppTextStyles.bodyMedium,
@@ -84,10 +83,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               Navigator.of(context).pop();
               Navigator.of(context).pop(); // Back to login
             },
-            child: const Text(
-              'OK',
-              style: AppTextStyles.buttonMedium,
-            ),
+            child: const Text('OK', style: AppTextStyles.buttonMedium),
           ),
         ],
       ),
@@ -102,16 +98,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         backgroundColor: AppColors.backgroundLight,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: AppColors.textPrimary,
-          ),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Forgot Password',
-          style: AppTextStyles.h3,
-        ),
+        title: const Text('Forgot Password', style: AppTextStyles.h3),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -183,8 +173,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 const SizedBox(height: AppSpacing.l),
 
                 // Back to Login
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Text(
                       'Remember your password?',

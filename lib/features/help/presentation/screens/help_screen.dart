@@ -18,10 +18,7 @@ class HelpScreen extends StatelessWidget {
             // TODO: Handle back navigation if needed
           },
         ),
-        title: const Text(
-          'Ask For Help',
-          style: AppTextStyles.h2,
-        ),
+        title: const Text('Ask For Help', style: AppTextStyles.h2),
         backgroundColor: AppColors.backgroundLight,
         elevation: 0,
       ),
@@ -29,16 +26,9 @@ class HelpScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.help_outline,
-              size: 80,
-              color: AppColors.accentOrange,
-            ),
+            Icon(Icons.help_outline, size: 80, color: AppColors.accentOrange),
             const SizedBox(height: 24),
-            Text(
-              'Help Screen',
-              style: AppTextStyles.h1,
-            ),
+            Text('Help Screen', style: AppTextStyles.h1),
             const SizedBox(height: 16),
             Text(
               'Help cards and mascot will be implemented here',
@@ -46,10 +36,7 @@ class HelpScreen extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            Text(
-              '(Phase 5 - Help Screen)',
-              style: AppTextStyles.caption,
-            ),
+            Text('(Phase 5 - Help Screen)', style: AppTextStyles.caption),
           ],
         ),
       ),

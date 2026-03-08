@@ -1,5 +1,5 @@
-// coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// coverage:ignore-file
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
@@ -9,288 +9,287 @@ part of 'register_request.dart';
 // FreezedGenerator
 // **************************************************************************
 
+// dart format off
 T _$identity<T>(T value) => value;
-
-final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
-);
-
-RegisterRequest _$RegisterRequestFromJson(Map<String, dynamic> json) {
-  return _RegisterRequest.fromJson(json);
-}
 
 /// @nodoc
 mixin _$RegisterRequest {
-  String get email => throw _privateConstructorUsedError;
-  String get password => throw _privateConstructorUsedError;
-  String get confirmPassword => throw _privateConstructorUsedError;
-  String get fullName => throw _privateConstructorUsedError;
-  String? get phoneNumber => throw _privateConstructorUsedError;
-  bool get acceptTerms => throw _privateConstructorUsedError;
+
+ String get email; String get password; String get confirmPassword; String get fullName; String get username; String? get phoneNumber; bool get acceptTerms;
+/// Create a copy of RegisterRequest
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RegisterRequestCopyWith<RegisterRequest> get copyWith => _$RegisterRequestCopyWithImpl<RegisterRequest>(this as RegisterRequest, _$identity);
 
   /// Serializes this RegisterRequest to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+  Map<String, dynamic> toJson();
 
-  /// Create a copy of RegisterRequest
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $RegisterRequestCopyWith<RegisterRequest> get copyWith =>
-      throw _privateConstructorUsedError;
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RegisterRequest&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password)&&(identical(other.confirmPassword, confirmPassword) || other.confirmPassword == confirmPassword)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.username, username) || other.username == username)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.acceptTerms, acceptTerms) || other.acceptTerms == acceptTerms));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,email,password,confirmPassword,fullName,username,phoneNumber,acceptTerms);
+
+@override
+String toString() {
+  return 'RegisterRequest(email: $email, password: $password, confirmPassword: $confirmPassword, fullName: $fullName, username: $username, phoneNumber: $phoneNumber, acceptTerms: $acceptTerms)';
+}
+
+
 }
 
 /// @nodoc
-abstract class $RegisterRequestCopyWith<$Res> {
-  factory $RegisterRequestCopyWith(
-    RegisterRequest value,
-    $Res Function(RegisterRequest) then,
-  ) = _$RegisterRequestCopyWithImpl<$Res, RegisterRequest>;
-  @useResult
-  $Res call({
-    String email,
-    String password,
-    String confirmPassword,
-    String fullName,
-    String? phoneNumber,
-    bool acceptTerms,
-  });
-}
+abstract mixin class $RegisterRequestCopyWith<$Res>  {
+  factory $RegisterRequestCopyWith(RegisterRequest value, $Res Function(RegisterRequest) _then) = _$RegisterRequestCopyWithImpl;
+@useResult
+$Res call({
+ String email, String password, String confirmPassword, String fullName, String username, String? phoneNumber, bool acceptTerms
+});
 
+
+
+
+}
 /// @nodoc
-class _$RegisterRequestCopyWithImpl<$Res, $Val extends RegisterRequest>
+class _$RegisterRequestCopyWithImpl<$Res>
     implements $RegisterRequestCopyWith<$Res> {
-  _$RegisterRequestCopyWithImpl(this._value, this._then);
+  _$RegisterRequestCopyWithImpl(this._self, this._then);
 
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
+  final RegisterRequest _self;
+  final $Res Function(RegisterRequest) _then;
 
-  /// Create a copy of RegisterRequest
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? email = null,
-    Object? password = null,
-    Object? confirmPassword = null,
-    Object? fullName = null,
-    Object? phoneNumber = freezed,
-    Object? acceptTerms = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            email: null == email
-                ? _value.email
-                : email // ignore: cast_nullable_to_non_nullable
-                      as String,
-            password: null == password
-                ? _value.password
-                : password // ignore: cast_nullable_to_non_nullable
-                      as String,
-            confirmPassword: null == confirmPassword
-                ? _value.confirmPassword
-                : confirmPassword // ignore: cast_nullable_to_non_nullable
-                      as String,
-            fullName: null == fullName
-                ? _value.fullName
-                : fullName // ignore: cast_nullable_to_non_nullable
-                      as String,
-            phoneNumber: freezed == phoneNumber
-                ? _value.phoneNumber
-                : phoneNumber // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            acceptTerms: null == acceptTerms
-                ? _value.acceptTerms
-                : acceptTerms // ignore: cast_nullable_to_non_nullable
-                      as bool,
-          )
-          as $Val,
-    );
-  }
+/// Create a copy of RegisterRequest
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? email = null,Object? password = null,Object? confirmPassword = null,Object? fullName = null,Object? username = null,Object? phoneNumber = freezed,Object? acceptTerms = null,}) {
+  return _then(_self.copyWith(
+email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,confirmPassword: null == confirmPassword ? _self.confirmPassword : confirmPassword // ignore: cast_nullable_to_non_nullable
+as String,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String?,acceptTerms: null == acceptTerms ? _self.acceptTerms : acceptTerms // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
 }
 
-/// @nodoc
-abstract class _$$RegisterRequestImplCopyWith<$Res>
-    implements $RegisterRequestCopyWith<$Res> {
-  factory _$$RegisterRequestImplCopyWith(
-    _$RegisterRequestImpl value,
-    $Res Function(_$RegisterRequestImpl) then,
-  ) = __$$RegisterRequestImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    String email,
-    String password,
-    String confirmPassword,
-    String fullName,
-    String? phoneNumber,
-    bool acceptTerms,
-  });
 }
 
-/// @nodoc
-class __$$RegisterRequestImplCopyWithImpl<$Res>
-    extends _$RegisterRequestCopyWithImpl<$Res, _$RegisterRequestImpl>
-    implements _$$RegisterRequestImplCopyWith<$Res> {
-  __$$RegisterRequestImplCopyWithImpl(
-    _$RegisterRequestImpl _value,
-    $Res Function(_$RegisterRequestImpl) _then,
-  ) : super(_value, _then);
 
-  /// Create a copy of RegisterRequest
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? email = null,
-    Object? password = null,
-    Object? confirmPassword = null,
-    Object? fullName = null,
-    Object? phoneNumber = freezed,
-    Object? acceptTerms = null,
-  }) {
-    return _then(
-      _$RegisterRequestImpl(
-        email: null == email
-            ? _value.email
-            : email // ignore: cast_nullable_to_non_nullable
-                  as String,
-        password: null == password
-            ? _value.password
-            : password // ignore: cast_nullable_to_non_nullable
-                  as String,
-        confirmPassword: null == confirmPassword
-            ? _value.confirmPassword
-            : confirmPassword // ignore: cast_nullable_to_non_nullable
-                  as String,
-        fullName: null == fullName
-            ? _value.fullName
-            : fullName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        phoneNumber: freezed == phoneNumber
-            ? _value.phoneNumber
-            : phoneNumber // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        acceptTerms: null == acceptTerms
-            ? _value.acceptTerms
-            : acceptTerms // ignore: cast_nullable_to_non_nullable
-                  as bool,
-      ),
-    );
-  }
+/// Adds pattern-matching-related methods to [RegisterRequest].
+extension RegisterRequestPatterns on RegisterRequest {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _RegisterRequest value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _RegisterRequest() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _RegisterRequest value)  $default,){
+final _that = this;
+switch (_that) {
+case _RegisterRequest():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _RegisterRequest value)?  $default,){
+final _that = this;
+switch (_that) {
+case _RegisterRequest() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String email,  String password,  String confirmPassword,  String fullName,  String username,  String? phoneNumber,  bool acceptTerms)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _RegisterRequest() when $default != null:
+return $default(_that.email,_that.password,_that.confirmPassword,_that.fullName,_that.username,_that.phoneNumber,_that.acceptTerms);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String email,  String password,  String confirmPassword,  String fullName,  String username,  String? phoneNumber,  bool acceptTerms)  $default,) {final _that = this;
+switch (_that) {
+case _RegisterRequest():
+return $default(_that.email,_that.password,_that.confirmPassword,_that.fullName,_that.username,_that.phoneNumber,_that.acceptTerms);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String email,  String password,  String confirmPassword,  String fullName,  String username,  String? phoneNumber,  bool acceptTerms)?  $default,) {final _that = this;
+switch (_that) {
+case _RegisterRequest() when $default != null:
+return $default(_that.email,_that.password,_that.confirmPassword,_that.fullName,_that.username,_that.phoneNumber,_that.acceptTerms);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$RegisterRequestImpl implements _RegisterRequest {
-  const _$RegisterRequestImpl({
-    required this.email,
-    required this.password,
-    required this.confirmPassword,
-    required this.fullName,
-    this.phoneNumber,
-    this.acceptTerms = false,
-  });
 
-  factory _$RegisterRequestImpl.fromJson(Map<String, dynamic> json) =>
-      _$$RegisterRequestImplFromJson(json);
+class _RegisterRequest implements RegisterRequest {
+  const _RegisterRequest({required this.email, required this.password, required this.confirmPassword, required this.fullName, required this.username, this.phoneNumber, this.acceptTerms = false});
+  factory _RegisterRequest.fromJson(Map<String, dynamic> json) => _$RegisterRequestFromJson(json);
 
-  @override
-  final String email;
-  @override
-  final String password;
-  @override
-  final String confirmPassword;
-  @override
-  final String fullName;
-  @override
-  final String? phoneNumber;
-  @override
-  @JsonKey()
-  final bool acceptTerms;
+@override final  String email;
+@override final  String password;
+@override final  String confirmPassword;
+@override final  String fullName;
+@override final  String username;
+@override final  String? phoneNumber;
+@override@JsonKey() final  bool acceptTerms;
 
-  @override
-  String toString() {
-    return 'RegisterRequest(email: $email, password: $password, confirmPassword: $confirmPassword, fullName: $fullName, phoneNumber: $phoneNumber, acceptTerms: $acceptTerms)';
-  }
+/// Create a copy of RegisterRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$RegisterRequestCopyWith<_RegisterRequest> get copyWith => __$RegisterRequestCopyWithImpl<_RegisterRequest>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$RegisterRequestImpl &&
-            (identical(other.email, email) || other.email == email) &&
-            (identical(other.password, password) ||
-                other.password == password) &&
-            (identical(other.confirmPassword, confirmPassword) ||
-                other.confirmPassword == confirmPassword) &&
-            (identical(other.fullName, fullName) ||
-                other.fullName == fullName) &&
-            (identical(other.phoneNumber, phoneNumber) ||
-                other.phoneNumber == phoneNumber) &&
-            (identical(other.acceptTerms, acceptTerms) ||
-                other.acceptTerms == acceptTerms));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    email,
-    password,
-    confirmPassword,
-    fullName,
-    phoneNumber,
-    acceptTerms,
-  );
-
-  /// Create a copy of RegisterRequest
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$RegisterRequestImplCopyWith<_$RegisterRequestImpl> get copyWith =>
-      __$$RegisterRequestImplCopyWithImpl<_$RegisterRequestImpl>(
-        this,
-        _$identity,
-      );
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$RegisterRequestImplToJson(this);
-  }
+@override
+Map<String, dynamic> toJson() {
+  return _$RegisterRequestToJson(this, );
 }
 
-abstract class _RegisterRequest implements RegisterRequest {
-  const factory _RegisterRequest({
-    required final String email,
-    required final String password,
-    required final String confirmPassword,
-    required final String fullName,
-    final String? phoneNumber,
-    final bool acceptTerms,
-  }) = _$RegisterRequestImpl;
-
-  factory _RegisterRequest.fromJson(Map<String, dynamic> json) =
-      _$RegisterRequestImpl.fromJson;
-
-  @override
-  String get email;
-  @override
-  String get password;
-  @override
-  String get confirmPassword;
-  @override
-  String get fullName;
-  @override
-  String? get phoneNumber;
-  @override
-  bool get acceptTerms;
-
-  /// Create a copy of RegisterRequest
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$RegisterRequestImplCopyWith<_$RegisterRequestImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _RegisterRequest&&(identical(other.email, email) || other.email == email)&&(identical(other.password, password) || other.password == password)&&(identical(other.confirmPassword, confirmPassword) || other.confirmPassword == confirmPassword)&&(identical(other.fullName, fullName) || other.fullName == fullName)&&(identical(other.username, username) || other.username == username)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.acceptTerms, acceptTerms) || other.acceptTerms == acceptTerms));
 }
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode => Object.hash(runtimeType,email,password,confirmPassword,fullName,username,phoneNumber,acceptTerms);
+
+@override
+String toString() {
+  return 'RegisterRequest(email: $email, password: $password, confirmPassword: $confirmPassword, fullName: $fullName, username: $username, phoneNumber: $phoneNumber, acceptTerms: $acceptTerms)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$RegisterRequestCopyWith<$Res> implements $RegisterRequestCopyWith<$Res> {
+  factory _$RegisterRequestCopyWith(_RegisterRequest value, $Res Function(_RegisterRequest) _then) = __$RegisterRequestCopyWithImpl;
+@override @useResult
+$Res call({
+ String email, String password, String confirmPassword, String fullName, String username, String? phoneNumber, bool acceptTerms
+});
+
+
+
+
+}
+/// @nodoc
+class __$RegisterRequestCopyWithImpl<$Res>
+    implements _$RegisterRequestCopyWith<$Res> {
+  __$RegisterRequestCopyWithImpl(this._self, this._then);
+
+  final _RegisterRequest _self;
+  final $Res Function(_RegisterRequest) _then;
+
+/// Create a copy of RegisterRequest
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? email = null,Object? password = null,Object? confirmPassword = null,Object? fullName = null,Object? username = null,Object? phoneNumber = freezed,Object? acceptTerms = null,}) {
+  return _then(_RegisterRequest(
+email: null == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
+as String,password: null == password ? _self.password : password // ignore: cast_nullable_to_non_nullable
+as String,confirmPassword: null == confirmPassword ? _self.confirmPassword : confirmPassword // ignore: cast_nullable_to_non_nullable
+as String,fullName: null == fullName ? _self.fullName : fullName // ignore: cast_nullable_to_non_nullable
+as String,username: null == username ? _self.username : username // ignore: cast_nullable_to_non_nullable
+as String,phoneNumber: freezed == phoneNumber ? _self.phoneNumber : phoneNumber // ignore: cast_nullable_to_non_nullable
+as String?,acceptTerms: null == acceptTerms ? _self.acceptTerms : acceptTerms // ignore: cast_nullable_to_non_nullable
+as bool,
+  ));
+}
+
+
+}
+
+// dart format on

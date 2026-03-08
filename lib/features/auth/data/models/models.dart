@@ -1,5 +1,5 @@
 /// Auth Models - Barrel export file
-/// 
+///
 /// Import tất cả models chỉ bằng 1 dòng:
 /// import 'package:homies_buddy_developer/features/auth/data/models/models.dart';
 library;

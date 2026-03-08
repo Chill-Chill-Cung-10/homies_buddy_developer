@@ -13,43 +13,49 @@
 ///   (Reuse) community/widgets/profile/profile_buddies_section.dart
 ///   (Reuse) community/widgets/profile/profile_post_feed.dart
 library;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_text_styles.dart';
 import '../../../../data/models/user_model.dart';
-import '../../../../data/models/post_model.dart';
 import '../../../community/presentation/screens/personal_profile_screen.dart';
 import '../../../community/presentation/widgets/comment_overlay.dart';
 import '../../../community/presentation/widgets/profile/profile_buddies_section.dart';
 import '../../../community/presentation/widgets/profile/profile_post_feed.dart';
 import '../../../auth/presentation/screens/change_password_screen.dart';
-import '../../mockdata/current_user_mock.dart';
+import '../providers/profile_providers.dart';
 import '../widgets/profile/user_profile_hero_header.dart';
 import '../widgets/profile/user_profile_stats_section.dart';
 import '../widgets/profile/profile_settings_menu.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import 'profile_edit_screen.dart';
 
 /// User Profile Screen — Tab chính hiển thị profile của user đang đăng nhập
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  late UserModel _user;
-  late List<UserModel> _allBuddies;
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   void initState() {
     super.initState();
-    _user = CurrentUserMock.currentUser;
-    _allBuddies = _user.allHomies;
+    // Profile will be loaded automatically by the provider
   }
 
   // ── Settings Menu Actions ──
 
   void _showSettingsMenu() {
+    // CRITICAL: Store ref and context BEFORE opening menu
+    final authActions = ref.read(authActionsProvider);
+    final navigator = Navigator.of(context);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
     showProfileSettingsMenu(
       context,
       menuItems: [
@@ -76,7 +82,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ProfileMenuItem(
           icon: Icons.logout,
           label: 'Logout',
-          onTap: _handleLogout,
+          onTap: () => _handleLogoutWithStoredRef(
+            authActions,
+            navigator,
+            scaffoldMessenger,
+          ),
           iconColor: AppColors.errorRed,
           textColor: AppColors.errorRed,
         ),
@@ -85,17 +95,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _handleProfileSetting() {
-    // TODO: Navigate to profile edit screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Profile Setting — Coming soon')),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
     );
   }
 
   void _handleChangePassword() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const ChangePasswordScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const ChangePasswordScreen()),
     );
   }
 
@@ -113,33 +120,45 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _handleLogout() {
+  void _handleLogoutWithStoredRef(
+    AuthActions authActions,
+    NavigatorState navigator,
+    ScaffoldMessengerState scaffoldMessenger,
+  ) {
     showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: navigator.context,
+      builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.backgroundLight,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text('Logout'),
         content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              // TODO: Implement actual logout logic (clear auth state, navigate to login)
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Logged out successfully')),
-              );
+            onPressed: () async {
+              Navigator.of(dialogContext).pop();
+              
+              try {
+                await authActions.signOut();
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Logged out successfully'),
+                    backgroundColor: AppColors.successGreen,
+                  ),
+                );
+              } catch (e) {
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text('Logout failed: $e'),
+                    backgroundColor: AppColors.errorRed,
+                  ),
+                );
+              }
             },
-            child: Text(
-              'Logout',
-              style: TextStyle(color: AppColors.errorRed),
-            ),
+            child: Text('Logout', style: TextStyle(color: AppColors.errorRed)),
           ),
         ],
       ),
@@ -149,9 +168,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ── Navigation ──
 
   void _handleEditProfile() {
-    // TODO: Navigate to edit profile screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit Profile — Coming soon')),
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const ProfileEditScreen()),
     );
   }
 
@@ -169,57 +187,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final profileState = ref.watch(profileStateProvider);
+    final user = profileState.user;
+    final isLoading = profileState.isLoading;
+    
+    // Show loading state
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.backgroundLight,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: AppColors.primaryPeach),
+              const SizedBox(height: 16),
+              Text(
+                'Loading profile...',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    // Show error/empty state
+    if (user == null) {
+      return Scaffold(
+        backgroundColor: AppColors.backgroundLight,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.person_off_outlined,
+                size: 64,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Unable to load profile',
+                style: AppTextStyles.h3.copyWith(
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                profileState.errorMessage ?? 'Please try again',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(profileStateProvider.notifier).refresh();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryPeach,
+                ),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final allBuddies = user.allHomies;
+
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // Layout 1: Hero Header với settings icon
-          UserProfileHeroHeader(
-            user: _user,
-            onSettingsTap: _showSettingsMenu,
-          ),
+      body: RefreshIndicator(
+        onRefresh: () => ref.read(profileStateProvider.notifier).refresh(),
+        child: CustomScrollView(
+          slivers: [
+            // Layout 1: Hero Header với settings icon
+            UserProfileHeroHeader(user: user, onSettingsTap: _showSettingsMenu),
 
-          // Layout 2: Detail content
-          SliverToBoxAdapter(
-            child: _buildDetailSection(),
-          ),
+            // Layout 2: Detail content
+            SliverToBoxAdapter(child: _buildDetailSection(user, allBuddies)),
 
-          // Post feed (reuse từ community)
-          ProfilePostFeed(
-            posts: _user.posts,
-            onLike: (index) {
-              setState(() {
-                final post = _user.posts[index];
-                final updatedPost = post.copyWith(
-                  isLikedByMe: !post.isLikedByMe,
-                  reactsCount: post.isLikedByMe
-                      ? post.reactsCount - 1
-                      : post.reactsCount + 1,
-                );
-                final posts = List<Post>.from(_user.posts);
-                posts[index] = updatedPost;
-                _user = _user.copyWith(posts: posts);
-              });
-            },
-            onComment: (post) {
-              showCommentOverlay(context, post);
-            },
-          ),
+            // Post feed (reuse từ community)
+            ProfilePostFeed(
+              posts: user.posts,
+              onLike: (index) {
+                // TODO: Implement like via API
+              },
+              onComment: (post) {
+                showCommentOverlay(context, post);
+              },
+            ),
 
-          // Bottom spacing
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
-        ],
+            // Bottom spacing
+            const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          ],
+        ),
       ),
     );
   }
 
   /// Layout 2: Detail section — stats, buddies
-  Widget _buildDetailSection() {
+  Widget _buildDetailSection(UserModel user, List<UserModel> allBuddies) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
-      ),
+      decoration: BoxDecoration(gradient: AppColors.cardGradient),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -227,17 +300,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           // Profile stats + Edit Profile button
           UserProfileStatsSection(
-            user: _user,
+            user: user,
             onEditProfile: _handleEditProfile,
           ),
 
           const SizedBox(height: AppSpacing.paddingL),
 
           // Buddies section (reuse từ community)
-          if (_allBuddies.isNotEmpty) ...[
+          if (allBuddies.isNotEmpty) ...[
             ProfileBuddiesSection(
-              displayName: _user.displayName,
-              allBuddies: _allBuddies,
+              displayName: user.displayName,
+              allBuddies: allBuddies,
               onBuddyTap: _navigateToBuddyProfile,
             ),
             const Padding(

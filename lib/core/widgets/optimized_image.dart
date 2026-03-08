@@ -4,14 +4,14 @@ import '../constants/app_colors.dart';
 import 'loading_indicators.dart';
 
 /// Optimized image widget với progressive loading
-/// 
+///
 /// Features:
 /// - Load thumbnail trước, sau đó load full image
 /// - Cache images
 /// - Downsample large images để tiết kiệm memory
 /// - Placeholder với shimmer effect
 /// - Error handling
-/// 
+///
 /// Usage:
 /// ```dart
 /// OptimizedImage(
@@ -31,7 +31,7 @@ class OptimizedImage extends StatelessWidget {
   final bool useMemCacheWidth;
   final int? memCacheWidth;
   final int? memCacheHeight;
-  
+
   const OptimizedImage({
     super.key,
     required this.imageUrl,
@@ -54,7 +54,7 @@ class OptimizedImage extends StatelessWidget {
         width: width,
         height: height,
         fit: fit,
-        
+
         // Progressive loading: show thumbnail while loading full image
         placeholder: thumbnailUrl != null
             ? (context, url) => CachedNetworkImage(
@@ -70,15 +70,15 @@ class OptimizedImage extends StatelessWidget {
                 height: height,
                 borderRadius: borderRadius,
               ),
-        
+
         // Downsample large images để tiết kiệm memory
         memCacheWidth: useMemCacheWidth ? (memCacheWidth ?? 800) : null,
         memCacheHeight: useMemCacheWidth ? memCacheHeight : null,
-        
+
         // Smooth fade in
         fadeInDuration: const Duration(milliseconds: 300),
         fadeOutDuration: const Duration(milliseconds: 100),
-        
+
         // Error widget
         errorWidget: (context, url, error) => Container(
           width: width,
@@ -118,7 +118,7 @@ class OptimizedAvatar extends StatelessWidget {
   final double size;
   final bool showBorder;
   final Color? borderColor;
-  
+
   const OptimizedAvatar({
     super.key,
     required this.imageUrl,
@@ -135,10 +135,7 @@ class OptimizedAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: showBorder
-            ? Border.all(
-                color: borderColor ?? AppColors.accentOrange,
-                width: 2,
-              )
+            ? Border.all(color: borderColor ?? AppColors.accentOrange, width: 2)
             : null,
       ),
       child: ClipOval(
@@ -147,11 +144,11 @@ class OptimizedAvatar extends StatelessWidget {
           width: size,
           height: size,
           fit: BoxFit.cover,
-          
+
           // Avatar thường nhỏ, downsample về 150x150
           memCacheWidth: 150,
           memCacheHeight: 150,
-          
+
           placeholder: (context, url) => Container(
             color: AppColors.surfaceColor,
             child: Icon(
@@ -160,7 +157,7 @@ class OptimizedAvatar extends StatelessWidget {
               color: AppColors.textSecondary.withOpacity(0.5),
             ),
           ),
-          
+
           errorWidget: (context, url, error) => Container(
             color: AppColors.surfaceColor,
             child: Icon(
@@ -181,7 +178,7 @@ class OptimizedPostImage extends StatelessWidget {
   final String? thumbnailUrl;
   final double aspectRatio;
   final VoidCallback? onTap;
-  
+
   const OptimizedPostImage({
     super.key,
     required this.imageUrl,
@@ -212,7 +209,7 @@ class OptimizedCoverPhoto extends StatelessWidget {
   final String imageUrl;
   final String? thumbnailUrl;
   final double height;
-  
+
   const OptimizedCoverPhoto({
     super.key,
     required this.imageUrl,
@@ -236,7 +233,7 @@ class OptimizedCoverPhoto extends StatelessWidget {
 }
 
 /// Helper function để preload images
-/// 
+///
 /// Usage:
 /// ```dart
 /// void _preloadNextImages() {
@@ -246,16 +243,16 @@ class OptimizedCoverPhoto extends StatelessWidget {
 /// }
 /// ```
 void preloadImage(BuildContext context, String imageUrl) {
-  precacheImage(
-    CachedNetworkImageProvider(imageUrl),
-    context,
-  );
+  if (imageUrl.isEmpty) return;
+  precacheImage(CachedNetworkImageProvider(imageUrl), context);
 }
 
 /// Preload multiple images
 void preloadImages(BuildContext context, List<String> imageUrls) {
   for (final url in imageUrls) {
-    preloadImage(context, url);
+    if (url.isNotEmpty) {
+      preloadImage(context, url);
+    }
   }
 }
 
@@ -270,16 +267,16 @@ class ImageSizes {
 }
 
 /// Helper để generate thumbnail URLs (nếu server hỗ trợ)
-/// 
+///
 /// Example: Cloudinary, Imgix, Firebase Storage với resize
 String? getThumbnailUrl(String originalUrl, {int size = ImageSizes.small}) {
   // TODO: Implement theo backend service
   // Example với Cloudinary:
   // return originalUrl.replaceFirst('/upload/', '/upload/w_$size,c_scale/');
-  
+
   // Example với Firebase Storage:
   // return '${originalUrl}_${size}x$size';
-  
+
   // Nếu không có thumbnail service, return null
   return null;
 }

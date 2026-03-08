@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
 import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/utils/password_validator.dart';
+import '../providers/auth_providers.dart';
 import '../widgets/auth_input_field.dart';
 import '../widgets/auth_password_field.dart';
 import '../widgets/auth_submit_button.dart';
 
-/// [Refactored] Phase 2.1 — Sử dụng AuthPasswordField, AuthSubmitButton.
-/// Change Password Screen
-/// Màn hình để người dùng thay đổi mật khẩu (khi đã đăng nhập)
-class ChangePasswordScreen extends StatefulWidget {
-  // ignore: use_super_parameters
-  const ChangePasswordScreen({Key? key}) : super(key: key);
+/// [Refactored] Phase 2.1 — Change Password Screen with Firebase Auth integration
+class ChangePasswordScreen extends ConsumerStatefulWidget {
+  const ChangePasswordScreen({super.key});
 
   @override
-  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+  ConsumerState<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -27,11 +28,13 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   bool _isLoading = false;
 
   // Password requirements state
-  bool _hasMinLength = false;
-  bool _hasUppercase = false;
-  bool _hasLowercase = false;
-  bool _hasNumber = false;
-  bool _hasSpecialChar = false;
+  PasswordValidationResult _passwordValidation = const PasswordValidationResult(
+    hasMinLength: false,
+    hasUppercase: false,
+    hasLowercase: false,
+    hasNumber: false,
+    hasSpecialChar: false,
+  );
 
   @override
   void initState() {
@@ -47,15 +50,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     super.dispose();
   }
 
-  /// Check password requirements in real-time
+  /// Check password requirements in real-time using shared validator
   void _checkPasswordRequirements() {
     final password = _newPasswordController.text;
     setState(() {
-      _hasMinLength = password.length >= 8;
-      _hasUppercase = password.contains(RegExp(r'[A-Z]'));
-      _hasLowercase = password.contains(RegExp(r'[a-z]'));
-      _hasNumber = password.contains(RegExp(r'[0-9]'));
-      _hasSpecialChar = password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+      _passwordValidation = PasswordValidator.validate(password);
     });
   }
 
@@ -78,7 +77,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     if (value == _currentPasswordController.text) {
       return 'New password must be different from current password';
     }
-    if (!_hasMinLength || !_hasUppercase || !_hasLowercase || !_hasNumber) {
+    if (!_passwordValidation.isValid) {
       return 'Password does not meet requirements';
     }
     return null;
@@ -97,22 +96,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   /// Handle update password
   Future<void> _handleUpdatePassword() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+    if (!_formKey.currentState!.validate()) return;
 
-      // TODO: Integrate with service layer
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+    setState(() => _isLoading = true);
 
-      setState(() {
-        _isLoading = false;
-      });
+    final authActions = ref.read(authActionsProvider);
+    final success = await authActions.changePassword(
+      currentPassword: _currentPasswordController.text,
+      newPassword: _newPasswordController.text,
+    );
 
-      if (mounted) {
-        // Show success dialog
+    setState(() => _isLoading = false);
+
+    if (mounted) {
+      if (success) {
         _showSuccessDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to change password. Please check your current password.'),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
       }
     }
   }
@@ -124,21 +129,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppShapes.button,
-        ),
-        title: Row(
-          children: const [
-            Icon(
-              Icons.check_circle,
-              color: AppColors.successGreen,
-              size: 28,
-            ),
+        shape: RoundedRectangleBorder(borderRadius: AppShapes.button),
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: AppColors.successGreen, size: 28),
             SizedBox(width: AppSpacing.s),
-            Text(
-              'Success!',
-              style: AppTextStyles.h3,
-            ),
+            Text('Success!', style: AppTextStyles.h3),
           ],
         ),
         content: const Text(
@@ -151,10 +147,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               Navigator.of(context).pop();
               Navigator.of(context).pop(); // Back to previous screen
             },
-            child: const Text(
-              'OK',
-              style: AppTextStyles.buttonMedium,
-            ),
+            child: const Text('OK', style: AppTextStyles.buttonMedium),
           ),
         ],
       ),
@@ -169,16 +162,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         backgroundColor: AppColors.backgroundLight,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: AppColors.textPrimary,
-          ),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text(
-          'Change Password',
-          style: AppTextStyles.h3,
-        ),
+        title: const Text('Change Password', style: AppTextStyles.h3),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -233,10 +220,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   decoration: BoxDecoration(
                     color: AppColors.cardBackground,
                     borderRadius: AppShapes.button,
-                    border: Border.all(
-                      color: AppColors.primaryPeach,
-                      width: 1,
-                    ),
+                    border: Border.all(color: AppColors.primaryPeach, width: 1),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -248,23 +232,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       const SizedBox(height: AppSpacing.m),
                       _buildRequirementItem(
                         'At least 8 characters',
-                        _hasMinLength,
+                        _passwordValidation.hasMinLength,
                       ),
                       _buildRequirementItem(
                         'One uppercase letter (A-Z)',
-                        _hasUppercase,
+                        _passwordValidation.hasUppercase,
                       ),
                       _buildRequirementItem(
                         'One lowercase letter (a-z)',
-                        _hasLowercase,
+                        _passwordValidation.hasLowercase,
                       ),
-                      _buildRequirementItem(
-                        'One number (0-9)',
-                        _hasNumber,
-                      ),
+                      _buildRequirementItem('One number (0-9)', _passwordValidation.hasNumber),
                       _buildRequirementItem(
                         'One special character (!@#\$%^&*)',
-                        _hasSpecialChar,
+                        _passwordValidation.hasSpecialChar,
                       ),
                     ],
                   ),

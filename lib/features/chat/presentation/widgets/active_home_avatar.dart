@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Active Home Avatar Widget
-/// 
+///
 /// Story-style avatar for active homes
 class ActiveHomeAvatar extends StatelessWidget {
   final String avatarUrl;
@@ -30,10 +30,7 @@ class ActiveHomeAvatar extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.orange.shade300,
-                    Colors.pink.shade300,
-                  ],
+                  colors: [Colors.orange.shade300, Colors.pink.shade300],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),

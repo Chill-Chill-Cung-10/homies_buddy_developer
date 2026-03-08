@@ -1,31 +1,34 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'conversation_model.freezed.dart';
+part 'conversation_model.g.dart';
+
 /// Conversation Model
-/// 
+///
 /// Represents a conversation between users/homes
-class Conversation {
-  final String id;
-  final List<String> participantIds;
-  final String participantName;  // Home name
-  final String participantAvatar; // Home avatar
-  final String lastMessage;
-  final DateTime lastUpdated;
-  final int unreadCount;
-  final String? nickname;       // Custom nickname set by current user
-  final DateTime? mutedUntil;   // Null = not muted, DateTime.max = muted forever
+@freezed
+abstract class Conversation with _$Conversation {
+  const factory Conversation({
+    required String id,
+    required List<String> participantIds,
+    required String participantName, // Home name
+    required String participantAvatar, // Home avatar
+    required String lastMessage,
+    required DateTime lastUpdated,
+    required int unreadCount,
+    String? nickname, // Custom nickname set by current user
+    DateTime? mutedUntil, // Null = not muted, DateTime.max = muted forever
+  }) = _Conversation;
 
-  const Conversation({
-    required this.id,
-    required this.participantIds,
-    required this.participantName,
-    required this.participantAvatar,
-    required this.lastMessage,
-    required this.lastUpdated,
-    required this.unreadCount,
-    this.nickname,
-    this.mutedUntil,
-  });
+  factory Conversation.fromJson(Map<String, dynamic> json) =>
+      _$ConversationFromJson(json);
+}
 
+/// Extension để thêm các helper methods
+extension ConversationX on Conversation {
   /// Display name: nickname if set, otherwise participantName
-  String get displayName => nickname?.isNotEmpty == true ? nickname! : participantName;
+  String get displayName =>
+      nickname?.isNotEmpty == true ? nickname! : participantName;
 
   /// Whether this conversation is currently muted
   bool get isMuted {
@@ -33,31 +36,30 @@ class Conversation {
     return mutedUntil!.isAfter(DateTime.now());
   }
 
-  Conversation copyWith({
-    String? id,
-    List<String>? participantIds,
-    String? participantName,
-    String? participantAvatar,
-    String? lastMessage,
-    DateTime? lastUpdated,
-    int? unreadCount,
-    String? nickname,
-    DateTime? mutedUntil,
-    bool clearNickname = false,
-    bool clearMute = false,
-  }) {
-    return Conversation(
-      id: id ?? this.id,
-      participantIds: participantIds ?? this.participantIds,
-      participantName: participantName ?? this.participantName,
-      participantAvatar: participantAvatar ?? this.participantAvatar,
-      lastMessage: lastMessage ?? this.lastMessage,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
-      unreadCount: unreadCount ?? this.unreadCount,
-      nickname: clearNickname ? null : (nickname ?? this.nickname),
-      mutedUntil: clearMute ? null : (mutedUntil ?? this.mutedUntil),
-    );
+  /// Kiểm tra xem có tin nhắn chưa đọc không
+  bool get hasUnread => unreadCount > 0;
+
+  /// Lấy thời gian last updated dạng "time ago"
+  String get timeAgo {
+    final now = DateTime.now();
+    final difference = now.difference(lastUpdated);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays} ngày';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours} giờ';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes} phút';
+    } else {
+      return 'Vừa xong';
+    }
   }
 
-  bool get hasUnread => unreadCount > 0;
+  /// Lấy preview last message (cắt ngắn)
+  String get lastMessagePreview {
+    if (lastMessage.length > 50) {
+      return '${lastMessage.substring(0, 50)}...';
+    }
+    return lastMessage;
+  }
 }

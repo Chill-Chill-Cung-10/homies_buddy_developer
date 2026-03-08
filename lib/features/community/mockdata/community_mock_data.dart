@@ -27,6 +27,7 @@ class CommunityMockData {
       mediaFiles: [
         MediaFile(
           id: 'media1',
+          postId: '1',
           mediaType: MediaType.image,
           mediaAspectRatio: 16 / 9,
           mediaUrl: 'https://picsum.photos/800/450?random=1',
@@ -37,7 +38,6 @@ class CommunityMockData {
       ],
       reactsCount: 2500,
       commentCount: 4, // Auto-synced with CommentMockData
-      isLikedByMe: true,
       privacy: PostPrivacy.public,
     ),
     Post(
@@ -52,6 +52,7 @@ class CommunityMockData {
       mediaFiles: [
         MediaFile(
           id: 'media2',
+          postId: '2',
           mediaType: MediaType.image,
           mediaAspectRatio: 4 / 3,
           mediaUrl: 'https://picsum.photos/800/600?random=2',
@@ -62,7 +63,6 @@ class CommunityMockData {
       ],
       reactsCount: 1230,
       commentCount: 3, // Auto-synced with CommentMockData
-      isLikedByMe: false,
       privacy: PostPrivacy.public,
     ),
     Post(
@@ -77,6 +77,7 @@ class CommunityMockData {
       mediaFiles: [
         MediaFile(
           id: 'media3_1',
+          postId: '3',
           mediaType: MediaType.image,
           mediaAspectRatio: 1.0,
           mediaUrl: 'https://picsum.photos/800/800?random=3',
@@ -86,6 +87,7 @@ class CommunityMockData {
         ),
         MediaFile(
           id: 'media3_2',
+          postId: '3',
           mediaType: MediaType.image,
           mediaAspectRatio: 1.0,
           mediaUrl: 'https://picsum.photos/800/800?random=4',
@@ -95,6 +97,7 @@ class CommunityMockData {
         ),
         MediaFile(
           id: 'media3_3',
+          postId: '3',
           mediaType: MediaType.image,
           mediaAspectRatio: 1.0,
           mediaUrl: 'https://picsum.photos/800/800?random=5',
@@ -105,7 +108,6 @@ class CommunityMockData {
       ],
       reactsCount: 3450,
       commentCount: 4, // Auto-synced with CommentMockData
-      isLikedByMe: true,
       privacy: PostPrivacy.friends,
     ),
     Post(
@@ -120,9 +122,11 @@ class CommunityMockData {
       mediaFiles: [
         MediaFile(
           id: 'media4',
+          postId: '4',
           mediaType: MediaType.video,
           mediaAspectRatio: 9 / 16,
-          mediaUrl: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
+          mediaUrl:
+              'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4',
           thumbnailUrl: 'https://picsum.photos/720/1280?random=6',
           width: 720,
           height: 1280,
@@ -131,7 +135,6 @@ class CommunityMockData {
       ],
       reactsCount: 567,
       commentCount: 0, // Auto-synced with CommentMockData
-      isLikedByMe: false,
       privacy: PostPrivacy.public,
     ),
     Post(
@@ -146,6 +149,7 @@ class CommunityMockData {
       mediaFiles: [
         MediaFile(
           id: 'media5',
+          postId: '5',
           mediaType: MediaType.image,
           mediaAspectRatio: 3 / 4,
           mediaUrl: 'https://picsum.photos/600/800?random=7',
@@ -156,7 +160,6 @@ class CommunityMockData {
       ],
       reactsCount: 892,
       commentCount: 0, // Auto-synced with CommentMockData
-      isLikedByMe: true,
       privacy: PostPrivacy.public,
     ),
   ];

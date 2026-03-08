@@ -5,13 +5,18 @@ part 'notification_model.freezed.dart';
 part 'notification_model.g.dart';
 
 /// Notification Model - Thông báo về các hoạt động
-/// 
+///
 /// Thông báo khi có người react, comment, follow, mention, hoặc share
 /// bài viết của user
 @freezed
-class NotificationModel with _$NotificationModel {
+abstract class NotificationModel with _$NotificationModel {
   const factory NotificationModel({
+    /// User ID người **GỬI** / thực hiện action
     required String actorId,
+
+    /// ⭐ **Thêm mới** — User ID người **NHẬN** notification
+    required String recipientId,
+
     required String actorName,
     required String actorAvatar,
     required String notificationId,
@@ -64,7 +69,8 @@ extension NotificationModelX on NotificationModel {
   bool get isFollowNotification => type == NotificationType.follow;
 
   /// Kiểm tra xem có preview content không
-  bool get hasContentPreview => contentPreview != null && contentPreview!.isNotEmpty;
+  bool get hasContentPreview =>
+      contentPreview != null && contentPreview!.isNotEmpty;
 
   /// Lấy icon name để hiển thị
   String get iconName => type.iconName;
