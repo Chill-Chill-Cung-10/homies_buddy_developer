@@ -39,11 +39,9 @@ Map<String, dynamic> _$NoteAnalysisToJson(_NoteAnalysis instance) =>
     };
 
 const _$UserToneEnumMap = {
-  UserTone.veryHappy: 'very_happy',
   UserTone.happy: 'happy',
   UserTone.neutral: 'neutral',
   UserTone.sad: 'sad',
-  UserTone.verySad: 'very_sad',
   UserTone.anxious: 'anxious',
   UserTone.angry: 'angry',
 };

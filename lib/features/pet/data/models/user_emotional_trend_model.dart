@@ -67,7 +67,6 @@ extension UserEmotionalTrendX on UserEmotionalTrend {
         .where(
           (tone) =>
               tone == UserTone.sad ||
-              tone == UserTone.verySad ||
               tone == UserTone.anxious ||
               tone == UserTone.angry,
         )
@@ -77,7 +76,7 @@ extension UserEmotionalTrendX on UserEmotionalTrend {
   /// Đếm số lần tone tích cực xuất hiện trong 7 ngày
   int get positiveToneCount {
     return toneHistory7d
-        .where((tone) => tone == UserTone.happy || tone == UserTone.veryHappy)
+        .where((tone) => tone == UserTone.happy)
         .length;
   }
 

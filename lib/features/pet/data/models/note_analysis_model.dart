@@ -42,15 +42,13 @@ abstract class NoteAnalysis with _$NoteAnalysis {
 
 /// Extension để thêm các helper methods
 extension NoteAnalysisX on NoteAnalysis {
-  /// Kiểm tra xem tone có tươi vui không (veryHappy, happy)
+  /// Kiểm tra xem tone có tươi vui không (happy)
   bool get isPositiveTone =>
-      currentTonePredict == UserTone.veryHappy ||
       currentTonePredict == UserTone.happy;
 
-  /// Kiểm tra xem tone có tiêu cực không (sad, verySad, anxious, angry)
+  /// Kiểm tra xem tone có tiêu cực không (sad, anxious, angry)
   bool get isNegativeTone =>
       currentTonePredict == UserTone.sad ||
-      currentTonePredict == UserTone.verySad ||
       currentTonePredict == UserTone.anxious ||
       currentTonePredict == UserTone.angry;
 

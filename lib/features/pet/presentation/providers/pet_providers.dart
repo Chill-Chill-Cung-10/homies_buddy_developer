@@ -54,6 +54,15 @@ class PetResumeNotifier extends StateNotifier<PetResumeState> {
   final PetRemoteDatasource _datasource;
   final FirebaseService _firebaseService;
 
+  // ── Guards ────────────────────────────────────────────────────────────────
+  // Chống gọi RPC đồng thời hoặc quá gần nhau
+  bool _isRunning = false;
+  DateTime? _lastRanAt;
+
+  // Tối thiểu 1 phút giữa 2 lần gọi RPC
+  // Điều chỉnh nếu cần: Duration(minutes: 5) cho app ít update hơn
+  static const _cooldown = Duration(minutes: 1);
+
   PetResumeNotifier(this._datasource, this._firebaseService)
       : super(PetResumeState.initial());
 
@@ -65,6 +74,23 @@ class PetResumeNotifier extends StateNotifier<PetResumeState> {
       return;
     }
 
+    // ── [Guard 1] Đang chạy rồi → skip ───────────────────────────────────
+    if (_isRunning) {
+      _logger.w('🐾 Skip RPC: already running');
+      return;
+    }
+
+    // ── [Guard 2] Cooldown chưa hết → skip ───────────────────────────────
+    if (_lastRanAt != null &&
+        DateTime.now().difference(_lastRanAt!) < _cooldown) {
+      final secondsAgo = DateTime.now().difference(_lastRanAt!).inSeconds;
+      _logger.w('🐾 Skip RPC: cooldown active (${secondsAgo}s ago)');
+      return;
+    }
+
+    // ── Bắt đầu chạy ─────────────────────────────────────────────────────
+    _isRunning = true;
+    _lastRanAt = DateTime.now();
     state = state.copyWith(isLoading: true, errorMessage: null);
     _logger.i('🐾 Starting update_pet_on_resume for user: $userId');
 
@@ -104,12 +130,25 @@ class PetResumeNotifier extends StateNotifier<PetResumeState> {
         isLoading: false,
         errorMessage: 'Failed to update pet state. Please try again.',
       );
+    } finally {
+      // ── Luôn reset _isRunning dù thành công hay lỗi ───────────────────
+      _isRunning = false;
     }
   }
 
-  /// Task 6: Log all RPC state results
+  /// Reset cooldown — dùng khi muốn force update (ví dụ: sau khi submit note)
+  void resetCooldown() {
+    _lastRanAt = null;
+    _logger.i('🐾 Cooldown reset');
+  }
+
+  void clearError() {
+    state = state.copyWith(errorMessage: null);
+  }
+
+  /// Log all RPC state results
   void _logRpcResult(Map<String, dynamic> result) {
-    _logger.i('═══ 🐾 RPC update_pet_on_resume RESULT ═══');
+    _logger.i('═══ 🐾RPC update_pet_on_resume RESULT ═══');
     _logger.i('  energy:            ${result['energy']}');
     _logger.i('  current_mood:      ${result['current_mood']}');
     _logger.i('  streak:            ${result['streak']}');
@@ -122,10 +161,6 @@ class PetResumeNotifier extends StateNotifier<PetResumeState> {
     _logger.i('  emotional_trend:   ${result['emotional_trend']}');
     _logger.i('  severity:          ${result['severity']}');
     _logger.i('═════════════════════════════════════════════');
-  }
-
-  void clearError() {
-    state = state.copyWith(errorMessage: null);
   }
 }
 

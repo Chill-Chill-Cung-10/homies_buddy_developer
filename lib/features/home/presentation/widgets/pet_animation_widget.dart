@@ -8,24 +8,21 @@ import 'dart:math' as math;
 // ENUM & CONFIG
 // ─────────────────────────────────────────────
 
-/// Các trạng thái ổn định của pet (loop animation)
 enum PetState {
-  happy,           // Vui vẻ
-  idle,            // Đứng im, quan sát
-  sleep,           // Ngủ
-  sad,             // Buồn
-  happyVsSmilling, // Happy variant
-  lookingOutside,  // Nhìn ra ngoài / xa cách
+  happy,
+  idle,
+  sleep,
+  sad,
+  happyVsSmilling,
+  lookingOutside,
 }
 
-/// Các animation chuyển đổi giữa các trạng thái (play once)
 enum PetTransition {
-  idleToSleep,     // idle → sleep
-  lookFrontToBack, // quay từ trước ra sau
-  lookBackToFront, // quay từ sau ra trước (reverse của lookFrontToBack)
+  idleToSleep,
+  lookFrontToBack,
+  lookBackToFront,
 }
 
-/// Sealed class đại diện cho bất kỳ animation nào của pet
 sealed class PetAnimation {
   const PetAnimation();
 
@@ -97,7 +94,6 @@ class _SpriteConfig {
   });
 }
 
-// ── Cấu hình sprite cho các STATE (loop animation) ──
 const Map<PetState, _SpriteConfig> _stateConfigs = {
   PetState.happy: _SpriteConfig(
     assetPath: 'assets/images/home/sprite_pets/lumni_happy.png',
@@ -143,7 +139,6 @@ const Map<PetState, _SpriteConfig> _stateConfigs = {
   ),
 };
 
-// ── Cấu hình sprite cho các TRANSITION (play once) ──
 const Map<PetTransition, _SpriteConfig> _transitionConfigs = {
   PetTransition.idleToSleep: _SpriteConfig(
     assetPath: 'assets/images/home/sprite_pets/lumni_idle_to_sleep.png',
@@ -173,11 +168,15 @@ const Map<PetTransition, _SpriteConfig> _transitionConfigs = {
 // PET STATE MACHINE
 // ─────────────────────────────────────────────
 
-/// Finite State Machine để quản lý hành vi và chuyển đổi của pet
 class PetFSM extends ChangeNotifier {
   PetAnimation _currentAnimation;
   PetState? _targetState;
   Timer? _stateTimer;
+
+  // ── Flag kiểm soát auto behavior ──
+  // Mặc định FALSE — chỉ chạy khi được gọi startAutoBehavior() rõ ràng
+  bool _autoBehaviorEnabled = false;
+
   final math.Random _random = math.Random();
 
   PetAnimation get currentAnimation => _currentAnimation;
@@ -190,9 +189,8 @@ class PetFSM extends ChangeNotifier {
   bool get isInTransition => _currentAnimation.isTransition;
 
   PetFSM({PetState initialState = PetState.idle})
-      : _currentAnimation = PetAnimation.state(initialState) {
-    _scheduleNextBehavior();
-  }
+      : _currentAnimation = PetAnimation.state(initialState);
+  // ← Không gọi _scheduleNextBehavior() trong constructor
 
   @override
   void dispose() {
@@ -204,14 +202,13 @@ class PetFSM extends ChangeNotifier {
   // PUBLIC API
   // ═══════════════════════════════════════════
 
-  /// Chuyển đến state mới (tự động tìm transition phù hợp nếu có)
+  /// Chuyển state có animation transition nếu có
   void transitionTo(PetState newState) {
     final current = currentState;
-    if (current == null) return; // Đang trong transition
+    if (current == null) return;
     if (current == newState) return;
 
     final transition = _findTransition(current, newState);
-
     if (transition != null) {
       _playTransition(transition, targetState: newState);
     } else {
@@ -219,15 +216,26 @@ class PetFSM extends ChangeNotifier {
     }
   }
 
-  void startAutoBehavior() => _scheduleNextBehavior();
+  /// Bật auto behavior — pet tự thay đổi trạng thái theo thời gian
+  void startAutoBehavior() {
+    _autoBehaviorEnabled = true;
+    _scheduleNextBehavior();
+  }
 
+  /// Tắt auto behavior — pet đứng yên ở state hiện tại cho đến khi được gọi lại
   void stopAutoBehavior() {
+    _autoBehaviorEnabled = false;
     _stateTimer?.cancel();
     _stateTimer = null;
   }
 
-  /// Force chuyển sang state ngay lập tức (không qua transition)
-  void forceState(PetState state) => _changeToState(state);
+  /// Chuyển state ngay lập tức, KHÔNG kích hoạt auto behavior
+  void forceState(PetState state) {
+    _currentAnimation = PetAnimation.state(state);
+    _targetState = null;
+    notifyListeners();
+    // ← Không gọi _scheduleNextBehavior()
+  }
 
   // ═══════════════════════════════════════════
   // PRIVATE METHODS
@@ -237,10 +245,17 @@ class PetFSM extends ChangeNotifier {
     _currentAnimation = PetAnimation.state(newState);
     _targetState = null;
     notifyListeners();
-    _scheduleNextBehavior();
+
+    // Chỉ schedule nếu auto behavior đang được bật
+    if (_autoBehaviorEnabled) {
+      _scheduleNextBehavior();
+    }
   }
 
-  void _playTransition(PetTransition transition, {required PetState targetState}) {
+  void _playTransition(
+    PetTransition transition, {
+    required PetState targetState,
+  }) {
     _currentAnimation = PetAnimation.transition(transition);
     _targetState = targetState;
     notifyListeners();
@@ -254,87 +269,76 @@ class PetFSM extends ChangeNotifier {
     }
   }
 
-  /// Tìm transition phù hợp giữa 2 states
   PetTransition? _findTransition(PetState from, PetState to) {
     const transitionMap = {
-      // idle → sleep
       (PetState.idle, PetState.sleep): PetTransition.idleToSleep,
-
-      // lookingOutside → idle: quay mặt lại trước
       (PetState.lookingOutside, PetState.idle): PetTransition.lookBackToFront,
       (PetState.lookingOutside, PetState.happy): PetTransition.lookBackToFront,
       (PetState.lookingOutside, PetState.sad): PetTransition.lookBackToFront,
-
-      // idle/happy → lookingOutside: quay mặt ra sau
       (PetState.idle, PetState.lookingOutside): PetTransition.lookFrontToBack,
       (PetState.happy, PetState.lookingOutside): PetTransition.lookFrontToBack,
     };
-
     return transitionMap[(from, to)];
   }
 
-  /// Lên lịch hành vi tiếp theo (auto behavior)
   void _scheduleNextBehavior() {
     _stateTimer?.cancel();
+    if (!_autoBehaviorEnabled) return; // Guard
 
-    // Random 5-12 giây giữa các behavior
     final delaySeconds = 5 + _random.nextInt(8);
-    _stateTimer = Timer(Duration(seconds: delaySeconds), _performRandomBehavior);
+    _stateTimer = Timer(
+      Duration(seconds: delaySeconds),
+      _performRandomBehavior,
+    );
   }
 
-  /// Thực hiện hành vi ngẫu nhiên dựa trên state hiện tại
-  /// Chỉ dùng cho auto-idle behavior — KHÔNG override behavior từ note_analysis
   void _performRandomBehavior() {
+    if (!_autoBehaviorEnabled) return; // Guard
+
     final current = currentState;
-    if (current == null) return; // Đang trong transition
+    if (current == null) return;
 
     switch (current) {
-      // ── IDLE: điểm trung tâm, có thể đi mọi hướng ──
       case PetState.idle:
         final roll = _random.nextDouble();
         if (roll < 0.30) {
-          transitionTo(PetState.sleep);           // 30% → ngủ
+          transitionTo(PetState.sleep);
         } else if (roll < 0.55) {
-          transitionTo(PetState.lookingOutside);  // 25% → nhìn ra ngoài
+          transitionTo(PetState.lookingOutside);
         } else if (roll < 0.80) {
-          transitionTo(PetState.happy);           // 25% → happy
+          transitionTo(PetState.happy);
         } else {
-          _scheduleNextBehavior();                // 20% → ở lại idle
+          _scheduleNextBehavior();
         }
 
-      // ── HAPPY: vui, thỉnh thoảng smiling ──
       case PetState.happy:
         final roll = _random.nextDouble();
         if (roll < 0.40) {
-          // Happy variant (play once → về happy)
-          _playTransition(PetTransition.lookFrontToBack, targetState: PetState.happy);
-          // Dùng tạm lookFrontToBack như "idle movement" nếu chưa có happyVsSmiling transition
-          // TODO: thay bằng PetTransition.happyVsSmiling khi có asset
+          _playTransition(
+            PetTransition.lookFrontToBack,
+            targetState: PetState.happy,
+          );
         } else if (roll < 0.70) {
-          transitionTo(PetState.idle);            // 30% → về idle
+          transitionTo(PetState.idle);
         } else {
-          transitionTo(PetState.lookingOutside);  // 30% → nhìn ra ngoài
+          transitionTo(PetState.lookingOutside);
         }
 
-      // ── SLEEP: thỉnh thoảng thức dậy ──
       case PetState.sleep:
-        // Sau 1 chu kỳ sleep, về idle
         transitionTo(PetState.idle);
 
-      // ── LOOKING OUTSIDE: có thể quay lại hoặc ở lại ──
       case PetState.lookingOutside:
         final roll = _random.nextDouble();
         if (roll < 0.60) {
-          transitionTo(PetState.idle);   // 60% → quay về idle (có transition)
+          transitionTo(PetState.idle);
         } else {
-          transitionTo(PetState.happy);  // 40% → quay về happy (có transition)
+          transitionTo(PetState.happy);
         }
 
-      // ── SAD / HAPPYVSSMILLING: không auto-change ──
-      // Những state này được drive bởi note_analysis, không random
+      // SAD / HAPPYVSSMILLING: driven by DB, không auto-change
       case PetState.sad:
       case PetState.happyVsSmilling:
-        _scheduleNextBehavior(); // Ở lại, check lại sau
+        _scheduleNextBehavior();
     }
   }
 
@@ -344,76 +348,9 @@ class PetFSM extends ChangeNotifier {
 
   void makeSad() => forceState(PetState.sad);
   void makeHappy() => forceState(PetState.happy);
-  void makeSleep() => transitionTo(PetState.sleep);
-  void makeIdle() => transitionTo(PetState.idle);
-  void makeLookOutside() => transitionTo(PetState.lookingOutside);
-}
-
-// ─────────────────────────────────────────────
-// NOTE ANALYSIS → PET STATE
-// ─────────────────────────────────────────────
-
-/// Map kết quả từ note_analysis sang PetState
-///
-/// Gọi hàm này sau khi nhận được data từ Supabase
-PetState decidePetStateFromAnalysis({
-  required String tone,       // từ note_analysis.current_tone
-  required String trend,      // từ note_analysis.emotional_trend
-  required int severity,      // từ note_analysis.severity_level (1-5)
-  required double deltaHours, // giờ kể từ lần mở app cuối
-  required int currentHour,   // DateTime.now().hour
-}) {
-  // ── Rule 1: Giờ ngủ → sleep ──
-  final isSleepHour = currentHour >= 23 || currentHour <= 5;
-  if (isSleepHour) return PetState.sleep;
-
-  // ── Rule 2: Bỏ rơi > 48h → nhìn ra ngoài buồn bã ──
-  if (deltaHours > 48) return PetState.lookingOutside;
-
-  // ── Rule 3: Dựa trên tone từ AI ──
-  switch (tone) {
-    case 'verySad':
-      // Rất buồn, severity cao → sad
-      return PetState.sad;
-
-    case 'sad':
-      // Severity cao → sad, severity thấp → idle cảm thông
-      return severity >= 3 ? PetState.sad : PetState.idle;
-
-    case 'anxious':
-      // Lo lắng → idle (hiện diện nhưng không quá phấn khích)
-      return PetState.idle;
-
-    case 'angry':
-      // Tức giận → nhìn ra ngoài (tránh mặt nhẹ)
-      return PetState.lookingOutside;
-
-    case 'happy':
-      return PetState.happy;
-
-    case 'veryHappy':
-      // Rất vui → happy variant
-      return PetState.happyVsSmilling;
-
-    case 'neutral':
-    default:
-      // ── Rule 4: Neutral → dựa trên trend ──
-      return _resolveNeutralTone(trend);
-  }
-}
-
-PetState _resolveNeutralTone(String trend) {
-  switch (trend) {
-    case 'improving':
-      return PetState.happy;
-    case 'declining':
-      return PetState.sad;
-    case 'volatile':
-      return PetState.idle; // Ổn định, không phản ứng thái quá
-    case 'stable':
-    default:
-      return PetState.idle;
-  }
+  void makeSleep() => forceState(PetState.sleep);
+  void makeIdle() => forceState(PetState.idle);
+  void makeLookOutside() => forceState(PetState.lookingOutside);
 }
 
 // ─────────────────────────────────────────────
@@ -609,7 +546,7 @@ class _SpritePainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────
-// STATEFUL PET WIDGET (FSM tích hợp)
+// STATEFUL PET WIDGET
 // ─────────────────────────────────────────────
 
 class StatefulPetWidget extends StatefulWidget {
@@ -622,7 +559,7 @@ class StatefulPetWidget extends StatefulWidget {
     super.key,
     this.width = 160,
     this.height = 160,
-    this.autoPlay = true,
+    this.autoPlay = false, // ← mặc định FALSE
     this.initialState = PetState.idle,
   });
 
@@ -638,6 +575,7 @@ class StatefulPetWidgetState extends State<StatefulPetWidget> {
     super.initState();
     _fsm = PetFSM(initialState: widget.initialState);
     _fsm.addListener(_rebuild);
+
     if (widget.autoPlay) _fsm.startAutoBehavior();
   }
 
@@ -650,10 +588,6 @@ class StatefulPetWidgetState extends State<StatefulPetWidget> {
 
   void _rebuild() => setState(() {});
 
-  // ═══════════════════════════════════════════
-  // PUBLIC API
-  // ═══════════════════════════════════════════
-
   void startAuto() => _fsm.startAutoBehavior();
   void stopAuto() => _fsm.stopAutoBehavior();
   void transitionTo(PetState state) => _fsm.transitionTo(state);
@@ -663,24 +597,6 @@ class StatefulPetWidgetState extends State<StatefulPetWidget> {
   void makeIdle() => _fsm.makeIdle();
   void makeLookOutside() => _fsm.makeLookOutside();
   PetFSM get fsm => _fsm;
-
-  /// Áp dụng trực tiếp từ note_analysis
-  void applyAnalysis({
-    required String tone,
-    required String trend,
-    required int severity,
-    required double deltaHours,
-  }) {
-    final targetState = decidePetStateFromAnalysis(
-      tone: tone,
-      trend: trend,
-      severity: severity,
-      deltaHours: deltaHours,
-      currentHour: DateTime.now().hour,
-    );
-    _fsm.stopAutoBehavior(); // Tắm auto khi có analysis
-    _fsm.transitionTo(targetState);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -712,11 +628,11 @@ class PetZone {
 }
 
 class HomeZones {
-  static const zone1 = PetZone(name: 'near_window',    x: 0.75, y: 0.25, scale: 0.75);
-  static const zone2 = PetZone(name: 'near_cottage',   x: 0.60, y: 0.17, scale: 0.90);
-  static const zone3 = PetZone(name: 'carpet_left',    x: 0.15, y: 0.15, scale: 1.00);
-  static const zone4 = PetZone(name: 'carpet_center',  x: 0.55, y: 0.15, scale: 1.00);
-  static const zone5 = PetZone(name: 'carpet_right',   x: 0.85, y: 0.15, scale: 1.00);
+  static const zone1 = PetZone(name: 'near_window',   x: 0.75, y: 0.25, scale: 0.75);
+  static const zone2 = PetZone(name: 'near_cottage',  x: 0.60, y: 0.17, scale: 0.90);
+  static const zone3 = PetZone(name: 'carpet_left',   x: 0.15, y: 0.15, scale: 1.00);
+  static const zone4 = PetZone(name: 'carpet_center', x: 0.55, y: 0.15, scale: 1.00);
+  static const zone5 = PetZone(name: 'carpet_right',  x: 0.85, y: 0.15, scale: 1.00);
 
   static const List<PetZone> all = [zone1, zone2, zone3, zone4, zone5];
 

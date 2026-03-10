@@ -20,13 +20,13 @@ export const analyzeNote = onRequest(
     const authHeader = req.headers.authorization;
     const secret = process.env.CLOUD_FUNCTION_SECRET;
     if (authHeader !== `Bearer ${secret}`) {
-      res.status(401).json({error: "Unauthorized"});
+      res.status(401).json({ error: "Unauthorized" });
       return;
     }
 
-    const {note_id, user_id, text_content} = req.body;
+    const { note_id, user_id, text_content } = req.body;
     if (!note_id || !user_id || !text_content) {
-      res.status(400).json({error: "Missing required fields"});
+      res.status(400).json({ error: "Missing required fields" });
       return;
     }
 
@@ -37,24 +37,23 @@ export const analyzeNote = onRequest(
 
     try {
       // [2] Lấy tone gần nhất
-      const {data: lastAnalysis} = await supabase
+      const { data: lastAnalysis } = await supabase
         .from("note_analysis")
         .select("current_tone_predict")
         .eq("user_id", user_id)
-        .order("analyzed_at", {ascending: false})
+        .order("analyzed_at", { ascending: false })
+        .order("id", { ascending: false })
         .limit(1)
         .maybeSingle();
 
       const lastTone = lastAnalysis?.current_tone_predict ?? "neutral";
-
       // [3] Gọi OpenAI
       const openAiResult = await analyzeToneWithOpenAI({
         text: text_content,
         last_tone: lastTone,
       });
-
       // [4] INSERT vào note_analysis
-      const {error: insertError} = await supabase
+      const { error: insertError } = await supabase
         .from("note_analysis")
         .insert({
           note_id: note_id,
@@ -71,11 +70,37 @@ export const analyzeNote = onRequest(
       // [5] UPDATE user_emotional_trend
       await updateEmotionalTrend(supabase, user_id, openAiResult.tone);
 
+      // [6] Lấy pet_id của user
+      const { data: petRow, error: petError } = await supabase
+        .from("pet")
+        .select("id")
+        .eq("user_id", user_id)
+        .single();
+
+      if (petError || !petRow) {
+        // Pet chưa tồn tại — không phải lỗi critical, bỏ qua
+        console.warn(`⚠️ Pet not found for user ${user_id}`);
+      } else {
+        // [7] Update pet mood dựa trên analysis mới
+        // last_interacted_at sẽ được set = NOW() trong update_pet_on_resume
+        // Flutter sẽ dùng giá trị này để biết Cloud Function vừa update
+        const { error: rpcError } = await supabase.rpc("update_pet_on_resume", {
+          p_pet_id: petRow.id,
+          p_user_id: user_id,
+        });
+
+        if (rpcError) {
+          console.error("❌ update_pet_on_resume error:", rpcError);
+        } else {
+          console.log(`🐾 Pet mood updated for user ${user_id}`);
+        }
+      }
+
       console.log(`✅ note ${note_id}: tone=${openAiResult.tone}, level=${openAiResult.level}`);
-      res.status(200).json({success: true});
+      res.status(200).json({ success: true });
     } catch (err) {
       console.error("❌ analyzeNote error:", err);
-      res.status(500).json({error: String(err)});
+      res.status(500).json({ error: String(err) });
     }
   }
 );
@@ -83,7 +108,7 @@ export const analyzeNote = onRequest(
 async function analyzeToneWithOpenAI(input: {
   text: string;
   last_tone: string;
-}): Promise<{tone: string; level: number; raw: object}> {
+}): Promise<{ tone: string; level: number; raw: object }> {
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -92,14 +117,14 @@ async function analyzeToneWithOpenAI(input: {
     },
     body: JSON.stringify({
       model: "gpt-4o-mini",
-      response_format: {type: "json_object"},
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
           content: `Bạn là AI chuyên phân tích cảm xúc trong văn bản tiếng Việt và tiếng Anh.
 Trả về JSON với format (không thêm text nào khác):  
 {
-  "tone": "<one of: very_happy | happy | neutral | anxious | sad | very_sad | angry>",
+  "tone": "<one of: happy| neutral|  sad| anxious| angry>",
   "level": <integer 1-5>
 }`,
         },
@@ -120,11 +145,11 @@ Trả về JSON với format (không thêm text nào khác):
   if (!content) throw new Error("OpenAI empty response");
 
   const parsed = JSON.parse(content);
-  const validTones = ["very_happy", "happy", "neutral", "anxious", "sad", "very_sad", "angry"];
+  const validTones = ["happy", "neutral", "sad", "anxious", "angry"];
   const tone = validTones.includes(parsed.tone) ? parsed.tone : "neutral";
   const level = Math.min(5, Math.max(1, parseInt(parsed.level) || 1));
 
-  return {tone, level, raw: result};
+  return { tone, level, raw: result };
 }
 
 async function updateEmotionalTrend(
@@ -133,7 +158,7 @@ async function updateEmotionalTrend(
   userId: string,
   newTone: string
 ): Promise<void> {
-  const {data: existing} = await supabase
+  const { data: existing } = await supabase
     .from("user_emotional_trend")
     .select("tone_history_7d")
     .eq("user_id", userId)
@@ -153,7 +178,7 @@ async function updateEmotionalTrend(
         emotional_momentum: calculateMomentum(updated),
         updated_at: new Date().toISOString(),
       },
-      {onConflict: "user_id"}
+      { onConflict: "user_id" }
     );
 }
 
@@ -167,8 +192,8 @@ function getDominantTone(history: string[]): string {
 }
 
 function calculateTrend(history: string[]): string {
-  const positives = ["happy", "very_happy"];
-  const negatives = ["sad", "very_sad", "anxious", "angry"];
+  const positives = ["happy"];
+  const negatives = ["sad", "anxious", "angry"];
   if (history.length < 2) return "stable";
   const recent = history.slice(-3);
   const posCount = recent.filter((t) => positives.includes(t)).length;
@@ -180,8 +205,8 @@ function calculateTrend(history: string[]): string {
 }
 
 function calculateMomentum(history: string[]): number {
-  const positives = ["happy", "very_happy"];
-  const negatives = ["sad", "very_sad", "anxious", "angry"];
+  const positives = ["happy"];
+  const negatives = ["sad", "anxious", "angry"];
   if (history.length === 0) return 0;
   const score = history.reduce((acc, tone) => {
     if (positives.includes(tone)) return acc + 1;
