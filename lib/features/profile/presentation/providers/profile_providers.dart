@@ -149,7 +149,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   }
 
   /// Update user profile
-\  Future<bool> updateProfile({
+  Future<bool> updateProfile({
     String? fullName,
     String? username,
     String? avatarUrl,

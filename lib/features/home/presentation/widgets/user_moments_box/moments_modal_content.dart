@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/constants/app_colors.dart';
+import '../../../../../core/widgets/system_notification_popup.dart';
 import '../../../../../core/widgets/widgets.dart';
-import '../../../../../data/models/moment_note_model.dart';
-import '../../../mock_data/mock_moment_notes.dart';
+import '../../../domain/entities/note_entity.dart';
+import '../../providers/home_providers.dart';
+import '../../providers/notes_providers.dart';
 import 'card_notes_item.dart';
 import 'media_preview_grid.dart';
 
 /// Modal content for creating moments/posts
 /// Contains input field and media selection functionality
-class MomentsModalContent extends StatefulWidget {
+class MomentsModalContent extends ConsumerStatefulWidget {
   final ImagePicker imagePicker;
   final String title;
   final String hintText;
@@ -27,13 +30,22 @@ class MomentsModalContent extends StatefulWidget {
   });
 
   @override
-  State<MomentsModalContent> createState() => _MomentsModalContentState();
+  ConsumerState<MomentsModalContent> createState() =>
+      _MomentsModalContentState();
 }
 
-class _MomentsModalContentState extends State<MomentsModalContent> {
+class _MomentsModalContentState extends ConsumerState<MomentsModalContent> {
   final TextEditingController _textController = TextEditingController();
   final List<XFile> _selectedMedia = [];
-  final List<MomentNote> _postedNotes = List.from(MockMomentNotes.sampleNotes);
+
+  @override
+  void initState() {
+    super.initState();
+    // Load notes after first frame to avoid modify during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadNotesForSelectedDate();
+    });
+  }
 
   @override
   void dispose() {
@@ -81,48 +93,161 @@ class _MomentsModalContentState extends State<MomentsModalContent> {
     }
   }
 
+  void _loadNotesForSelectedDate() {
+    final selectedDate = ref.read(selectedDateProvider);
+    ref.read(notesProvider.notifier).loadNotesByDate(selectedDate);
+  }
+
   void _removeMedia(int index) {
     setState(() => _selectedMedia.removeAt(index));
   }
 
-  void _handleSend() {
+  Future<void> _handleSend() async {
     final text = _textController.text.trim();
     if (text.isEmpty && _selectedMedia.isEmpty) return;
 
-    // Tạo note mới và thêm vào đầu danh sách
-    final newNote = MomentNote(
-      id: 'note_${DateTime.now().millisecondsSinceEpoch}',
-      userId:
-          'user_current', // Current user ID - should come from auth provider
-      authorName: 'Me',
-      authorAvatarUrl: 'https://i.pravatar.cc/150?img=3',
-      createdAt: DateTime.now(),
-      textContent: text,
-      // Media từ local file chưa có URL, để trống tạm
-      mediaUrls: [],
-    );
+    final mediaPaths = _selectedMedia.map((f) => f.path).toList();
+    final success = await ref.read(notesProvider.notifier).createNote(
+          textContent: text,
+          mediaFilePaths: mediaPaths,
+        );
 
-    setState(() {
-      _postedNotes.insert(0, newNote);
+    if (!mounted) return;
+
+    if (success) {
       _textController.clear();
-      _selectedMedia.clear();
-    });
+      setState(() => _selectedMedia.clear());
+      widget.onSend?.call();
+      SystemNotificationPopup.show(
+        context,
+        message: 'Note posted!',
+        type: NotificationType.success,
+      );
+    } else {
+      final error = ref.read(notesProvider).errorMessage ?? 'Unknown error';
+      SystemNotificationPopup.show(
+        context,
+        message: error,
+        type: NotificationType.error,
+      );
+    }
+  }
 
-    widget.onSend?.call();
+  void _showEditDialog(NoteEntity note) {
+    final editController = TextEditingController(text: note.textContent);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Note'),
+        content: TextField(
+          controller: editController,
+          maxLines: 5,
+          minLines: 2,
+          decoration: const InputDecoration(
+            hintText: 'Edit your note...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final newText = editController.text.trim();
+              if (newText.isEmpty) return;
+
+              final success = await ref
+                  .read(notesProvider.notifier)
+                  .updateNote(noteId: note.id, textContent: newText);
+
+              if (!mounted) return;
+              SystemNotificationPopup.show(
+                context,
+                message: success ? 'Note updated!' : 'Failed to update note',
+                type: success
+                    ? NotificationType.success
+                    : NotificationType.error,
+              );
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(NoteEntity note) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Note'),
+        content: const Text('Are you sure you want to delete this note?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final success =
+                  await ref.read(notesProvider.notifier).deleteNote(note.id);
+
+              if (!mounted) return;
+              SystemNotificationPopup.show(
+                context,
+                message: success ? 'Note deleted!' : 'Failed to delete note',
+                type: success
+                    ? NotificationType.success
+                    : NotificationType.error,
+              );
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * widget.heightFactor,
-      decoration: const BoxDecoration(
-        color: AppColors.backgroundLight,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+    // Listen for selectedDate changes and reload notes
+    ref.listen<DateTime>(selectedDateProvider, (previous, next) {
+      if (previous != null && previous != next) {
+        // Use Future.microtask to avoid modifying state during build
+        Future.microtask(() => _loadNotesForSelectedDate());
+      }
+    });
+    
+    final notesState = ref.watch(notesProvider);
+    final isToday = ref.watch(isSelectedDateTodayProvider);
+
+    // Determine loading text based on context
+    String? loadingText;
+    if (notesState.isCreating) {
+      loadingText = 'Đang đăng bài...';
+    } else if (notesState.isLoading) {
+      loadingText = 'Đang tải ghi chú...';
+    }
+
+    return LoadingOverlay(
+      isLoading: notesState.isCreating || notesState.isLoading,
+      loadingText: loadingText,
+      child: Container(
+        height: MediaQuery.of(context).size.height * widget.heightFactor,
+        decoration: const BoxDecoration(
+          color: AppColors.backgroundLight,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
         ),
-      ),
-      child: Column(
+        child: Column(
         children: [
           // Drag handle
           Container(
@@ -157,31 +282,88 @@ class _MomentsModalContentState extends State<MomentsModalContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Input row
-                  _buildInputRow(),
+                  // Input row — only show for today
+                  if (isToday) ...[
+                    _buildInputRow(),
 
-                  // Media preview section
-                  if (_selectedMedia.isNotEmpty) ...[
-                    const SizedBox(height: 12),
-                    MediaPreviewGrid(
-                      mediaFiles: _selectedMedia,
-                      onRemoveMedia: _removeMedia,
-                    ),
+                    // Media preview section
+                    if (_selectedMedia.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      MediaPreviewGrid(
+                        mediaFiles: _selectedMedia,
+                        onRemoveMedia: _removeMedia,
+                      ),
+                    ],
                   ],
 
-                  // Posted notes list
-                  if (_postedNotes.isNotEmpty) ...[
+                  // Error state
+                  if (!notesState.isLoading &&
+                      notesState.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 24),
+                      child: Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: AppColors.errorRed, size: 32),
+                            const SizedBox(height: 8),
+                            Text(
+                              notesState.errorMessage!,
+                              style: const TextStyle(
+                                color: AppColors.errorRed,
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: _loadNotesForSelectedDate,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Notes list
+                  if (notesState.notes.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     const Divider(height: 1, color: AppColors.surfaceColor),
                     const SizedBox(height: 16),
-                    ..._postedNotes.map((note) => CardNoteItem(note: note)),
+                    ...notesState.notes.map(
+                      (note) => CardNoteItem(
+                        note: note,
+                        onEdit: isToday ? () => _showEditDialog(note) : null,
+                        onDelete:
+                            isToday ? () => _confirmDelete(note) : null,
+                      ),
+                    ),
                   ],
+
+                  // Empty state
+                  if (!notesState.isLoading &&
+                      notesState.errorMessage == null &&
+                      notesState.notes.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 40),
+                      child: Center(
+                        child: Text(
+                          'No notes for this day',
+                          style: TextStyle(
+                            color: AppColors.textHint,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
           ),
         ],
       ),
+    ),
     );
   }
 

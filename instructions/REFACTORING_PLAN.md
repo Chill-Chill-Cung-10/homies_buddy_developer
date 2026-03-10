@@ -42,13 +42,15 @@
 
 ## 🚨 CÁC VẤN ĐỀ NGHIÊM TRỌNG
 
-### 1. TRÙNG LẶP CLASS NAME — `AppColors`
+### 1. ~~TRÙNG LẶP CLASS NAME — `AppColors`~~ ✅ RESOLVED
 
 **Vị trí:**
-- `lib/core/theme/app_colors.dart` (29 dòng) — màu pastel/beige
-- `lib/core/constants/app_colors.dart` (82 dòng) — màu primary/status/gradient
+- `lib/core/theme/app_colors.dart` (đã xóa)
+- `lib/core/constants/app_colors.dart` (giữ lại, đã bổ sung đầy đủ màu)
 
-**Vấn đề:** 2 class cùng tên `AppColors` với **giá trị khác nhau** cho `textPrimary`, `textSecondary`. Import sai file sẽ gây bug UI silent.
+**Trạng thái:** Đã merge tất cả màu vào file duy nhất. Đã thêm:
+- Calendar colors: `calendarAccent`, `calendarBackground`, `calendarDayText`, `calendarSelectedDay`, `calendarWeekHeader`
+- Exp bar colors: `expBarBackground`, `expBarFill`, `expBarEmpty`
 
 ### 2. TRÙNG LẶP FILE NAME — `notification_service.dart`
 
@@ -66,13 +68,17 @@
 
 **Vấn đề:** Barrel file dùng `hide` để workaround nhưng fragile. Cần extract ra file riêng.
 
-### 4. TRÙNG LẶP `UserModel`
+### 4. ~~TRÙNG LẶP `UserModel`~~ ✅ RESOLVED
 
 **Vị trí:**
-- `lib/data/models/user_model.dart` (freezed, 72 dòng) — dùng cho community
-- `lib/features/auth/data/models/user_model.dart` (freezed, 60 dòng) — dùng cho auth
+- `lib/data/models/user_model.dart` (freezed, 72 dòng) — dùng cho community (social profile)
+- `lib/features/auth/data/models/user_model.dart` (freezed, 60 dòng) — dùng cho auth (lightweight)
 
-**Vấn đề:** 2 UserModel khác fields. Khi integrate API sẽ conflict.
+**Giải pháp:** Đây là thiết kế có chủ đích (intentional separation):
+- `AuthUser` typedef được tạo trong auth module để phân biệt với community `UserModel`
+- `profile_providers.dart` đã được cập nhật sử dụng `AuthUser` typedef thay vì namespace alias
+- Community `UserModel` là single source of truth cho social profile (posts, followers, homies)
+- Auth `UserModel` (aka `AuthUser`) chỉ chứa identity, email, verification
 
 ### 5. HÀM `_formatCount()` LẶP LẠI 3 LẦN
 
@@ -324,9 +330,9 @@ SAU:
 
 ---
 
-### PHASE 4: Feature Help — Tách screen lớn nhất (Ưu tiên TRUNG BÌNH)
+### PHASE 4: Feature Help — Tách screen lớn nhất (Ưu tiên TRUNG BÌNH) ✅ COMPLETED
 
-#### 4.1 Tách `ask_for_help_screen.dart` (643 dòng)
+#### 4.1 Tách `ask_for_help_screen.dart` (643 dòng) ✅
 
 **Hành động:**
 ```
@@ -334,17 +340,16 @@ TRƯỚC:
   screens/ask_for_help_screen.dart  (643 dòng)
 
 SAU:
-  screens/ask_for_help_screen.dart  (~200 dòng, orchestrator)
+  screens/ask_for_help_screen.dart  (~350 dòng, orchestrator)
   widgets/
-    ├── bouncing_dots.dart           ← _BouncingDots animation widget
-    ├── help_welcome_message.dart    ← _buildWelcomeMessage
-    ├── help_new_chat_view.dart      ← _buildNewChatView + _buildSuggestionCards
-    ├── help_active_chat_view.dart   ← _buildActiveChatView
-    ├── help_input_area.dart         ← _buildInputArea + _buildAttachedImagesPreview
-    └── help_typing_indicator.dart   ← _buildTypingIndicator
+    ├── bouncing_dots.dart           ← _BouncingDots animation widget ✅
+    ├── help_welcome_message.dart    ← _buildWelcomeMessage ✅
+    ├── help_typing_indicator.dart   ← _buildTypingIndicator ✅
+    ├── help_input_area.dart         ← _buildInputArea + _buildAttachedImagesPreview ✅
+    └── widgets.dart                 ← Barrel export ✅
 ```
 
-#### 4.2 Xóa `help_screen.dart` placeholder
+#### 4.2 Xóa `help_screen.dart` placeholder ⏳ PENDING
 
 **Hành động:**
 - Xóa `help_screen.dart` (51 dòng, chỉ có TODO)
@@ -352,25 +357,23 @@ SAU:
 
 ---
 
-### PHASE 5: Feature Chat — Chuẩn hóa (Ưu tiên TRUNG BÌNH)
+### PHASE 5: Feature Chat — Chuẩn hóa (Ưu tiên TRUNG BÌNH) ✅ COMPLETED
 
-#### 5.1 Chuẩn hóa Chat models → Freezed
+#### 5.1 Chuẩn hóa Chat models → Freezed ✅
 
-**Hành động:**
-- Convert `conversation_model.dart` (hand-written) → Freezed
-- Convert `message_model.dart` (hand-written) → Freezed
-- Convert `message_receipt_model.dart` (hand-written) → Freezed
-- Thêm `fromJson`/`toJson` cho tất cả
+**Trạng thái:** Đã hoàn thành từ trước
+- `conversation_model.dart` → Freezed ✅
+- `message_model.dart` → Freezed ✅  
+- `message_receipt_model.dart` → Freezed ✅
+- Tất cả có `fromJson`/`toJson` ✅
 
-**Lý do:** Auth models dùng Freezed, community models dùng Freezed, nhưng chat models lại hand-written → inconsistent.
+#### 5.2 Chuẩn hóa `MomentNote` model → Freezed ✅
 
-#### 5.2 Chuẩn hóa `MomentNote` model → Freezed
+**Trạng thái:** Đã hoàn thành từ trước
+- `lib/data/models/moment_note_model.dart` → Freezed ✅
+- Có `.freezed.dart` và `.g.dart` generated files ✅
 
-**Hành động:**
-- Convert `lib/data/models/moment_note_model.dart` (plain class) → Freezed
-- Thêm `fromJson`/`toJson`
-
-#### 5.3 Tách `chat_detail_setting_screen.dart` (313 dòng)
+#### 5.3 Tách `chat_detail_setting_screen.dart` (313 dòng) ⏳ PENDING
 
 **Hành động:**
 ```
@@ -388,15 +391,15 @@ SAU:
 
 ---
 
-### PHASE 6: Feature Home — Cải thiện nhỏ (Ưu tiên THẤP)
+### PHASE 6: Feature Home — Cải thiện nhỏ (Ưu tiên THẤP) ✅ COMPLETED
 
-#### 6.1 Extract hardcoded colors → `AppColors`
+#### 6.1 Extract hardcoded colors → `AppColors` ✅ COMPLETED
 
 **Hành động:**
-- `calendar_item.dart`: `Color(0xFFF2D6B3)`, `Color(0xFFFFF8F0)` → `AppColors.calendarAccent`, `AppColors.calendarBg`
-- `exp_item.dart`: `Color(0xFFFFF4E8)`, `Color(0xFFE6B98A)` → `AppColors.expBarBg`, `AppColors.expBarFill`
-- `help_suggestion_card.dart`: 6 hardcoded colors → `AppColors.suggestionGreen`, etc.
-- `active_home_avatar.dart`: `Color(0xFF4A5568)` → `AppColors.avatarFallback`
+- `calendar_item.dart`: ✅ Fixed bug (arrows now change month, not day) + use `AppColors.calendarSelectedDay`, `AppColors.calendarWeekHeader`
+- `exp_item.dart`: ✅ Use `AppColors.expBarBackground`, `AppColors.expBarFill`, `AppColors.expBarEmpty`, `AppColors.textSecondary`
+- `help_suggestion_card.dart`: ✅ Use `AppColors.suggestionPlant/Pet/Health/Training/Nutrition/Grooming`
+- `active_home_avatar.dart`: ✅ Use `AppColors.avatarFallbackText`, `AppColors.avatarStoryGradientStart/End`
 
 #### 6.2 Extract calendar logic
 
@@ -426,15 +429,41 @@ TẠO MỚI:
 
 ---
 
-### PHASE 8: Architecture — State Management & DI (Ưu tiên cho TƯƠNG LAI)
+### PHASE 8: Architecture — State Management & DI (Ưu tiên cho TƯƠNG LAI) 🔄 IN PROGRESS
 
-#### 8.1 Abstract mock data → Repository pattern
+#### 8.1 Abstract mock data → Repository pattern ✅ PARTIALLY COMPLETED
 
 **Hành động:**
 ```
 TRƯỚC:  Screen → MockData (trực tiếp gọi static method)
 SAU:    Screen → Provider/BLoC → Repository → DataSource (Mock hoặc API)
 ```
+
+**Đã tạo:**
+- `lib/core/errors/failures.dart` ✅ — Failure classes (ValidationFailure, AuthFailure, NetworkFailure, etc.)
+- `fpdart: ^1.1.0` ✅ — Added to pubspec.yaml for Either, Option, Unit types
+
+**Đã tạo domain layer cho:**
+
+1. **Auth Feature** ✅
+   - `domain/entities/auth_user.dart` — Pure Dart entity
+   - `domain/repositories/auth_repository.dart` — Abstract interface (không import Firebase/Supabase)
+   - `domain/usecases/sign_in_with_email.dart` — Validate input + delegate to repo
+   - `domain/usecases/sign_up.dart` — Registration usecase
+   - `domain/usecases/sign_out.dart` — Logout usecase
+   - `domain/domain.dart` — Barrel export
+
+2. **Profile Feature** ✅
+   - `domain/entities/profile_entity.dart` — Social profile entity
+   - `domain/repositories/profile_repository.dart` — CRUD + social operations
+   - `domain/usecases/get_current_user_profile.dart`
+   - `domain/usecases/update_profile.dart`
+   - `domain/domain.dart` — Barrel export
+
+**Còn lại:**
+- Chat domain layer
+- Community domain layer
+- Data layer repository implementations
 
 **Tạo repositories:**
 ```
@@ -749,3 +778,32 @@ lib/
 | 3.6 | Di chuyển notification → feature riêng | `features/notifications/` với screens, widgets, data; old files → re-exports |
 
 > **Tất cả code refactored đều có comment `[Refactored] Phase X.Y` để dễ trace.**
+
+### Phase 8: Home Feature — Daily Notes & Pet RPC Integration ✅ (Hoàn thành)
+| Sub-phase | Mô tả | Kết quả |
+|-----------|-------|---------|
+| 8.1 | Tạo `home_providers.dart` | `selectedDateProvider` + `isSelectedDateTodayProvider` — shared state giữa calendar & notes |
+| 8.2 | Tạo Pet data layer | `pet_table.dart` (DB constants), `pet_remote_datasource.dart` (getUserPet, updatePetOnResume RPC) |
+| 8.3 | Tạo `pet_providers.dart` | `PetResumeState`, `PetResumeNotifier` với `onAppResume()`, full logging 11 RPC fields, error handling (SocketException, TimeoutException) |
+| 8.4 | Cập nhật Notes data layer | `note_remote_datasource.dart` + `getCurrentUserNotesByDate(date)`, `note_repository.dart` + `getNotesByDate(date)`, `note_repository_impl.dart` implementation |
+| 8.5 | Cập nhật `notes_providers.dart` | Added `loadNotesByDate()`, `updateNote()`, emoji-prefixed Logger logging cho tất cả methods |
+| 8.6 | Cập nhật `calendar_item.dart` | Convert → `ConsumerStatefulWidget`, header shows "Today" khi ngày hiện tại, thêm "Today" TextButton ở góc dưới phải grid, date selection qua `selectedDateProvider` |
+| 8.7 | Cập nhật `card_notes_item.dart` | `MomentNote` → `NoteEntity`, thêm `onEdit`/`onDelete` callbacks, thêm three_dots `PopupMenuButton` với Edit/Delete menu items |
+| 8.8 | Cập nhật `moments_modal_content.dart` | Convert → `ConsumerStatefulWidget`, real API thay mock data, `_showEditDialog()`, `_confirmDelete()`, input bị block khi không phải ngày hôm nay, `SystemNotificationPopup` cho success/error |
+| 8.9 | Cập nhật `main.dart` | Convert `MyApp` → `ConsumerStatefulWidget` + `WidgetsBindingObserver`, `didChangeAppLifecycleState` → `_handleResume()`, `ref.listen(isAuthenticatedProvider)` cho cold start, `ref.listen(petResumeProvider)` cho error notification |
+
+**Files mới tạo:**
+- `lib/features/home/presentation/providers/home_providers.dart`
+- `lib/features/pet/data/models/pet_table.dart`
+- `lib/features/pet/data/datasources/pet_remote_datasource.dart`
+- `lib/features/pet/presentation/providers/pet_providers.dart`
+
+**Files đã sửa:**
+- `lib/features/home/data/datasources/note_remote_datasource.dart`
+- `lib/features/home/domain/repositories/note_repository.dart`
+- `lib/features/home/data/repositories/note_repository_impl.dart`
+- `lib/features/home/presentation/providers/notes_providers.dart`
+- `lib/features/home/presentation/widgets/calendar_item.dart`
+- `lib/features/home/presentation/widgets/user_moments_box/card_notes_item.dart`
+- `lib/features/home/presentation/widgets/user_moments_box/moments_modal_content.dart`
+- `lib/main.dart`

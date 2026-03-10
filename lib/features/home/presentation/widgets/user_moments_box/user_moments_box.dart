@@ -2,30 +2,26 @@ import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
 import '../../../../../core/constants/app_shapes.dart';
-import '../../../../../data/models/moment_note_model.dart';
-import '../../../mock_data/mock_moment_notes.dart';
+import '../../../domain/entities/note_entity.dart';
 import 'card_notes_item.dart';
 
 /// User Moments Box - Hiển thị danh sách ghi chú cá nhân
 ///
 /// Sử dụng ListView để render danh sách [CardNoteItem]
-/// Có thể truyền data thật hoặc dùng mock data để test
+/// Data phải được truyền từ provider/usecase
 class UserMomentsBox extends StatelessWidget {
-  final List<MomentNote>? notes;
-  final bool useMockData;
+  final List<NoteEntity>? notes;
   final VoidCallback? onAvatarTap;
 
   const UserMomentsBox({
     super.key,
     this.notes,
-    this.useMockData = true,
     this.onAvatarTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final displayNotes =
-        notes ?? (useMockData ? MockMomentNotes.sampleNotes : <MomentNote>[]);
+    final displayNotes = notes ?? <NoteEntity>[];
 
     if (displayNotes.isEmpty) {
       return _buildEmptyState();

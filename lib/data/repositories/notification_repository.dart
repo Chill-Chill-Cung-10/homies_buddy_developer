@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/notification_model.dart';
 import '../../core/services/firebase_service.dart';
+import '../../core/mixins/session_guard_mixin.dart';
 
 /// Notification Repository - Quản lý notifications
 ///
@@ -9,41 +10,50 @@ import '../../core/services/firebase_service.dart';
 /// - Mark as read/unread
 /// - Delete notifications
 /// - Get unread count
-class NotificationRepository {
+///
+/// 🛡️ Protected with SessionGuardMixin - All operations check session validity
+class NotificationRepository with SessionGuardMixin {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Get notifications của current user
   ///
   /// Realtime stream với pagination
+  /// 🛡️ Requires authentication
   Stream<List<NotificationModel>> getNotifications({
     DocumentSnapshot? lastDoc,
     int limit = 20,
   }) {
-    final currentUserId = _firebaseService.currentUserId;
-    if (currentUserId == null) {
-      return Stream.value([]);
-    }
+    return guardedStream(
+      () {
+        final currentUserId = _firebaseService.currentUserId;
+        if (currentUserId == null) {
+          return Stream.value([]);
+        }
 
-    Query<Map<String, dynamic>> query = _firebaseService
-        .userNotifications(currentUserId)
-        .orderBy('createdAt', descending: true)
-        .limit(limit);
+        Query<Map<String, dynamic>> query = _firebaseService
+            .userNotifications(currentUserId)
+            .orderBy('createdAt', descending: true)
+            .limit(limit);
 
-    if (lastDoc != null) {
-      query = query.startAfterDocument(lastDoc);
-    }
+        if (lastDoc != null) {
+          query = query.startAfterDocument(lastDoc);
+        }
 
-    return query.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return NotificationModel.fromJson({
-          ...doc.data(),
-          'notificationId': doc.id,
-          'createdAt':
-              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
-              DateTime.now(),
+        return query.snapshots().map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return NotificationModel.fromJson({
+              ...doc.data(),
+              'notificationId': doc.id,
+              'createdAt':
+                  (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+                  DateTime.now(),
+            });
+          }).toList();
         });
-      }).toList();
-    });
+      },
+      requiresAuth: true,
+      operationName: 'getNotifications',
+    );
   }
 
   /// Get unread notification count

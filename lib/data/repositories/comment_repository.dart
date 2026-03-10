@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/comment_model.dart';
 import '../../core/services/firebase_service.dart';
+import '../../core/mixins/session_guard_mixin.dart';
 
 /// Comment Repository - Quản lý comments trên posts
 ///
@@ -8,12 +9,15 @@ import '../../core/services/firebase_service.dart';
 /// - Create/Update/Delete comments
 /// - Get comments với pagination
 /// - React/Unreact comments
-class CommentRepository {
+///
+/// 🛡️ Protected with SessionGuardMixin - All operations check session validity
+class CommentRepository with SessionGuardMixin {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Get comments của một post
   ///
   /// [sortBy] - 'createdAt' (mới nhất) hoặc 'reactCount' (nhiều react nhất)
+  /// Public operation - does not require auth
   Stream<List<Comment>> getComments(
     String postId, {
     String sortBy = 'createdAt',
@@ -21,28 +25,34 @@ class CommentRepository {
     DocumentSnapshot? lastDoc,
     int limit = 20,
   }) {
-    Query<Map<String, dynamic>> query = _firebaseService
-        .postComments(postId)
-        .orderBy(sortBy, descending: descending)
-        .limit(limit);
+    return guardedStream(
+      () {
+        Query<Map<String, dynamic>> query = _firebaseService
+            .postComments(postId)
+            .orderBy(sortBy, descending: descending)
+            .limit(limit);
 
-    if (lastDoc != null) {
-      query = query.startAfterDocument(lastDoc);
-    }
+        if (lastDoc != null) {
+          query = query.startAfterDocument(lastDoc);
+        }
 
-    return query.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return Comment.fromJson({
-          ...doc.data(),
-          'commentId': doc.id,
-          'postId': postId,
-          'createdAt':
-              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
-              DateTime.now(),
-          'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
+        return query.snapshots().map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return Comment.fromJson({
+              ...doc.data(),
+              'commentId': doc.id,
+              'postId': postId,
+              'createdAt':
+                  (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+                  DateTime.now(),
+              'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
+            });
+          }).toList();
         });
-      }).toList();
-    });
+      },
+      requiresAuth: false,
+      operationName: 'getComments',
+    );
   }
 
   /// Get comment count của post

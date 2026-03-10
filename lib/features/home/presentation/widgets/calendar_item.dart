@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_colors.dart';
+import '../providers/home_providers.dart';
 
-class CozyCalendar extends StatefulWidget {
+class CozyCalendar extends ConsumerStatefulWidget {
   const CozyCalendar({super.key});
 
   @override
-  _CozyCalendarState createState() => _CozyCalendarState();
+  ConsumerState<CozyCalendar> createState() => _CozyCalendarState();
 }
 
-class _CozyCalendarState extends State<CozyCalendar> {
-  DateTime currentMonth = DateTime(2026, 4);
-  DateTime? selectedDate = DateTime.now(); // Mặc định chọn ngày hiện tại
-  bool isExpanded = false;
+class _CozyCalendarState extends ConsumerState<CozyCalendar> {
+  late DateTime currentMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    final selected = ref.read(selectedDateProvider);
+    currentMonth = DateTime(selected.year, selected.month);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final selectedDate = ref.watch(selectedDateProvider);
+    final isExpanded = ref.watch(calendarExpandedProvider);
     final days = _generateDays(currentMonth);
 
     return Container(
@@ -107,7 +117,31 @@ class _CozyCalendarState extends State<CozyCalendar> {
                             children: [
                               _buildWeekDays(),
                               SizedBox(height: 8),
-                              _buildGrid(days),
+                              _buildGrid(days, selectedDate),
+                              // Today button at bottom-right
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: TextButton(
+                                  onPressed: _resetToToday,
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    'Today',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.calendarSelectedDay,
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         )
@@ -123,48 +157,50 @@ class _CozyCalendarState extends State<CozyCalendar> {
 
   // ================= HEADER =================
   Widget _buildHeader() {
+    final selectedDate = ref.read(selectedDateProvider);
+    final headerText = _getHeaderText(selectedDate);
+
     return GestureDetector(
       onTap: () {
-        setState(() {
-          isExpanded = !isExpanded;
-        });
+        ref.read(calendarExpandedProvider.notifier).state = 
+            !ref.read(calendarExpandedProvider);
       },
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: Icon(Icons.chevron_left),
+            icon: const Icon(Icons.chevron_left),
             iconSize: 20,
-            padding: EdgeInsets.all(4),
-            constraints: BoxConstraints(),
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(),
             onPressed: () {
               setState(() {
                 currentMonth = DateTime(
                   currentMonth.year,
-                  currentMonth.month,
-                  currentMonth.day - 1,
+                  currentMonth.month - 1,
+                  1,
                 );
               });
             },
           ),
           Flexible(
             child: Text(
-              "${_monthName(currentMonth.month)} ${currentMonth.day} ${currentMonth.year}",
+              headerText,
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
-            icon: Icon(Icons.chevron_right),
+            icon: const Icon(Icons.chevron_right),
             iconSize: 20,
-            padding: EdgeInsets.all(4),
-            constraints: BoxConstraints(),
+            padding: const EdgeInsets.all(4),
+            constraints: const BoxConstraints(),
             onPressed: () {
               setState(() {
                 currentMonth = DateTime(
                   currentMonth.year,
-                  currentMonth.month,
-                  currentMonth.day + 1,
+                  currentMonth.month + 1,
+                  1,
                 );
               });
             },
@@ -172,6 +208,27 @@ class _CozyCalendarState extends State<CozyCalendar> {
         ],
       ),
     );
+  }
+
+  /// Header text: "Today" if selectedDate == today, otherwise "MMM d yyyy"
+  String _getHeaderText(DateTime selectedDate) {
+    final now = DateTime.now();
+    if (selectedDate.year == now.year &&
+        selectedDate.month == now.month &&
+        selectedDate.day == now.day) {
+      return 'Today';
+    }
+    return '${_monthName(selectedDate.month)} ${selectedDate.day} ${selectedDate.year}';
+  }
+
+  /// Reset selectedDate to today and navigate calendar to current month
+  void _resetToToday() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    ref.read(selectedDateProvider.notifier).state = today;
+    setState(() {
+      currentMonth = DateTime(now.year, now.month);
+    });
   }
 
   // ================= WEEK =================
@@ -184,7 +241,7 @@ class _CozyCalendarState extends State<CozyCalendar> {
           .map(
             (d) => Text(
               d,
-              style: TextStyle(color: Colors.brown.shade300, fontSize: 12),
+              style: TextStyle(color: AppColors.calendarWeekHeader, fontSize: 12),
             ),
           )
           .toList(),
@@ -192,7 +249,7 @@ class _CozyCalendarState extends State<CozyCalendar> {
   }
 
   // ================= GRID =================
-  Widget _buildGrid(List<DateTime?> days) {
+  Widget _buildGrid(List<DateTime?> days, DateTime selectedDate) {
     return GridView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -207,20 +264,18 @@ class _CozyCalendarState extends State<CozyCalendar> {
         if (day == null) return SizedBox();
 
         final isSelected =
-            selectedDate != null &&
-            day.day == selectedDate!.day &&
-            day.month == selectedDate!.month;
+            day.day == selectedDate.day &&
+            day.month == selectedDate.month &&
+            day.year == selectedDate.year;
 
         return GestureDetector(
           onTap: () {
-            setState(() {
-              selectedDate = day;
-            });
+            ref.read(selectedDateProvider.notifier).state = day;
           },
           child: AnimatedContainer(
             duration: Duration(milliseconds: 200),
             decoration: BoxDecoration(
-              color: isSelected ? Color(0xFFF2D6B3) : Colors.transparent,
+              color: isSelected ? AppColors.calendarSelectedDay : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: FittedBox(
@@ -262,7 +317,7 @@ class _CozyCalendarState extends State<CozyCalendar> {
       return Container(
         padding: EdgeInsets.all(1),
         decoration: BoxDecoration(
-          color: Color(0xFFF2D6B3),
+          color: AppColors.calendarSelectedDay,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Icon(Icons.sentiment_satisfied, size: 7),

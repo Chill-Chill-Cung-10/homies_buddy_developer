@@ -3,6 +3,7 @@ import '../../data/models/post_model.dart';
 import '../../data/models/media_file_model.dart';
 import '../../data/models/enums/post_privacy.dart';
 import '../../core/services/firebase_service.dart';
+import '../../core/mixins/session_guard_mixin.dart';
 
 /// Post Repository - Quản lý operations liên quan đến posts
 ///
@@ -12,36 +13,46 @@ import '../../core/services/firebase_service.dart';
 /// - Get user's posts
 /// - React/Unreact posts
 /// - Hashtag & mention queries
-class PostRepository {
+///
+/// 🛡️ Protected with SessionGuardMixin - All operations check session validity
+class PostRepository with SessionGuardMixin {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Get community feed (public posts)
   ///
   /// [lastDoc] - Document cuối cùng để cursor-based pagination
   /// [limit] - Số lượng posts mỗi page
+  /// 
+  /// Public operation - does not require auth
   Stream<List<Post>> getFeed({DocumentSnapshot? lastDoc, int limit = 10}) {
-    Query<Map<String, dynamic>> query = _firebaseService.postsCollection
-        .where('privacy', isEqualTo: 'public')
-        .orderBy('createdAt', descending: true)
-        .limit(limit);
+    return guardedStream(
+      () {
+        Query<Map<String, dynamic>> query = _firebaseService.postsCollection
+            .where('privacy', isEqualTo: 'public')
+            .orderBy('createdAt', descending: true)
+            .limit(limit);
 
-    if (lastDoc != null) {
-      query = query.startAfterDocument(lastDoc);
-    }
-
-    return query.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return Post.fromJson({
-          ...doc.data(),
-          'postId': doc.id,
-          // Convert Timestamp to DateTime
-          'createdAt':
-              (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
-              DateTime.now(),
-          'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
+        if (lastDoc != null) {
+          query = query.startAfterDocument(lastDoc);
+        }
+        
+        return query.snapshots().map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return Post.fromJson({
+              ...doc.data(),
+              'postId': doc.id,
+              // Convert Timestamp to DateTime
+              'createdAt':
+                  (doc.data()['createdAt'] as Timestamp?)?.toDate() ??
+                  DateTime.now(),
+              'updatedAt': (doc.data()['updatedAt'] as Timestamp?)?.toDate(),
+            });
+          }).toList();
         });
-      }).toList();
-    });
+      },
+      requiresAuth: false,
+      operationName: 'getFeed',
+    );
   }
 
   /// Get posts của một user cụ thể

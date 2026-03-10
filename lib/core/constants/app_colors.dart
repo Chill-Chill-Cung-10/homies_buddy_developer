@@ -81,6 +81,12 @@ class AppColors {
   static const Color navBarUnselected = Color(0xFFBDA88F);
 
   // ──────────────────────────────────────────────
+  // Calendar Colors
+  // ──────────────────────────────────────────────
+  static const Color calendarSelectedDay = Color(0xFFFFB88C);
+  static const Color calendarWeekHeader = Color(0xFF8B7355);
+
+  // ──────────────────────────────────────────────
   // Gradient Colors
   // ──────────────────────────────────────────────
   static const LinearGradient backgroundGradient = LinearGradient(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/spinning_nav_button.dart';
+import '../providers/home_providers.dart';
 import '../widgets/calendar_item.dart';
 import '../widgets/user_moments_box.dart';
 import '../widgets/pet_animation_widget.dart';
@@ -8,16 +10,15 @@ import '../widgets/background_animation_widget.dart';
 
 enum PetMood { happy, idle, sad }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final PetMood _currentMood = PetMood.happy;
-  BackgroundTime _currentTimeOfDay = BackgroundTime.morning;
 
   // Map mood → PetState
   static const Map<PetMood, PetState> _moodToState = {
@@ -26,14 +27,19 @@ class _HomeScreenState extends State<HomeScreen> {
     PetMood.sad: PetState.sad,
   };
 
-  void _switchTimeOfDay(BackgroundTime time) {
-    if (_currentTimeOfDay == time) return;
-    setState(() => _currentTimeOfDay = time);
+  /// Auto-detect current time of day based on actual time
+  BackgroundTime get _currentTimeOfDay {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 8) return BackgroundTime.earlyMorning;
+    if (hour >= 8 && hour < 12) return BackgroundTime.morning;
+    if (hour >= 12 && hour < 18) return BackgroundTime.afternoon;
+    return BackgroundTime.night;
   }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
+    final isCalendarExpanded = ref.watch(calendarExpandedProvider);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -66,6 +72,20 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
+          // ── Barrier khi calendar expanded - đặt trước calendar để catch tap events ──
+          if (isCalendarExpanded)
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  // Đóng calendar khi tap ra ngoài
+                  ref.read(calendarExpandedProvider.notifier).state = false;
+                },
+                child: Container(
+                  color: Colors.transparent,
+                ),
+              ),
+            ),
+
           // ── Top: Settings & Calendar ──
           Positioned(
             top: 16,
@@ -95,48 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          // ── Time of Day Selector ──
-          Positioned(
-            top: 120,
-            left: 24,
-            right: 24,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _TimeButton(
-                    icon: Icons.brightness_2,
-                    label: 'Dawn',
-                    isActive: _currentTimeOfDay == BackgroundTime.earlyMorning,
-                    onTap: () => _switchTimeOfDay(BackgroundTime.earlyMorning),
-                  ),
-                  const SizedBox(width: 8),
-                  _TimeButton(
-                    icon: Icons.wb_sunny_outlined,
-                    label: 'Morning',
-                    isActive: _currentTimeOfDay == BackgroundTime.morning,
-                    onTap: () => _switchTimeOfDay(BackgroundTime.morning),
-                  ),
-                  const SizedBox(width: 8),
-                  _TimeButton(
-                    icon: Icons.wb_sunny,
-                    label: 'Afternoon',
-                    isActive: _currentTimeOfDay == BackgroundTime.afternoon,
-                    onTap: () => _switchTimeOfDay(BackgroundTime.afternoon),
-                  ),
-                  const SizedBox(width: 8),
-                  _TimeButton(
-                    icon: Icons.nightlight_round,
-                    label: 'Night',
-                    isActive: _currentTimeOfDay == BackgroundTime.night,
-                    onTap: () => _switchTimeOfDay(BackgroundTime.night),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
           // ── Thoughts Share ──
           const Positioned(
             bottom: 18,
@@ -145,72 +123,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: UserMomentsBox(),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _TimeButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _TimeButton({
-    required this.icon,
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive
-              ? Colors.white.withOpacity(0.9)
-              : Colors.white.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isActive
-                ? AppColors.accentOrange
-                : Colors.white.withOpacity(0.5),
-            width: isActive ? 2 : 1,
-          ),
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: AppColors.accentOrange.withOpacity(0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : [],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 16,
-              color: isActive ? AppColors.accentOrange : Colors.white,
-            ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: isActive ? AppColors.textPrimary : Colors.white,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -241,7 +241,9 @@ class AuthRepository {
         username: response['username'] as String? ?? '',
         avatarUrl: response['avatar_url'] as String?,
         phoneNumber: firebaseUser?.phoneNumber,
-        dateOfBirth: null,
+        dateOfBirth: response['date_of_birth'] == null
+            ? null
+            : DateTime.tryParse(response['date_of_birth'] as String),
         isEmailVerified: firebaseUser?.emailVerified ?? false,
         createdAt: response['created_at'] == null
             ? firebaseUser?.metadata.creationTime
@@ -272,6 +274,9 @@ class AuthRepository {
         'email': user.email,
         'full_name': user.fullName,
         'avatar_url': user.avatarUrl ?? '',
+        'username': user.username.isNotEmpty ? user.username : null,
+        'dateOfBirth': user.dateOfBirth?.toIso8601String()   // ← thêm dòng này
+                 ?? DateTime(2000, 1, 1).toIso8601String(),
       };
 
       debugPrint('Supabase sync start -> user_profile: $profilePayload');
@@ -298,6 +303,7 @@ class AuthRepository {
         'email': user.email,
         'full_name': user.fullName,
         'avatar_url': user.avatarUrl ?? '',
+        'username': user.username.isNotEmpty ? user.username : null,
       };
 
       await client

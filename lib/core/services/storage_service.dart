@@ -10,7 +10,49 @@ import 'firebase_service.dart';
 /// và generate thumbnails cho images.
 class StorageService {
   final FirebaseService _firebaseService = FirebaseService.instance;
+  /// Upload media cho note — path: notes/{userId}/{noteId}_media_{i}.jpg
+Future<List<String>> uploadNoteMedia({
+  required String userId,
+  required String noteId,
+  required List<XFile> files,
+}) async {
+  final urls = <String>[];
 
+  for (int i = 0; i < files.length; i++) {
+    final file = files[i];
+    final ext = path.extension(file.path).toLowerCase();
+    final isVideo = ['.mp4', '.mov', '.avi'].contains(ext);
+
+    try {
+      // Path đúng: notes/{userId}/{noteId}_media_{i}.jpg
+      final filename = '${noteId}_media_$i${isVideo ? ext : '.jpg'}';
+      final ref = _firebaseService.storage
+          .ref()
+          .child('notes/$userId/$filename');  // ← path khớp rules
+
+      if (isVideo) {
+        final uploadTask = ref.putFile(
+          File(file.path),
+          SettableMetadata(contentType: 'video/mp4'),
+        );
+        final snapshot = await uploadTask;
+        urls.add(await snapshot.ref.getDownloadURL());
+      } else {
+        final compressed = await _compressImage(file, maxWidth: 1920);
+        final uploadTask = ref.putFile(
+          compressed,
+          SettableMetadata(contentType: 'image/jpeg'),
+        );
+        final snapshot = await uploadTask;
+        urls.add(await snapshot.ref.getDownloadURL());
+      }
+    } catch (e) {
+      throw StorageException('Failed to upload media $i: $e');
+    }
+  }
+
+  return urls;
+}
   /// Upload avatar của user
   ///
   /// Tự động compress xuống max 512x512, quality 85%

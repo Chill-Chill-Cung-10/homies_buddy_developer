@@ -87,11 +87,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final accessToken = await firebaseUser.getIdToken() ?? '';
         final refreshToken = firebaseUser.refreshToken ?? '';
         
+        // Firebase ID tokens expire after 1 hour
+        final expiresAt = DateTime.now().add(const Duration(hours: 1));
+        
         // Save session to secure storage
         await _sessionService.saveSession(
           userId: userProfile.id,
           accessToken: accessToken,
           refreshToken: refreshToken,
+          expiresAt: expiresAt,
         );
         
         state = AuthState.authenticated(

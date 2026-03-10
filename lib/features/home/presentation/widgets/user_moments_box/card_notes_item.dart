@@ -4,21 +4,25 @@ import 'package:intl/intl.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
 import '../../../../../core/constants/app_shapes.dart';
-import '../../../../../data/models/moment_note_model.dart';
+import '../../../domain/entities/note_entity.dart';
 
 /// Card Note Item - Hiển thị một ghi chú cá nhân trong user moments list
 ///
-/// Bao gồm: avatar, tên, timestamp, nội dung text, media grid
+/// Bao gồm: avatar, tên, timestamp, nội dung text, media grid, three_dots menu
 class CardNoteItem extends StatelessWidget {
-  final MomentNote note;
+  final NoteEntity note;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const CardNoteItem({
     super.key,
     required this.note,
     this.onAvatarTap,
     this.onTap,
+    this.onEdit,
+    this.onDelete,
   });
 
   /// Format DateTime -> "2:40 PM 02/28/2026"
@@ -127,6 +131,49 @@ class CardNoteItem extends StatelessWidget {
             ],
           ),
         ),
+
+        // Three dots menu
+        if (onEdit != null || onDelete != null)
+          PopupMenuButton<String>(
+            icon: const Icon(
+              Icons.more_vert,
+              size: 20,
+              color: AppColors.textHint,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            onSelected: (value) {
+              if (value == 'edit') onEdit?.call();
+              if (value == 'delete') onDelete?.call();
+            },
+            itemBuilder: (context) => [
+              if (onEdit != null)
+                const PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_outlined, size: 18),
+                      SizedBox(width: 8),
+                      Text('Edit'),
+                    ],
+                  ),
+                ),
+              if (onDelete != null)
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline, size: 18, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: Colors.red)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
       ],
     );
   }

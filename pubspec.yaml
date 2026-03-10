@@ -93,6 +93,7 @@ dependencies:
   encrypt: ^5.0.3
 
   # 12. Utils
+  fpdart: ^1.1.0
   path: ^1.8.3
 
   # 13. Monitoring & Quality
