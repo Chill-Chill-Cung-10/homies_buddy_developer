@@ -1,38 +1,47 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../data/models/models.dart';
-import '../../mockdata/chat_mock_data.dart';
+import '../../data/repositories/chat_repository.dart';
 import '../widgets/widgets.dart';
 import 'chat_detail_setting_screen.dart';
 
-/// Chat Detail Screen
+/// Chat Detail Screen — Firebase-backed
 ///
-/// Displays conversation messages in a warm, cozy interface
+/// - Streams messages real-time từ Firestore
+/// - Send text + image qua [ChatRepository]
+/// - Tự động mark seen khi mở screen
 class ChatDetailScreen extends StatefulWidget {
   final Conversation conversation;
+  final ChatRepository repository;
+  final String currentUserId;
 
-  const ChatDetailScreen({super.key, required this.conversation});
+  const ChatDetailScreen({
+    super.key,
+    required this.conversation,
+    required this.repository,
+    required this.currentUserId,
+  });
 
   @override
   State<ChatDetailScreen> createState() => _ChatDetailScreenState();
 }
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
-  late List<Message> _messages;
   late Conversation _conversation;
   final ScrollController _scrollController = ScrollController();
+  final _picker = ImagePicker();
+
+  // Upload progress: null = không upload, 0.0–1.0 = đang upload
+  double? _uploadProgress;
 
   @override
   void initState() {
     super.initState();
     _conversation = widget.conversation;
-    _messages = ChatMockData.getMessagesForConversation(widget.conversation.id);
-
-    // Scroll to bottom after frame is rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToBottom();
-    });
   }
 
   @override
@@ -42,13 +51,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   void _navigateToSettings() {
@@ -56,63 +67,86 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       MaterialPageRoute(
         builder: (_) => ChatDetailSettingScreen(
           conversation: _conversation,
+          repository: widget.repository,
           onConversationUpdated: (updated) {
-            setState(() {
-              _conversation = updated;
-            });
+            setState(() => _conversation = updated);
+            // Persist nickname/mute to Firestore
+            widget.repository.updateNickname(
+              conversationId: updated.id,
+              nickname: updated.nickname,
+            );
+            if (updated.mutedUntil != _conversation.mutedUntil) {
+              widget.repository.updateMutedUntil(
+                conversationId: updated.id,
+                mutedUntil: updated.mutedUntil,
+              );
+            }
           },
         ),
       ),
     );
   }
 
-  void _sendMessage(String content) {
+  // ── Send text ──────────────────────────────────────────────────────────
+
+  Future<void> _sendMessage(String content) async {
     if (content.trim().isEmpty) return;
-
-    final newMessage = Message(
-      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-      conversationId: widget.conversation.id,
-      senderId: ChatMockData.currentUserId,
+    await widget.repository.sendTextMessage(
+      conversationId: _conversation.id,
+      senderId: widget.currentUserId,
       content: content,
-      type: MessageType.text,
-      createdAt: DateTime.now(),
-      status: MessageStatus.sending,
     );
-
-    setState(() {
-      _messages.add(newMessage);
-    });
-
-    // Simulate sending (mark as sent then delivered)
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() {
-          final index = _messages.indexWhere((m) => m.id == newMessage.id);
-          if (index != -1) {
-            _messages[index] = newMessage.copyWith(status: MessageStatus.sent);
-          }
-        });
-      }
-    });
-
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
-        setState(() {
-          final index = _messages.indexWhere((m) => m.id == newMessage.id);
-          if (index != -1) {
-            _messages[index] = newMessage.copyWith(
-              status: MessageStatus.delivered,
-            );
-          }
-        });
-      }
-    });
-
-    // Scroll to bottom
-    Future.delayed(const Duration(milliseconds: 100), () {
-      _scrollToBottom();
-    });
+    _scrollToBottom();
   }
+
+  // ── Send images ────────────────────────────────────────────────────────
+
+  Future<void> _pickAndSendImages() async {
+    final picked = await _picker.pickMultiImage(imageQuality: 80);
+    if (picked.isEmpty) return;
+
+    final files = picked.map((xf) => File(xf.path)).toList();
+
+    setState(() => _uploadProgress = 0.0);
+
+    try {
+      // Fake progress vì Firebase Storage putFile không expose granular progress
+      // trong MVE — dùng simple indeterminate. Bạn có thể subscribe uploadTask
+      // để có real progress sau.
+      await widget.repository.sendImageMessage(
+        conversationId: _conversation.id,
+        senderId: widget.currentUserId,
+        imageFiles: files,
+      );
+      _scrollToBottom();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Upload thất bại: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadProgress = null);
+    }
+  }
+
+  // ── Mark seen for latest message ───────────────────────────────────────
+
+  void _markSeenIfNeeded(List<Message> messages) {
+    final lastOthers = messages.lastWhereOrNull(
+      (m) =>
+          m.senderId != widget.currentUserId &&
+          m.status != MessageStatus.seen,
+    );
+    if (lastOthers == null) return;
+    widget.repository.markSeen(
+      conversationId: _conversation.id,
+      messageId: lastOthers.id,
+      userId: widget.currentUserId,
+    );
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -121,35 +155,26 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         backgroundColor: AppColors.backgroundPost.withOpacity(0.95),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: AppColors.textPrimary,
-            size: 20,
-          ),
+          icon: Icon(Icons.arrow_back_ios,
+              color: AppColors.textPrimary, size: 20),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: GestureDetector(
           onTap: _navigateToSettings,
           child: Row(
             children: [
-              // Avatar
               ClipOval(
                 child: SizedBox(
                   width: 36,
                   height: 36,
                   child: _conversation.participantAvatar.startsWith('http')
-                      ? Image.network(
-                          _conversation.participantAvatar,
-                          fit: BoxFit.cover,
-                        )
-                      : Image.asset(
-                          _conversation.participantAvatar,
-                          fit: BoxFit.cover,
-                        ),
+                      ? Image.network(_conversation.participantAvatar,
+                          fit: BoxFit.cover)
+                      : Image.asset(_conversation.participantAvatar,
+                          fit: BoxFit.cover),
                 ),
               ),
               const SizedBox(width: 10),
-              // Name and status
               Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,51 +213,87 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         decoration: BoxDecoration(gradient: AppColors.cardGradient),
         child: Column(
           children: [
-            // Messages List
+            // ── Upload progress bar ──────────────────────────────
+            if (_uploadProgress != null)
+              LinearProgressIndicator(
+                value: null, // indeterminate
+                color: AppColors.accentOrange,
+                backgroundColor: AppColors.accentOrange.withOpacity(0.2),
+              ),
+
+            // ── Messages stream ──────────────────────────────────
             Expanded(
-              child: _messages.isEmpty
-                  ? Center(
+              child: StreamBuilder<List<Message>>(
+                stream: widget.repository
+                    .watchMessages(_conversation.id),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text('Lỗi: ${snapshot.error}',
+                          style: AppTextStyles.bodyMedium),
+                    );
+                  }
+
+                  final messages = snapshot.data ?? [];
+
+                  // Mark seen sau khi build
+                  if (messages.isNotEmpty) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      _markSeenIfNeeded(messages);
+                    });
+                    _scrollToBottom();
+                  }
+
+                  if (messages.isEmpty) {
+                    return Center(
                       child: Text(
                         'No messages yet\nStart the conversation!',
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textSecondary),
                       ),
-                    )
-                  : ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 16,
-                      ),
-                      itemCount: _messages.length,
-                      itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        final isMe =
-                            message.senderId == ChatMockData.currentUserId;
+                    );
+                  }
 
-                        return MessageBubble(message: message, isMe: isMe);
-                      },
-                    ),
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 16),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      final isMe =
+                          message.senderId == widget.currentUserId;
+                      return MessageBubble(message: message, isMe: isMe);
+                    },
+                  );
+                },
+              ),
             ),
 
-            // Input Field
+            // ── Input field ──────────────────────────────────────
             ChatInputField(
               onSendMessage: _sendMessage,
-              onAttachMedia: () {
-                // TODO: Implement media attachment
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Media attachment coming soon!'),
-                    duration: Duration(seconds: 1),
-                  ),
-                );
-              },
+              onAttachMedia: _pickAndSendImages,
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+// Dart extension helper (có thể bỏ nếu dùng collection package)
+extension _IterableX<T> on Iterable<T> {
+  T? lastWhereOrNull(bool Function(T) test) {
+    T? result;
+    for (final e in this) {
+      if (test(e)) result = e;
+    }
+    return result;
   }
 }

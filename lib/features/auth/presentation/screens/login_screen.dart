@@ -38,7 +38,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
-
+    if (!mounted) return;
     // Check for errors after sign in attempt
     final authState = ref.read(authStateProvider);
     if (authState.isError && mounted) {

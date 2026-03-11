@@ -264,7 +264,7 @@ class AuthRepository {
     if (client == null) {
       debugPrint('⚠️ Supabase not configured, skipping profile creation');
       throw AuthException(
-        'Supabase is not configured. Please run with SUPABASE_URL and SUPABASE_ANON_KEY.',
+        'Supabase is not configured. Please check your .env file (SUPABASE_URL, SUPABASE_ANON_KEY).',
       );
     }
 

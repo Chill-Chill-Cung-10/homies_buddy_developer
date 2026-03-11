@@ -6,25 +6,25 @@
 /// - Privacy selector
 /// - Post button
 library;
+import 'dart:async';
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:homies_buddy_developer/data/repositories/post_repository.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
 import '../../../../core/constants/app_spacing.dart';
-import '../../../../core/services/storage_service.dart';
 import '../../../../core/widgets/system_notification_popup.dart';
-import '../../../../data/models/post_model.dart';
-import '../../../../data/models/media_file_model.dart';
 import '../../../../data/models/enums/post_privacy.dart';
-import '../../../../data/models/enums/media_type.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../data/models/create_post_request.dart';
+import '../providers/community_providers.dart';
 
 /// Create Post Screen
 class CreatePostScreen extends ConsumerStatefulWidget {
@@ -38,7 +38,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   final _contentController = TextEditingController();
   final _contentFocusNode = FocusNode();
   final ImagePicker _picker = ImagePicker();
-  final StorageService _storageService = StorageService();
   
   // State
   bool _isLoading = false;
@@ -67,6 +66,12 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
   // ─── Media Picking ───
 
+  /// Acceptable aspect ratio range: 1:1 (square) to 4:5 (portrait)
+  /// Min ratio = 4/5 = 0.8 (tall portrait)
+  /// Max ratio = 1.0 (square)
+  static const double minAspectRatio = 0.8; // 4:5 portrait
+  static const double maxAspectRatio = 1.0; // 1:1 square
+
   Future<void> _pickImages() async {
     if (_selectedMedia.length >= maxMediaFiles) {
       SystemNotificationPopup.warning(
@@ -78,19 +83,41 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
 
     try {
       final List<XFile> images = await _picker.pickMultiImage(
-        maxWidth: 1920,
-        maxHeight: 1920,
+        maxWidth: 960,
+        maxHeight: 960,
+        imageQuality: 85,
       );
 
       if (images.isNotEmpty) {
         final remaining = maxMediaFiles - _selectedMedia.length;
-        final toAdd = images.take(remaining).toList();
+        final toCheck = images.take(remaining).toList();
+        
+        // Validate aspect ratios
+        final validImages = await _filterValidAspectRatios(toCheck);
+        
+        if (validImages.isEmpty && toCheck.isNotEmpty) {
+          if (mounted) {
+            SystemNotificationPopup.warning(
+              context,
+              message: 'Images must have aspect ratio between 1:1 (square) and 4:5 (portrait)',
+            );
+          }
+          return;
+        }
         
         setState(() {
-          _selectedMedia.addAll(toAdd);
+          _selectedMedia.addAll(validImages);
         });
 
-        if (images.length > remaining) {
+        final rejected = toCheck.length - validImages.length;
+        if (rejected > 0) {
+          if (mounted) {
+            SystemNotificationPopup.warning(
+              context,
+              message: '$rejected image(s) rejected. Only 1:1 to 4:5 ratios allowed.',
+            );
+          }
+        } else if (images.length > remaining) {
           if (mounted) {
             SystemNotificationPopup.warning(
               context,
@@ -104,6 +131,45 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         SystemNotificationPopup.error(context, message: 'Failed to pick images: $e');
       }
     }
+  }
+
+  /// Filter images to only include valid aspect ratios (1:1 to 4:5)
+  Future<List<XFile>> _filterValidAspectRatios(List<XFile> images) async {
+    final validImages = <XFile>[];
+    
+    for (final image in images) {
+      if (_isVideoFile(image.path)) {
+        // Videos are allowed without aspect ratio check
+        validImages.add(image);
+        continue;
+      }
+      
+      try {
+        final bytes = await image.readAsBytes();
+        final codec = await ui.instantiateImageCodec(bytes);
+        final frame = await codec.getNextFrame();
+        final decodedImage = frame.image;
+        
+        final width = decodedImage.width.toDouble();
+        final height = decodedImage.height.toDouble();
+        final aspectRatio = width / height;
+        
+        decodedImage.dispose();
+        
+        // Allow aspect ratios between 0.8 (4:5 portrait) and 1.0 (square)
+        if (aspectRatio >= minAspectRatio && aspectRatio <= maxAspectRatio) {
+          validImages.add(image);
+        } else {
+          debugPrint('⚠️ Image rejected: aspect ratio $aspectRatio (need $minAspectRatio-$maxAspectRatio)');
+        }
+      } catch (e) {
+        debugPrint('⚠️ Failed to check aspect ratio: $e');
+        // If we can't read dimensions, allow the image
+        validImages.add(image);
+      }
+    }
+    
+    return validImages;
   }
 
   Future<void> _pickVideo() async {
@@ -145,11 +211,25 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     try {
       final XFile? photo = await _picker.pickImage(
         source: ImageSource.camera,
-        maxWidth: 1920,
-        maxHeight: 1920,
+        maxWidth: 960,
+        maxHeight: 960,
+        imageQuality: 85,
       );
 
       if (photo != null) {
+        // Validate aspect ratio
+        final validPhotos = await _filterValidAspectRatios([photo]);
+        
+        if (validPhotos.isEmpty) {
+          if (mounted) {
+            SystemNotificationPopup.warning(
+              context,
+              message: 'Photo aspect ratio must be between 1:1 and 4:5',
+            );
+          }
+          return;
+        }
+        
         setState(() {
           _selectedMedia.add(photo);
         });
@@ -224,41 +304,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         throw Exception('User not found');
       }
 
-      final postId = const Uuid().v4();
       final content = _contentController.text.trim();
       final hashtags = _extractHashtags(content);
       final mentions = _extractMentions(content);
 
-      // Upload media files
-      List<MediaFile> mediaFiles = [];
-      if (_selectedMedia.isNotEmpty) {
-        final uploadResults = await _storageService.uploadPostMedia(
-          postId,
-          _selectedMedia,
-        );
+      // Convert XFile to File
+      final mediaFiles = _selectedMedia.map((xFile) => File(xFile.path)).toList();
 
-        for (int i = 0; i < uploadResults.length; i++) {
-          final result = uploadResults[i];
-          final file = _selectedMedia[i];
-          final isVideo = _isVideoFile(file.path);
-          
-          mediaFiles.add(MediaFile(
-            id: const Uuid().v4(),
-            postId: postId,
-            mediaUrl: result.mediaUrl,
-            thumbnailUrl: result.thumbnailUrl,
-            mediaType: isVideo ? MediaType.video : MediaType.image,
-            mediaAspectRatio: 1.0, // Will be calculated on server
-            width: 0, // Will be calculated on server
-            height: 0, // Will be calculated on server
-            durationSeconds: isVideo ? 0 : null,
-          ));
-        }
-      }
-
-      // Create post object
-      final post = Post(
-        postId: postId,
+      // Create post request
+      final request = CreatePostRequest(
         authorId: user.id,
         authorName: user.fullName,
         authorAvatar: user.avatarUrl,
@@ -266,34 +320,47 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         hashtags: hashtags,
         mentions: mentions,
         mediaFiles: mediaFiles,
-        reactsCount: 0,
-        commentCount: 0,
         privacy: _selectedPrivacy,
-        createdAt: DateTime.now(),
       );
 
-      // TODO: Save post to database (Supabase/Firebase)
-      // For now, just simulate success
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Save post via repository
+      final postRepository = ref.read(postRepositoryProvider);
+      final postId = await postRepository.createPost(request);
+
+      // Fetch the created post to return it
+      final postWithLikeStatus = await postRepository.getPostById(postId, currentUserId: user.id);
+      
+      if (postWithLikeStatus == null) {
+        throw Exception('Failed to fetch created post');
+      }
 
       if (mounted) {
         SystemNotificationPopup.success(
           context,
           message: 'Post created successfully!',
         );
-        Navigator.of(context).pop(post);
+        Navigator.of(context).pop(postWithLikeStatus.post);
       }
-    } catch (e) {
+    } 
+    catch (e, stackTrace) {
+      debugPrint('❌ CREATE POST ERROR: $e');
+      debugPrint('❌ STACK: $stackTrace');
+      
+      // Get error message if it's PostRepositoryException
+      String errorMessage = e.toString();
+      if (e is PostRepositoryException) {
+        errorMessage = 'Failed to create post: ${e.message}';
+        debugPrint('❌ POST REPOSITORY ERROR: ${e.message}');
+      }
+      
       if (mounted) {
         SystemNotificationPopup.error(
           context,
-          message: 'Failed to create post: $e',
+          message: errorMessage,
         );
       }
     } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      setState(() => _isLoading = false);
     }
   }
 
@@ -669,6 +736,8 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 : Image.file(
                     File(file.path),
                     fit: BoxFit.cover,
+                    cacheWidth: 1200,
+                    filterQuality: FilterQuality.low,
                   ),
           ),
         ),
@@ -722,6 +791,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
+                    cacheWidth: 480,
+                    cacheHeight: 480,
+                    filterQuality: FilterQuality.low,
                   ),
           ),
         ),
@@ -768,32 +840,41 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       child: SafeArea(
         child: Row(
           children: [
-            // Add photo button
-            _buildActionButton(
-              icon: Icons.photo_library,
-              label: 'Photo',
-              onTap: _isLoading ? null : _pickImages,
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    // Add photo button
+                    _buildActionButton(
+                      icon: Icons.photo_library,
+                      label: 'Photo',
+                      onTap: _isLoading ? null : _pickImages,
+                    ),
+                    
+                    const SizedBox(width: AppSpacing.s),
+                    
+                    // Take photo button
+                    _buildActionButton(
+                      icon: Icons.camera_alt,
+                      label: 'Camera',
+                      onTap: _isLoading ? null : _takePhoto,
+                    ),
+                    
+                    const SizedBox(width: AppSpacing.s),
+                    
+                    // Add video button
+                    _buildActionButton(
+                      icon: Icons.videocam,
+                      label: 'Video',
+                      onTap: _isLoading ? null : _pickVideo,
+                    ),
+                  ],
+                ),
+              ),
             ),
-            
-            const SizedBox(width: AppSpacing.m),
-            
-            // Take photo button
-            _buildActionButton(
-              icon: Icons.camera_alt,
-              label: 'Camera',
-              onTap: _isLoading ? null : _takePhoto,
-            ),
-            
-            const SizedBox(width: AppSpacing.m),
-            
-            // Add video button
-            _buildActionButton(
-              icon: Icons.videocam,
-              label: 'Video',
-              onTap: _isLoading ? null : _pickVideo,
-            ),
-            
-            const Spacer(),
+
+            const SizedBox(width: AppSpacing.s),
             
             // Media count
             if (_selectedMedia.isNotEmpty)
@@ -828,7 +909,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -1,6 +1,7 @@
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -21,17 +22,9 @@ Future<void> main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 2. Initialize Supabase (for PostgreSQL data storage)
-  if (SupabaseConfig.isConfigured) {
-    await Supabase.initialize(
-      url: SupabaseConfig.url,
-      anonKey: SupabaseConfig.anonKey,
-    );
-  } else if (kDebugMode) {
-    debugPrint(
-      '⚠️ Supabase not configured. Run with --dart-define SUPABASE_URL and SUPABASE_ANON_KEY.',
-    );
-  }
+  await dotenv.load(fileName: '.env');
+  SupabaseConfig.validate(); // crash ngay với message rõ ràng nếu thiếu
+  await Supabase.initialize(url: SupabaseConfig.url, anonKey: SupabaseConfig.anonKey);
 
   // 3. Run app with Riverpod provider scope
   runApp(

@@ -13,15 +13,18 @@ import '../../../../../data/models/comment_model.dart';
 
 class CommentItem extends StatelessWidget {
   final Comment comment;
+  final bool isReactedByMe;
   final bool isHighlighted;
   final double highlightOpacity;
   final EdgeInsets highlightPadding;
   final GlobalKey? commentKey;
   final ValueChanged<Comment>? onReact;
+  final VoidCallback? onDelete;
 
   const CommentItem({
     super.key,
     required this.comment,
+    this.isReactedByMe = false,
     this.isHighlighted = false,
     this.highlightOpacity = 0.2,
     this.highlightPadding = const EdgeInsets.symmetric(
@@ -30,6 +33,7 @@ class CommentItem extends StatelessWidget {
     ),
     this.commentKey,
     this.onReact,
+    this.onDelete,
   });
 
   @override
@@ -127,7 +131,9 @@ class CommentItem extends StatelessWidget {
                               width: 14,
                               height: 14,
                               colorFilter: ColorFilter.mode(
-                                AppColors.iconColor,
+                                isReactedByMe
+                                    ? AppColors.accentOrange
+                                    : AppColors.iconColor,
                                 BlendMode.srcIn,
                               ),
                             ),
@@ -161,6 +167,18 @@ class CommentItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+
+                    if (onDelete != null) ...[
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: onDelete,
+                        child: Icon(
+                          Icons.delete_outline,
+                          size: 16,
+                          color: AppColors.textHint.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],

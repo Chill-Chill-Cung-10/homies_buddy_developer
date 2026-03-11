@@ -173,8 +173,6 @@ class PetFSM extends ChangeNotifier {
   PetState? _targetState;
   Timer? _stateTimer;
 
-  // ── Flag kiểm soát auto behavior ──
-  // Mặc định FALSE — chỉ chạy khi được gọi startAutoBehavior() rõ ràng
   bool _autoBehaviorEnabled = false;
 
   final math.Random _random = math.Random();
@@ -190,7 +188,6 @@ class PetFSM extends ChangeNotifier {
 
   PetFSM({PetState initialState = PetState.idle})
       : _currentAnimation = PetAnimation.state(initialState);
-  // ← Không gọi _scheduleNextBehavior() trong constructor
 
   @override
   void dispose() {
@@ -202,7 +199,6 @@ class PetFSM extends ChangeNotifier {
   // PUBLIC API
   // ═══════════════════════════════════════════
 
-  /// Chuyển state có animation transition nếu có
   void transitionTo(PetState newState) {
     final current = currentState;
     if (current == null) return;
@@ -216,25 +212,21 @@ class PetFSM extends ChangeNotifier {
     }
   }
 
-  /// Bật auto behavior — pet tự thay đổi trạng thái theo thời gian
   void startAutoBehavior() {
     _autoBehaviorEnabled = true;
     _scheduleNextBehavior();
   }
 
-  /// Tắt auto behavior — pet đứng yên ở state hiện tại cho đến khi được gọi lại
   void stopAutoBehavior() {
     _autoBehaviorEnabled = false;
     _stateTimer?.cancel();
     _stateTimer = null;
   }
 
-  /// Chuyển state ngay lập tức, KHÔNG kích hoạt auto behavior
   void forceState(PetState state) {
     _currentAnimation = PetAnimation.state(state);
     _targetState = null;
     notifyListeners();
-    // ← Không gọi _scheduleNextBehavior()
   }
 
   // ═══════════════════════════════════════════
@@ -246,7 +238,6 @@ class PetFSM extends ChangeNotifier {
     _targetState = null;
     notifyListeners();
 
-    // Chỉ schedule nếu auto behavior đang được bật
     if (_autoBehaviorEnabled) {
       _scheduleNextBehavior();
     }
@@ -283,7 +274,7 @@ class PetFSM extends ChangeNotifier {
 
   void _scheduleNextBehavior() {
     _stateTimer?.cancel();
-    if (!_autoBehaviorEnabled) return; // Guard
+    if (!_autoBehaviorEnabled) return;
 
     final delaySeconds = 5 + _random.nextInt(8);
     _stateTimer = Timer(
@@ -293,7 +284,7 @@ class PetFSM extends ChangeNotifier {
   }
 
   void _performRandomBehavior() {
-    if (!_autoBehaviorEnabled) return; // Guard
+    if (!_autoBehaviorEnabled) return;
 
     final current = currentState;
     if (current == null) return;
@@ -555,12 +546,18 @@ class StatefulPetWidget extends StatefulWidget {
   final bool autoPlay;
   final PetState initialState;
 
+  // ── Callback khi widget đã mount và FSM sẵn sàng ──
+  // Dùng để apply pending mood từ HomeScreen nếu DB query
+  // trả về trước khi widget được build xong
+  final VoidCallback? onReady;
+
   const StatefulPetWidget({
     super.key,
     this.width = 160,
     this.height = 160,
-    this.autoPlay = false, // ← mặc định FALSE
+    this.autoPlay = false,
     this.initialState = PetState.idle,
+    this.onReady,
   });
 
   @override
@@ -577,6 +574,11 @@ class StatefulPetWidgetState extends State<StatefulPetWidget> {
     _fsm.addListener(_rebuild);
 
     if (widget.autoPlay) _fsm.startAutoBehavior();
+
+    // Fire onReady sau frame đầu tiên — đảm bảo FSM đã sẵn sàng nhận lệnh
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) widget.onReady?.call();
+    });
   }
 
   @override

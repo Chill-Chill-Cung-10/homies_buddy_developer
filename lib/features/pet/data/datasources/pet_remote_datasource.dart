@@ -12,6 +12,11 @@ class PetRemoteDatasource {
 
   /// Get user's pet by userId
   Future<Map<String, dynamic>?> getUserPet(String userId) async {
+    final session = _supabase.auth.currentSession;
+    if (session == null) {
+      return null; // caller sẽ handle
+    }
+    
     return await _supabase
         .from(PetTable.name)
         .select()

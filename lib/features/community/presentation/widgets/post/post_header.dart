@@ -16,6 +16,7 @@ class PostHeader extends StatelessWidget {
   final VoidCallback? onAvatarTap;
   final VoidCallback? onAuthorNameTap;
   final ValueChanged<String>? onMentionTap;
+  final VoidCallback? onDelete;
 
   const PostHeader({
     super.key,
@@ -23,6 +24,7 @@ class PostHeader extends StatelessWidget {
     this.onAvatarTap,
     this.onAuthorNameTap,
     this.onMentionTap,
+    this.onDelete,
   });
 
   @override
@@ -94,7 +96,7 @@ class PostHeader extends StatelessWidget {
           ),
 
           // More Options
-          IconButton(
+          PopupMenuButton<String>(
             icon: SvgPicture.asset(
               'assets/images/icons/three_dots.svg',
               width: 20,
@@ -104,9 +106,32 @@ class PostHeader extends StatelessWidget {
                 BlendMode.srcIn,
               ),
             ),
-            onPressed: () {
-              // TODO: Show more options
+            onSelected: (value) {
+              if (value == 'delete' && onDelete != null) {
+                onDelete!();
+              }
             },
+            itemBuilder: (context) => [
+              PopupMenuItem<String>(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.delete_outline,
+                      color: AppColors.errorRed,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Xóa bài viết',
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        color: AppColors.errorRed,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/constants/app_colors.dart';
-import '../../../../../core/widgets/system_notification_popup.dart';
 import '../../../../../core/widgets/widgets.dart';
 import '../../../domain/entities/note_entity.dart';
 import '../../providers/home_providers.dart';

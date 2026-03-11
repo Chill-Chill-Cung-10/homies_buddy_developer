@@ -148,7 +148,7 @@ class PetResumeNotifier extends StateNotifier<PetResumeState> {
 
   /// Log all RPC state results
   void _logRpcResult(Map<String, dynamic> result) {
-    _logger.i('═══ 🐾RPC update_pet_on_resume RESULT ═══');
+    _logger.i('═══ 🐾 RPC update_pet_on_resume RESULT ═══');
     _logger.i('  energy:            ${result['energy']}');
     _logger.i('  current_mood:      ${result['current_mood']}');
     _logger.i('  streak:            ${result['streak']}');

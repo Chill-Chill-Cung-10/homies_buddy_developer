@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/spinning_nav_button.dart';
@@ -6,6 +7,7 @@ import '../../../core/widgets/loading_indicators.dart';
 import '../../../core/mixins/pagination_mixin.dart';
 import '../../notifications/data/notification_mock_data.dart';
 import '../../notifications/presentation/screens/notification_screen.dart';
+import '../../chat/data/repositories/firebase_chat_repository.dart';
 import '../../chat/presentation/screens/chat_list_screen.dart';
 import '../../chat/mockdata/chat_mock_data.dart';
 import '../../../data/models/post_model.dart';
@@ -33,6 +35,9 @@ class _CommunityScreenState extends State<CommunityScreen>
     with PaginationMixin<Post, CommunityScreen> {
   // Repository để fetch posts (trong thực tế sẽ dùng Firebase/API)
   // final _postRepository = PostRepository();
+
+  /// Local like states for this lazy-loading example screen.
+  final Set<String> _likedPostIds = <String>{};
 
   @override
   int get itemsPerPage => 10;
@@ -66,6 +71,7 @@ class _CommunityScreenState extends State<CommunityScreen>
       setState(() {
         items.clear();
         items.addAll(posts);
+        _likedPostIds.clear();
         currentPage = 0;
         hasMore = posts.length >= itemsPerPage;
         isLoading = false;
@@ -163,9 +169,17 @@ class _CommunityScreenState extends State<CommunityScreen>
   void _handleLike(int index) {
     setState(() {
       final post = items[index];
+      final wasLiked = _likedPostIds.contains(post.postId);
+      if (wasLiked) {
+        _likedPostIds.remove(post.postId);
+      } else {
+        _likedPostIds.add(post.postId);
+      }
+
       final updatedPost = post.copyWith(
-        // isLikedByMe computed from POST_LIKES junction table
-        reactsCount: post.reactsCount, // Will update via repository
+        reactsCount: wasLiked
+            ? (post.reactsCount - 1).clamp(0, double.maxFinite).toInt()
+            : post.reactsCount + 1,
       );
       items[index] = updatedPost;
     });
@@ -175,7 +189,11 @@ class _CommunityScreenState extends State<CommunityScreen>
   }
 
   void _handleComment(Post post) {
-    showCommentOverlay(context, post);
+    showCommentOverlay(
+      context,
+      post,
+      isLikedByMe: _likedPostIds.contains(post.postId),
+    );
   }
 
   @override
@@ -226,10 +244,15 @@ class _CommunityScreenState extends State<CommunityScreen>
                 color: AppColors.iconColor,
               ),
               onPressed: () {
+                final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                if (currentUserId == null) return;
                 Navigator.of(context)
                     .push(
                       MaterialPageRoute(
-                        builder: (context) => const ChatListScreen(),
+                        builder: (context) => ChatListScreen(
+                          repository: FirebaseChatRepository(),
+                          currentUserId: currentUserId,
+                        ),
                       ),
                     )
                     .then((_) {
@@ -300,8 +323,10 @@ class _CommunityScreenState extends State<CommunityScreen>
           }
 
           final post = items[index];
+          final isLikedByMe = _likedPostIds.contains(post.postId);
           return SocialPostCard(
             post: post,
+            isLikedByMe: isLikedByMe,
             onLike: () => _handleLike(index),
             onComment: () => _handleComment(post),
             onAvatarTap: () => _navigateToProfile(context, post.authorId),

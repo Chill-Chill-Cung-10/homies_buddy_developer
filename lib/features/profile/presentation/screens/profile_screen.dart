@@ -277,7 +277,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 // TODO: Implement like via API
               },
               onComment: (post) {
-                showCommentOverlay(context, post);
+                showCommentOverlay(context, post, isLikedByMe: false);
               },
             ),
 

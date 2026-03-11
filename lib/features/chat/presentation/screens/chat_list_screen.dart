@@ -2,59 +2,47 @@ import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../data/models/conversation_model.dart';
-import '../../mockdata/chat_mock_data.dart';
+import '../../data/repositories/chat_repository.dart';
 import '../widgets/widgets.dart';
 import 'chat_detail_screen.dart';
 
-/// Chat List Screen
+/// Chat List Screen — Firebase-backed
 ///
-/// Displays list of conversations in a cozy, home-style interface
+/// Streams conversations real-time từ Firestore.
 class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({super.key});
+  /// Repository được inject từ bên ngoài (DI / Provider / Riverpod)
+  final ChatRepository repository;
+
+  /// ID của current user (từ FirebaseAuth)
+  final String currentUserId;
+
+  const ChatListScreen({
+    super.key,
+    required this.repository,
+    required this.currentUserId,
+  });
 
   @override
   State<ChatListScreen> createState() => _ChatListScreenState();
 }
 
 class _ChatListScreenState extends State<ChatListScreen> {
-  List<Conversation> _allConversations = [];
-  late List<Conversation> _filteredConversations;
   final _searchController = TextEditingController();
   String _searchQuery = '';
 
   @override
-  void initState() {
-    super.initState();
-    _loadConversations();
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  void _loadConversations() {
-    _allConversations = ChatMockData.mockConversations;
-    _filteredConversations = List<Conversation>.from(_allConversations);
-  }
-
-  @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged() {
-    final query = _searchController.text.trim().toLowerCase();
-    setState(() {
-      _searchQuery = query;
-      if (query.isEmpty) {
-        _filteredConversations = List<Conversation>.from(_allConversations);
-      } else {
-        _filteredConversations = _allConversations.where((conv) {
-          return conv.displayName.toLowerCase().contains(query) ||
-              conv.participantName.toLowerCase().contains(query) ||
-              conv.lastMessage.toLowerCase().contains(query);
-        }).toList();
-      }
-    });
+  List<Conversation> _applySearch(List<Conversation> all) {
+    if (_searchQuery.isEmpty) return all;
+    final q = _searchQuery.toLowerCase();
+    return all.where((c) =>
+        c.displayName.toLowerCase().contains(q) ||
+        c.participantName.toLowerCase().contains(q) ||
+        c.lastMessage.toLowerCase().contains(q)).toList();
   }
 
   @override
@@ -63,21 +51,16 @@ class _ChatListScreenState extends State<ChatListScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Row(
-          children: [
-            Text(
-              'Messages',
-              style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(width: 4),
-          ],
+        title: Text(
+          'Messages',
+          style: AppTextStyles.h2.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
       body: Container(
         decoration: BoxDecoration(gradient: AppColors.cardGradient),
         child: Column(
           children: [
-            // Search Bar
+            // ── Search Bar ─────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Container(
@@ -88,102 +71,114 @@ class _ChatListScreenState extends State<ChatListScreen> {
                 child: TextField(
                   controller: _searchController,
                   style: AppTextStyles.bodyMedium,
+                  onChanged: (v) => setState(() => _searchQuery = v.trim()),
                   decoration: InputDecoration(
                     hintText: 'Search conversations...',
-                    hintStyle: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      color: AppColors.textSecondary,
-                    ),
+                    hintStyle: AppTextStyles.bodyMedium
+                        .copyWith(color: AppColors.textSecondary),
+                    prefixIcon:
+                        Icon(Icons.search, color: AppColors.textSecondary),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                            icon: Icon(
-                              Icons.close,
-                              color: AppColors.textSecondary,
-                              size: 20,
-                            ),
+                            icon: Icon(Icons.close,
+                                color: AppColors.textSecondary, size: 20),
                             onPressed: () {
                               _searchController.clear();
+                              setState(() => _searchQuery = '');
                             },
                           )
                         : null,
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
+                        horizontal: 16, vertical: 14),
                   ),
                 ),
               ),
             ),
 
-            // Conversations List
+            // ── Conversations List ─────────────────────────────────
             Expanded(
-              child: RefreshIndicator(
-                color: AppColors.accentOrange,
-                onRefresh: () async {
-                  // TODO: Implement refresh
-                  await Future.delayed(const Duration(seconds: 1));
-                  setState(() {});
-                },
-                child: _filteredConversations.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 56,
-                              color: AppColors.textSecondary.withOpacity(0.4),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'No conversations found',
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textSecondary,
+              child: StreamBuilder<List<Conversation>>(
+                stream: widget.repository
+                    .watchConversations(widget.currentUserId),
+                builder: (context, snapshot) {
+                  // Loading
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  // Error
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Lỗi kết nối: ${snapshot.error}',
+                        style: AppTextStyles.bodyMedium
+                            .copyWith(color: AppColors.textSecondary),
+                      ),
+                    );
+                  }
+
+                  final all = snapshot.data ?? [];
+                  final filtered = _applySearch(all);
+
+                  // Empty
+                  if (filtered.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            _searchQuery.isNotEmpty
+                                ? Icons.search_off
+                                : Icons.chat_bubble_outline,
+                            size: 56,
+                            color: AppColors.textSecondary.withOpacity(0.4),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _searchQuery.isNotEmpty
+                                ? 'No conversations found'
+                                : 'No messages yet',
+                            style: AppTextStyles.bodyMedium
+                                .copyWith(color: AppColors.textSecondary),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 8),
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final conversation = filtered[index];
+                      return ConversationCard(
+                        conversation: conversation,
+                        onTap: () async {
+                          // Mark as read
+                          await widget.repository.markConversationAsRead(
+                            conversationId: conversation.id,
+                            currentUserId: widget.currentUserId,
+                          );
+
+                          if (!context.mounted) return;
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ChatDetailScreen(
+                                conversation: conversation,
+                                repository: widget.repository,
+                                currentUserId: widget.currentUserId,
                               ),
                             ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        itemCount: _filteredConversations.length,
-                        itemBuilder: (context, index) {
-                          final conversation = _filteredConversations[index];
-                          return ConversationCard(
-                            conversation: conversation,
-                            onTap: () {
-                              // Mark as read when opening
-                              ChatMockData.markConversationAsRead(
-                                conversation.id,
-                              );
-
-                              // Navigate to chat detail
-                              Navigator.of(context)
-                                  .push(
-                                    MaterialPageRoute(
-                                      builder: (context) => ChatDetailScreen(
-                                        conversation: conversation,
-                                      ),
-                                    ),
-                                  )
-                                  .then((_) {
-                                    // Refresh list after returning to pick up any updates (nickname, etc.)
-                                    setState(() {
-                                      _loadConversations();
-                                      _onSearchChanged(); // Reapply search filter if active
-                                    });
-                                  });
-                            },
                           );
                         },
-                      ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],

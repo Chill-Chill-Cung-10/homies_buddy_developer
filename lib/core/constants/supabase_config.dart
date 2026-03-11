@@ -1,7 +1,11 @@
-class SupabaseConfig {
-  // Read from --dart-define so credentials are not committed to git.
-  static const String url = String.fromEnvironment('SUPABASE_URL');
-  static const String anonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-  static bool get isConfigured => url.isNotEmpty && anonKey.isNotEmpty;
+class SupabaseConfig {
+  static String get url => dotenv.env['SUPABASE_URL'] ?? '';
+  static String get anonKey => dotenv.env['SUPABASE_ANON_KEY'] ?? '';
+
+  static void validate() {
+    assert(url.isNotEmpty, 'Thiếu SUPABASE_URL');
+    assert(anonKey.isNotEmpty, 'Thiếu SUPABASE_ANON_KEY');
+  }
 }

@@ -10,34 +10,40 @@ import 'post/post_footer.dart';
 /// [Refactored] Phase 3.2 — Split into PostHeader, PostContent,
 /// PostMediaCarousel, PostFooter sub-widgets.
 ///
-/// Social Post Card - Reusable widget cho community feed item
-/// Hiển thị một bài post với header, content, media, và footer interactions
+/// [Updated] — thêm isLikeProcessing để truyền xuống PostFooter,
+/// chặn double-tap ở cả feed lẫn comment overlay.
 class SocialPostCard extends StatelessWidget {
   final Post post;
+
+  /// Trạng thái like của current user — render đúng màu icon tim
+  final bool isLikedByMe;
+
+  /// Khi true, nút like bị vô hiệu hoá — tránh race condition / double-tap
+  final bool isLikeProcessing;
+
   final VoidCallback? onLike;
   final VoidCallback? onComment;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onPostTap;
-
-  /// Callback when author name is tapped
   final VoidCallback? onAuthorNameTap;
-
-  /// Callback when a mention is tapped, receives the mention string (e.g. '@haiia')
   final ValueChanged<String>? onMentionTap;
+  final VoidCallback? onDelete;
 
-  /// When true, the comment button is highlighted (e.g. in comment overlay mode)
-  /// and its tap interaction is disabled
+  /// When true, comment button is highlighted and tap is disabled (in overlay mode)
   final bool isCommentHighlighted;
 
   const SocialPostCard({
     super.key,
     required this.post,
+    this.isLikedByMe = false,
+    this.isLikeProcessing = false,
     this.onLike,
     this.onComment,
     this.onAvatarTap,
     this.onPostTap,
     this.onAuthorNameTap,
     this.onMentionTap,
+    this.onDelete,
     this.isCommentHighlighted = false,
   });
 
@@ -59,24 +65,20 @@ class SocialPostCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           PostHeader(
             post: post,
             onAvatarTap: onAvatarTap,
             onAuthorNameTap: onAuthorNameTap,
             onMentionTap: onMentionTap,
+            onDelete: onDelete,
           ),
-
-          // Content Text
           if (post.contentText.isNotEmpty)
             PostContent(contentText: post.contentText),
-
-          // Media (Image/Video/Album)
           if (post.hasMedia) PostMediaCarousel(mediaFiles: post.mediaFiles),
-
-          // Footer (Reactions & Comments)
           PostFooter(
             post: post,
+            isLikedByMe: isLikedByMe,
+            isLikeProcessing: isLikeProcessing,
             onLike: onLike,
             onComment: onComment,
             isCommentHighlighted: isCommentHighlighted,
@@ -85,6 +87,4 @@ class SocialPostCard extends StatelessWidget {
       ),
     );
   }
-
-  // [Refactored] Phase 1.5 — _formatCount chuyển sang core/utils/formatters.dart.
 }

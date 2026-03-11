@@ -1,44 +1,50 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/spinning_nav_button.dart';
-import '../mockdata/community_mock_data.dart';
+import '../../../data/models/post_model.dart';
 
-/// [Refactored] Phase 3.6 — Import notification from its own feature module
 import '../../notifications/data/notification_mock_data.dart';
 import '../mockdata/profile_mock_data.dart';
 import 'widgets/social_post_card.dart';
 import 'widgets/comment_overlay.dart';
+import 'widgets/your_latest_post_section.dart';
 import '../../notifications/presentation/screens/notification_screen.dart';
 import 'screens/personal_profile_screen.dart';
 import 'screens/create_post_screen.dart';
+import '../../chat/data/repositories/firebase_chat_repository.dart';
 import '../../chat/presentation/screens/chat_list_screen.dart';
 import '../../chat/mockdata/chat_mock_data.dart';
+import 'providers/community_providers.dart';
 
-/// Community Screen - Community Feed với Social Post Cards
-///
-/// Hiển thị feed của các bài post từ community
-class CommunityScreen extends StatefulWidget {
+class CommunityScreen extends ConsumerWidget {
   const CommunityScreen({super.key});
 
   @override
-  State<CommunityScreen> createState() => _CommunityScreenState();
+  Widget build(BuildContext context, WidgetRef ref) {
+    return const _CommunityScreenContent();
+  }
 }
 
-class _CommunityScreenState extends State<CommunityScreen> {
-  // Pagination state
-  final List<dynamic> _posts = [];
-  final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
-  bool _hasMore = true;
-  int _currentPage = 0;
-  static const int _postsPerPage = 10;
+class _CommunityScreenContent extends ConsumerStatefulWidget {
+  const _CommunityScreenContent();
+
+  @override
+  ConsumerState<_CommunityScreenContent> createState() =>
+      _CommunityScreenContentState();
+}
+
+class _CommunityScreenContentState
+    extends ConsumerState<_CommunityScreenContent> {
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _loadInitialPosts();
   }
 
   @override
@@ -48,82 +54,14 @@ class _CommunityScreenState extends State<CommunityScreen> {
     super.dispose();
   }
 
-  // Load initial posts
-  Future<void> _loadInitialPosts() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await Future.delayed(
-        const Duration(milliseconds: 500),
-      ); // Simulate network delay
-      final allPosts = CommunityMockData.mockPosts;
-      final initialPosts = allPosts.take(_postsPerPage).toList();
-
-      setState(() {
-        _posts.addAll(initialPosts);
-        _currentPage = 1;
-        _hasMore = allPosts.length > _postsPerPage;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  // Load more posts when scrolling
-  Future<void> _loadMorePosts() async {
-    if (_isLoading || !_hasMore) return;
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      await Future.delayed(
-        const Duration(milliseconds: 500),
-      ); // Simulate network delay
-      final allPosts = CommunityMockData.mockPosts;
-      final startIndex = _currentPage * _postsPerPage;
-      final endIndex = startIndex + _postsPerPage;
-
-      final morePosts = allPosts.skip(startIndex).take(_postsPerPage).toList();
-
-      setState(() {
-        _posts.addAll(morePosts);
-        _currentPage++;
-        _hasMore = endIndex < allPosts.length;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  // Detect scroll position and load more
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent * 0.85) {
-      _loadMorePosts();
+      ref.read(communityFeedProvider.notifier).loadMorePosts();
     }
   }
 
-  // Refresh posts
-  Future<void> _refreshPosts() async {
-    setState(() {
-      _posts.clear();
-      _currentPage = 0;
-      _hasMore = true;
-    });
-    await _loadInitialPosts();
-  }
-
-  void _navigateToProfile(BuildContext context, String authorId) {
+  void _navigateToProfile(String authorId) {
     final user = ProfileMockData.getUserByAuthorId(authorId);
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -132,7 +70,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
     );
   }
 
-  void _navigateToProfileByUsername(BuildContext context, String mention) {
+  void _navigateToProfileByUsername(String mention) {
     final user = ProfileMockData.getUserByUsername(mention);
     if (user != null) {
       Navigator.of(context).push(
@@ -150,8 +88,36 @@ class _CommunityScreenState extends State<CommunityScreen> {
     }
   }
 
+  void _handleNewPostCreated(Post newPost) {
+    ref.read(userLatestPostProvider.notifier).setLatestPost(newPost);
+  }
+
+  void _deletePost(String postId) {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+    ref.read(communityFeedProvider.notifier).deletePost(postId, currentUser.uid);
+  }
+
+  void _deleteLatestPost() {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+    ref.read(userLatestPostProvider.notifier).deleteLatestPost(currentUser.uid);
+  }
+
+  void _toggleLikeOnLatestPost() {
+    ref.read(userLatestPostProvider.notifier).toggleLike();
+  }
+
+  void _toggleLikeOnPost(String postId) {
+    ref.read(communityFeedProvider.notifier).toggleLike(postId);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final feedState = ref.watch(communityFeedProvider);
+    final latestPostState = ref.watch(userLatestPostProvider);
+    final shouldShowLatestPost = ref.watch(shouldShowLatestPostProvider);
+
     return Scaffold(
       appBar: AppBar(
         leading: const SpinningNavButton(iconColor: AppColors.textPrimary),
@@ -161,9 +127,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.iconColor),
-            onPressed: () {
-              // TODO: Implement search
-            },
+            onPressed: () {},
           ),
           Badge(
             isLabelVisible: NotificationMockData.getUnreadCount() > 0,
@@ -174,17 +138,11 @@ class _CommunityScreenState extends State<CommunityScreen> {
             child: IconButton(
               icon: const Icon(Icons.notifications, color: AppColors.iconColor),
               onPressed: () {
-                // Navigate to Notification Screen
-                Navigator.of(context)
-                    .push(
-                      MaterialPageRoute(
-                        builder: (context) => const NotificationScreen(),
-                      ),
-                    )
-                    .then((_) {
-                      // Refresh badge count after returning from notifications
-                      setState(() {});
-                    });
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationScreen(),
+                  ),
+                );
               },
             ),
           ),
@@ -200,17 +158,16 @@ class _CommunityScreenState extends State<CommunityScreen> {
                 color: AppColors.iconColor,
               ),
               onPressed: () {
-                // Navigate to Chat List Screen
-                Navigator.of(context)
-                    .push(
-                      MaterialPageRoute(
-                        builder: (context) => const ChatListScreen(),
-                      ),
-                    )
-                    .then((_) {
-                      // Refresh badge count after returning from chat
-                      setState(() {});
-                    });
+                final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                if (currentUserId == null) return;
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ChatListScreen(
+                      repository: FirebaseChatRepository(),
+                      currentUserId: currentUserId,
+                    ),
+                  ),
+                );
               },
             ),
           ),
@@ -220,8 +177,9 @@ class _CommunityScreenState extends State<CommunityScreen> {
         decoration: BoxDecoration(gradient: AppColors.cardGradient),
         child: RefreshIndicator(
           color: AppColors.accentOrange,
-          onRefresh: _refreshPosts,
-          child: _posts.isEmpty && _isLoading
+          onRefresh: () =>
+              ref.read(communityFeedProvider.notifier).refreshPosts(),
+          child: feedState.posts.isEmpty && feedState.isLoading
               ? const Center(
                   child: CircularProgressIndicator(
                     color: AppColors.accentOrange,
@@ -233,11 +191,40 @@ class _CommunityScreenState extends State<CommunityScreen> {
                     vertical: 8,
                     horizontal: 16,
                   ),
-                  itemCount: _posts.length + 1, // +1 for loading indicator
+                  itemCount: feedState.posts.length +
+                      1 +
+                      (shouldShowLatestPost ? 1 : 0),
                   itemBuilder: (context, index) {
-                    // Show loading indicator at bottom
-                    if (index == _posts.length) {
-                      if (_isLoading) {
+                    // ── Latest post section ──────────────────────────────────
+                    if (shouldShowLatestPost && index == 0) {
+                      return YourLatestPostSection(
+                        post: latestPostState.post!,
+                        isLikedByMe: latestPostState.isLikedByMe,
+                        onLike: _toggleLikeOnLatestPost,
+                        onComment: () {
+                          showCommentOverlay(
+                            context,
+                            latestPostState.post!,
+                            // isLikedByMe lấy từ latestPostState
+                            isLikedByMe: latestPostState.isLikedByMe,
+                          );
+                        },
+                        onAvatarTap: () =>
+                            _navigateToProfile(latestPostState.post!.authorId),
+                        onAuthorNameTap: () =>
+                            _navigateToProfile(latestPostState.post!.authorId),
+                        onMentionTap: _navigateToProfileByUsername,
+                        onPostTap: () {},
+                        onDelete: _deleteLatestPost,
+                      );
+                    }
+
+                    final adjustedIndex =
+                        shouldShowLatestPost ? index - 1 : index;
+
+                    // ── Loading / end indicator ──────────────────────────────
+                    if (adjustedIndex == feedState.posts.length) {
+                      if (feedState.isLoading) {
                         return const Padding(
                           padding: EdgeInsets.all(16.0),
                           child: Center(
@@ -246,7 +233,7 @@ class _CommunityScreenState extends State<CommunityScreen> {
                             ),
                           ),
                         );
-                      } else if (!_hasMore) {
+                      } else if (!feedState.hasMore) {
                         return Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Center(
@@ -263,51 +250,43 @@ class _CommunityScreenState extends State<CommunityScreen> {
                       }
                     }
 
-                    // Show post card
-                    final post = _posts[index];
+                    // ── Post card ────────────────────────────────────────────
+                    // feedState.posts là List<Post>; isLikedByMe tra qua likedPostIds
+                    final post = feedState.posts[adjustedIndex];
+                    final isLiked =
+                        feedState.likedPostIds.contains(post.postId);
+
                     return SocialPostCard(
                       post: post,
-                      onLike: () {
-                        setState(() {
-                          // Toggle like state
-                          final updatedPost = post.copyWith(
-                            isLikedByMe: !post.isLikedByMe,
-                            reactsCount: post.isLikedByMe
-                                ? post.reactsCount - 1
-                                : post.reactsCount + 1,
-                          );
-                          _posts[index] = updatedPost;
-                        });
-                      },
-                      onComment: () {
-                        // Show comment overlay
-                        showCommentOverlay(context, post);
-                      },
-                      onAvatarTap: () {
-                        _navigateToProfile(context, post.authorId);
-                      },
-                      onAuthorNameTap: () {
-                        _navigateToProfile(context, post.authorId);
-                      },
-                      onMentionTap: (mention) {
-                        _navigateToProfileByUsername(context, mention);
-                      },
-                      onPostTap: () {
-                        // TODO: Navigate to post detail
-                      },
+                      isLikedByMe: isLiked,
+                      onLike: () => _toggleLikeOnPost(post.postId),
+                      onComment: () => showCommentOverlay(
+                        context,
+                        post,
+                        // isLikedByMe lấy từ feedState.likedPostIds
+                        isLikedByMe: isLiked,
+                      ),
+                      onAvatarTap: () => _navigateToProfile(post.authorId),
+                      onAuthorNameTap: () => _navigateToProfile(post.authorId),
+                      onMentionTap: _navigateToProfileByUsername,
+                      onPostTap: () {},
+                      onDelete: () => _deletePost(post.postId),
                     );
                   },
                 ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push<Post>(
             context,
             MaterialPageRoute(
               builder: (context) => const CreatePostScreen(),
             ),
           );
+          if (result != null) {
+            _handleNewPostCreated(result);
+          }
         },
         backgroundColor: AppColors.accentOrange,
         child: const Icon(Icons.add, color: Colors.white),

@@ -66,15 +66,12 @@ service firebase.storage {
     // POST MEDIA - /posts/{postId}/
     // ==========================================================================
     
-    match /posts/{postId}/{filename} {
-      allow read: if isAuthenticated();
-      
-      allow write: if isAuthenticated() && 
-                      isValidMediaFile() &&
-                      ((isValidImageFile() && isValidImageSize()) ||
-                       (isValidVideoFile() && isValidVideoSize()));
-      
-      allow delete: if isAuthenticated();
+    match /posts/{userId}/{postId}/{filename} {
+      allow read:   if isAuthenticated();
+      allow write:  if isOwner(userId) && isValidMediaFile() &&
+                       ((isValidImageFile() && isValidImageSize()) ||
+                        (isValidVideoFile() && isValidVideoSize()));
+      allow delete: if isOwner(userId);
     }
     
     // ==========================================================================

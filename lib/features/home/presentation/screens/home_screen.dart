@@ -4,14 +4,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/spinning_nav_button.dart';
 import '../providers/home_providers.dart';
+import '../../../pet/presentation/providers/pet_providers.dart';
 import '../widgets/calendar_item.dart';
 import '../widgets/user_moments_box.dart';
 import '../widgets/pet_animation_widget.dart';
 import '../widgets/background_animation_widget.dart';
-
-// Ngưỡng thời gian: nếu last_interacted_at > 10 phút → Flutter tự update
-// Nếu < 10 phút → Cloud Function vừa update rồi, không gọi lại
-const _kUpdateThresholdMinutes = 10;
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -23,6 +20,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _petKey = GlobalKey<StatefulPetWidgetState>();
   String? _petId;
+
+  // ── Realtime channel ──
+  RealtimeChannel? _petChannel;
+
+  // ── Lưu mood pending nếu widget chưa ready khi forceState được gọi ──
+  PetState? _pendingMood;
 
   // ── Mapping DB mood string → PetState ──
   static PetState _mapMood(String mood) => switch (mood) {
@@ -43,18 +46,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return BackgroundTime.night;
   }
 
+  // ── Apply mood lên FSM — an toàn với null check ──
+  void _applyMood(PetState mood, {bool withTransition = false}) {
+    final fsm = _petKey.currentState?.fsm;
+    if (fsm == null) {
+      // Widget chưa ready → lưu lại để apply sau qua onReady callback
+      _pendingMood = mood;
+      debugPrint('[Pet] FSM not ready, pending mood=$mood');
+      return;
+    }
+    if (withTransition) {
+      fsm.transitionTo(mood);
+    } else {
+      fsm.forceState(mood);
+      fsm.startAutoBehavior();
+    }
+    _pendingMood = null;
+    debugPrint('[Pet] mood applied=$mood transition=$withTransition');
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _initPet());
   }
 
-  Future<void> _initPet() async {
-    await _showCurrentMood();   // Bước 1: hiện mood cũ ngay
-    await _maybeUpdate();       // Bước 2: update nếu cần
+  @override
+  void dispose() {
+    _petChannel?.unsubscribe();
+    super.dispose();
   }
 
-  // ── Bước 1: Đọc current_mood + last_interacted_at từ DB → hiện ngay ──
+  Future<void> _initPet() async {
+    await _showCurrentMood();
+    _subscribePetChanges();
+  }
+
+  // ── Đọc current_mood từ DB → hiện ngay ──
   Future<void> _showCurrentMood() async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
@@ -62,100 +90,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       final petRow = await Supabase.instance.client
           .from('pet')
-          .select('id, current_mood, last_interacted_at')
+          .select('id, current_mood')
           .eq('user_id', user.id)
           .single();
 
       if (!mounted) return;
 
       _petId = petRow['id'] as String;
-      final mood = petRow['current_mood'] as String;
+      final mood = petRow['current_mood'] as String? ?? 'idle';
 
-      // Hiện mood ngay — không animation, không đợi
-      _petKey.currentState?.fsm.stopAutoBehavior();
-      _petKey.currentState?.fsm.forceState(_mapMood(mood));
-
-      debugPrint('[Pet] current mood=$mood');
-
-    } catch (e) {
-      debugPrint('[Pet] showCurrentMood error: $e');
-      _petKey.currentState?.fsm.forceState(PetState.idle);
-    }
-  }
-
-  // ── Bước 2: Chỉ update nếu Cloud Function chưa update gần đây ──
-  Future<void> _maybeUpdate() async {
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null || _petId == null) return;
-
-      final petRow = await Supabase.instance.client
-          .from('pet')
-          .select('last_interacted_at')
-          .eq('id', _petId!)
-          .single();
-
-      final lastInteracted = DateTime.tryParse(
-        petRow['last_interacted_at'] as String? ?? '',
-      );
-
-      // Cloud Function set last_interacted_at = NOW() sau mỗi lần analyze
-      // Nếu < 10 phút → Cloud Function vừa update → không gọi lại
-      if (lastInteracted != null) {
-        final minutesSince = DateTime.now()
-            .difference(lastInteracted.toLocal())
-            .inMinutes;
-
-        if (minutesSince < _kUpdateThresholdMinutes) {
-          debugPrint('[Pet] recently updated ($minutesSince min ago), skip');
-          return;
-        }
-      }
-
-      // > 10 phút hoặc chưa có data → Flutter tự update
-      debugPrint('[Pet] updating in background...');
-      await _updateInBackground();
-
-    } catch (e) {
-      debugPrint('[Pet] maybeUpdate error: $e');
-    }
-  }
-
-  // ── Update mood ngầm, transition nếu mood thay đổi ──
-  Future<void> _updateInBackground() async {
-    try {
-      final user = Supabase.instance.client.auth.currentUser;
-      if (user == null || _petId == null) return;
-
-      final result = await Supabase.instance.client.rpc(
-        'update_pet_on_resume',
-        params: {
-          'p_pet_id':  _petId!,
-          'p_user_id': user.id,
-        },
-      );
+      // Yield 1 frame để đảm bảo StatefulPetWidget đã được insert vào tree
+      await Future.delayed(Duration.zero);
 
       if (!mounted) return;
 
-      final newMood     = result['current_mood'] as String;
-      final newPetState = _mapMood(newMood);
-
-      // Nếu mood khác → transition có animation
-      // Nếu mood giống → FSM tự bỏ qua (same state check)
-      _petKey.currentState?.fsm.transitionTo(newPetState);
-
-      debugPrint('[Pet] updated mood=$newMood energy=${result['energy']} '
-          'streak=${result['streak']} tone=${result['user_tone']}');
+      _applyMood(_mapMood(mood));
 
     } catch (e) {
-      debugPrint('[Pet] updateInBackground error: $e');
+      debugPrint('[Pet] showCurrentMood error: $e');
+      await Future.delayed(Duration.zero);
+      if (mounted) _applyMood(PetState.idle);
     }
+  }
+
+  // ── Lắng nghe thay đổi mood realtime từ DB ──
+  // Trigger khi analyzeNote (Firebase Function) update pet table
+  void _subscribePetChanges() {
+    if (_petId == null) return;
+
+    _petChannel = Supabase.instance.client
+        .channel('pet:$_petId')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'pet',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: _petId!,
+          ),
+          callback: (payload) {
+            if (!mounted) return;
+            final newMood = payload.newRecord['current_mood'] as String?;
+            if (newMood == null) return;
+            debugPrint('[Pet] realtime update → mood=$newMood');
+            _applyMood(_mapMood(newMood), withTransition: true);
+          },
+        )
+        .subscribe((status, [_]) {
+          debugPrint('[Pet] realtime status=$status');
+        });
+  }
+
+  // ── Nhận mood update từ petResumeProvider (RPC result) ──
+  // Tách ra method riêng để không tạo closure mới mỗi lần build()
+  void _onResumeProviderUpdate(PetResumeState? prev, PetResumeState next) {
+    if (next.rpcResult == null) return;
+    if (next.rpcResult == prev?.rpcResult) return;
+
+    final newMood = next.rpcResult!['current_mood'] as String?;
+    if (newMood == null) return;
+
+    debugPrint('[Pet] provider update → mood=$newMood');
+    _applyMood(_mapMood(newMood), withTransition: true);
   }
 
   @override
   Widget build(BuildContext context) {
     final screenSize         = MediaQuery.of(context).size;
     final isCalendarExpanded = ref.watch(calendarExpandedProvider);
+
+    // ref.listen trong ConsumerStatefulWidget.build() là đúng theo Riverpod docs
+    // Riverpod đảm bảo callback chỉ fire khi state thực sự thay đổi,
+    // không bị duplicate dù build() chạy lại nhiều lần
+    ref.listen<PetResumeState>(petResumeProvider, _onResumeProviderUpdate);
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
@@ -183,8 +191,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 key: _petKey,
                 width: screenSize.width * 0.5,
                 height: screenSize.width * 0.5,
-                autoPlay: false,
+                autoPlay: false,  // ← FSM tự quản lý qua startAutoBehavior()
                 initialState: PetState.idle,
+                onReady: () {
+                  // Callback khi StatefulPetWidget đã mount xong
+                  // Apply pending mood nếu query DB xong trước khi widget ready
+                  if (_pendingMood != null) {
+                    debugPrint('[Pet] applying pending mood=$_pendingMood');
+                    _applyMood(_pendingMood!);
+                  }
+                },
               ),
             ),
           ),

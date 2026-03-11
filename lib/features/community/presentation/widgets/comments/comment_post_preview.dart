@@ -1,5 +1,5 @@
 /// [Refactored] Phase 3.3 — Extracted from comment_overlay.dart
-/// Post preview section — wraps SocialPostCard with comment-highlighted mode
+/// [Updated] — isLikedByMe + isLikeProcessing để truyền đúng trạng thái xuống SocialPostCard
 library;
 
 import 'package:flutter/material.dart';
@@ -9,12 +9,21 @@ import '../social_post_card.dart';
 
 class CommentPostPreview extends StatelessWidget {
   final Post post;
+
+  /// Trạng thái like của current user — để PostFooter render đúng màu icon tim
+  final bool isLikedByMe;
+
+  /// Khi true, nút like bị vô hiệu hoá để tránh double-tap
+  final bool isLikeProcessing;
+
   final VoidCallback? onLike;
   final VoidCallback? onAvatarTap;
 
   const CommentPostPreview({
     super.key,
     required this.post,
+    required this.isLikedByMe,
+    this.isLikeProcessing = false,
     this.onLike,
     this.onAvatarTap,
   });
@@ -28,8 +37,10 @@ class CommentPostPreview extends StatelessWidget {
       ),
       child: SocialPostCard(
         post: post,
+        isLikedByMe: isLikedByMe,
+        isLikeProcessing: isLikeProcessing,
         isCommentHighlighted: true,
-        onLike: onLike,
+        onLike: isLikeProcessing ? null : onLike,
         onComment: null, // Disabled in comment overlay
         onAvatarTap: onAvatarTap,
         onPostTap: null, // Disabled in overlay

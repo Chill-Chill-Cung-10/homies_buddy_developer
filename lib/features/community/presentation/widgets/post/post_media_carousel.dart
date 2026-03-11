@@ -1,10 +1,13 @@
 /// [Refactored] Phase 3.2 — Extracted from social_post_card.dart
 /// Media carousel: single image, video thumbnail, or multi-image carousel
+///
+/// FIXED LAYOUT: Uses constant 4:5 aspect ratio to prevent layout jumps
+/// - All images displayed with BoxFit.cover in fixed frame
+/// - PageView.builder for carousel (better performance than CarouselSlider)
 library;
 
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_shapes.dart';
 import '../../../../../data/models/media_file_model.dart';
@@ -20,6 +23,23 @@ class PostMediaCarousel extends StatefulWidget {
 
 class _PostMediaCarouselState extends State<PostMediaCarousel> {
   int _currentMediaIndex = 0;
+  late final PageController _pageController;
+
+  /// Fixed aspect ratio 4:5 (width:height = 0.8)
+  /// This ensures consistent layout regardless of original image dimensions
+  static const double fixedAspectRatio = 4 / 5; // 0.8
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,52 +50,46 @@ class _PostMediaCarouselState extends State<PostMediaCarousel> {
         horizontal: AppShapes.paddingS,
         vertical: AppShapes.paddingS,
       ),
-      child: widget.mediaFiles.length == 1
-          ? _buildSingleMedia(widget.mediaFiles.first)
-          : _buildMediaCarousel(widget.mediaFiles),
-    );
-  }
-
-  Widget _buildSingleMedia(MediaFile media) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: AppShapes.paddingS),
-      child: AspectRatio(
-        aspectRatio: media.mediaAspectRatio,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(AppShapes.iconRadius),
-          child: _buildMediaContent(media),
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Fixed aspect ratio container - prevents layout jumps
+          AspectRatio(
+            aspectRatio: fixedAspectRatio,
+            child: widget.mediaFiles.length == 1
+                ? _buildSingleMedia(widget.mediaFiles.first)
+                : _buildMediaCarousel(widget.mediaFiles),
+          ),
+          // Page indicators (only for multiple images)
+          if (widget.mediaFiles.length > 1)
+            _buildCarouselIndicators(widget.mediaFiles.length),
+        ],
       ),
     );
   }
 
+  Widget _buildSingleMedia(MediaFile media) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppShapes.iconRadius),
+      child: _buildMediaContent(media),
+    );
+  }
+
   Widget _buildMediaCarousel(List<MediaFile> mediaFiles) {
-    return Column(
-      children: [
-        CarouselSlider(
-          options: CarouselOptions(
-            aspectRatio: mediaFiles[_currentMediaIndex].mediaAspectRatio,
-            viewportFraction: 1.0,
-            enableInfiniteScroll: false,
-            onPageChanged: (index, reason) {
-              setState(() {
-                _currentMediaIndex = index;
-              });
-            },
-          ),
-          items: mediaFiles.map((media) {
-            return Builder(
-              builder: (BuildContext context) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(AppShapes.iconRadius),
-                  child: _buildMediaContent(media),
-                );
-              },
-            );
-          }).toList(),
-        ),
-        if (mediaFiles.length > 1) _buildCarouselIndicators(mediaFiles.length),
-      ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppShapes.iconRadius),
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: mediaFiles.length,
+        onPageChanged: (index) {
+          setState(() {
+            _currentMediaIndex = index;
+          });
+        },
+        itemBuilder: (context, index) {
+          return _buildMediaContent(mediaFiles[index]);
+        },
+      ),
     );
   }
 

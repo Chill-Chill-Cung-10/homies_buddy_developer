@@ -104,6 +104,7 @@ Future<List<String>> uploadNoteMedia({
   ///
   /// Returns: List of download URLs (bao gồm cả thumbnails nếu có)
   Future<List<MediaUploadResult>> uploadPostMedia(
+    String userId,  // ← userId trước
     String postId,
     List<XFile> files, {
     bool generateThumbnails = true,
@@ -120,6 +121,7 @@ Future<List<String>> uploadNoteMedia({
           // Upload video (no compression)
           final videoUrl = await _uploadFile(
             file,
+            userId,
             postId,
             'media_$i$ext',
             'video/mp4',
@@ -139,6 +141,7 @@ Future<List<String>> uploadNoteMedia({
           final compressedImage = await _compressImage(file, maxWidth: 1920);
           final imageUrl = await _uploadCompressed(
             compressedImage,
+            userId,
             postId,
             'media_$i.jpg',
             'image/jpeg',
@@ -150,6 +153,7 @@ Future<List<String>> uploadNoteMedia({
             final thumbnail = await _compressImage(file, maxWidth: 400);
             thumbnailUrl = await _uploadCompressed(
               thumbnail,
+              userId,
               postId,
               'media_${i}_thumb.jpg',
               'image/jpeg',
@@ -175,11 +179,12 @@ Future<List<String>> uploadNoteMedia({
   /// Private helper - Upload file trực tiếp
   Future<String> _uploadFile(
     XFile file,
+    String userId,
     String postId,
     String filename,
     String contentType,
   ) async {
-    final ref = _firebaseService.postMediaRef(postId).child(filename);
+    final ref = _firebaseService.postMediaRef(userId, postId).child(filename);
     final uploadTask = ref.putFile(
       File(file.path),
       SettableMetadata(contentType: contentType),
@@ -191,11 +196,12 @@ Future<List<String>> uploadNoteMedia({
   /// Private helper - Upload compressed file
   Future<String> _uploadCompressed(
     File file,
+    String userId,
     String postId,
     String filename,
     String contentType,
   ) async {
-    final ref = _firebaseService.postMediaRef(postId).child(filename);
+    final ref = _firebaseService.postMediaRef(userId, postId).child(filename);
     final uploadTask = ref.putFile(
       file,
       SettableMetadata(contentType: contentType),
@@ -241,9 +247,9 @@ Future<List<String>> uploadNoteMedia({
   }
 
   /// Delete all media của một post
-  Future<void> deletePostMedia(String postId) async {
+  Future<void> deletePostMedia(String userId, String postId) async {
     try {
-      final ref = _firebaseService.postMediaRef(postId);
+      final ref = _firebaseService.postMediaRef(userId, postId);
       final listResult = await ref.listAll();
 
       // Delete all files in the folder

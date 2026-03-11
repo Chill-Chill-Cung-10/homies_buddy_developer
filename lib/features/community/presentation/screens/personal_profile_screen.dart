@@ -91,7 +91,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
               });
             },
             onComment: (post) {
-              showCommentOverlay(context, post);
+              showCommentOverlay(context, post, isLikedByMe: false);
             },
           ),
 

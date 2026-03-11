@@ -19,18 +19,19 @@ samples, guidance on mobile development, and a full API reference.
 
 Do not hardcode Supabase values in source code.
 
-Pass values at build/run time with `--dart-define`:
+Create a `.env` file at project root with:
 
-```powershell
-flutter run --dart-define=SUPABASE_URL=https://your-project.supabase.co --dart-define=SUPABASE_ANON_KEY=your_anon_or_publishable_key
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your_anon_or_publishable_key
 ```
 
-For release build:
+Then run normally:
 
 ```powershell
-flutter build apk --release --dart-define=SUPABASE_URL=https://your-project.supabase.co --dart-define=SUPABASE_ANON_KEY=your_anon_or_publishable_key
+flutter run
 ```
 
 Recommended for CI/CD:
 - Store `SUPABASE_URL` and `SUPABASE_ANON_KEY` in pipeline secrets.
-- Inject them into Flutter commands via `--dart-define` at build time.
+- Generate `.env` from secrets before build/run.

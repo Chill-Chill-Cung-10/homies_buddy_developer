@@ -1,12 +1,12 @@
 /// [Refactored] Phase 3.3 — Extracted from comment_overlay.dart
-/// Comment input field with send button + sort dropdown filter
+/// [Updated] — isSubmitting loading state khi gửi comment
 library;
 
 import 'package:flutter/material.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/constants/app_text_styles.dart';
 import '../../../../../core/constants/app_shapes.dart';
-import '../../../mockdata/comment_mock_data.dart';
+import '../../../data/models/comment_sort_option.dart';
 
 class CommentInputSection extends StatelessWidget {
   final TextEditingController commentController;
@@ -14,6 +14,7 @@ class CommentInputSection extends StatelessWidget {
   final CommentSortOption selectedSortOption;
   final ValueChanged<CommentSortOption?> onSortChanged;
   final VoidCallback onSendComment;
+  final bool isSubmitting; // ← loading khi đang gửi
 
   const CommentInputSection({
     super.key,
@@ -22,6 +23,7 @@ class CommentInputSection extends StatelessWidget {
     required this.selectedSortOption,
     required this.onSortChanged,
     required this.onSendComment,
+    this.isSubmitting = false,
   });
 
   @override
@@ -46,6 +48,7 @@ class CommentInputSection extends StatelessWidget {
                   child: TextField(
                     controller: commentController,
                     focusNode: commentFocusNode,
+                    enabled: !isSubmitting, // ← disable khi đang gửi
                     decoration: const InputDecoration(
                       hintText: 'Your Comment...',
                       hintStyle: TextStyle(
@@ -61,27 +64,38 @@ class CommentInputSection extends StatelessWidget {
                     ),
                     maxLines: null,
                     textInputAction: TextInputAction.send,
-                    onSubmitted: (_) => onSendComment(),
+                    onSubmitted: isSubmitting ? null : (_) => onSendComment(),
                   ),
                 ),
                 const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(
-                    Icons.send,
-                    color: AppColors.accentOrange,
-                    size: 24,
-                  ),
-                  onPressed: onSendComment,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
+
+                // Send button hoặc loading indicator
+                isSubmitting
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.accentOrange,
+                        ),
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.send,
+                          color: AppColors.accentOrange,
+                          size: 24,
+                        ),
+                        onPressed: onSendComment,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
               ],
             ),
           ),
 
           const SizedBox(height: 12),
 
-          // Filter Dropdown
+          // Sort Dropdown
           Row(
             children: [
               Container(

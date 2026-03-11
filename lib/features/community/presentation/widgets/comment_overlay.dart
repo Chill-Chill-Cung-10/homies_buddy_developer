@@ -1,79 +1,95 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_text_styles.dart';
 import '../../../../core/constants/app_shapes.dart';
 import '../../../../data/models/post_model.dart';
 import '../../../../data/models/comment_model.dart';
-import '../../mockdata/comment_mock_data.dart';
+import '../../data/models/comment_sort_option.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import 'comments/comment_item.dart';
 import 'comments/comment_input_section.dart';
 import 'comments/comment_post_preview.dart';
+import '../providers/comment_providers.dart';
+import '../providers/community_providers.dart';
 
-/// [Refactored] Phase 3.3 — Split into CommentItem, CommentInputSection,
-/// CommentPostPreview sub-widgets.
-///
 /// Comment Overlay - Instagram-style comment bottom sheet
-/// Hiển thị comment overlay với post preview, comment input, filter, và comment list
-class CommentOverlay extends StatefulWidget {
+/// Kết nối với CommentRepository qua Riverpod providers
+class CommentOverlay extends ConsumerStatefulWidget {
   final Post post;
+
+  /// Trạng thái like ban đầu — truyền từ feed để render đúng ngay khi mở overlay
+  final bool isLikedByMe;
+
   final String? highlightCommentId;
 
   const CommentOverlay({
     super.key,
     required this.post,
+    required this.isLikedByMe,
     this.highlightCommentId,
   });
 
   @override
-  State<CommentOverlay> createState() => _CommentOverlayState();
+  ConsumerState<CommentOverlay> createState() => _CommentOverlayState();
 }
 
-class _CommentOverlayState extends State<CommentOverlay> {
+class _CommentOverlayState extends ConsumerState<CommentOverlay> {
   final TextEditingController _commentController = TextEditingController();
   final FocusNode _commentFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
   final Map<String, GlobalKey> _commentKeys = {};
 
-  late List<Comment> _comments;
-  late Post _post; // Local post state for managing reactions
-  CommentSortOption _selectedSortOption = CommentSortOption.latest;
+  late Post _post;
+
+  /// Optimistic like state — phản ánh UI ngay lập tức
+  late bool _isLikedByMe;
+
+  /// Guard chống double-tap: true trong khi đang chờ Supabase phản hồi
+  bool _isLikeProcessing = false;
+
   String? _currentHighlightedCommentId;
-  double _highlightOpacity = 0.2; // Opacity for smooth fade-out
+  double _highlightOpacity = 0.2;
   EdgeInsets _highlightPadding = const EdgeInsets.symmetric(
     horizontal: 8,
     vertical: 4,
-  ); // Padding for smooth size transition
+  );
   Timer? _highlightTimer;
+
+  // Provider params — computed once
+  late CommentProviderParams _providerParams;
 
   @override
   void initState() {
     super.initState();
+    _post = widget.post;
+    _isLikedByMe = widget.isLikedByMe;
     _currentHighlightedCommentId = widget.highlightCommentId;
-    _post = widget.post; // Initialize local post state
-    _loadComments();
 
-    // Scroll to highlighted comment after build
+    final currentUserId = ref.read(currentAuthUserProvider)?.id;
+    _providerParams = CommentProviderParams(
+      postId: widget.post.postId,
+      currentUserId: currentUserId,
+    );
+
     if (widget.highlightCommentId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scrollToHighlightedComment();
       });
 
-      // Start fade-out timer (2.5 seconds hold, then 800ms fade)
       _highlightTimer = Timer(const Duration(milliseconds: 2000), () {
         if (mounted) {
-          // Animate both opacity and padding to 0 smoothly
           setState(() {
             _highlightOpacity = 0.0;
-            _highlightPadding = EdgeInsets.zero; // Remove padding smoothly
+            _highlightPadding = EdgeInsets.zero;
           });
 
-          // After fade-out animation completes, remove highlight
           Future.delayed(const Duration(milliseconds: 800), () {
             if (mounted) {
               setState(() {
                 _currentHighlightedCommentId = null;
-                // Reset for next time
                 _highlightOpacity = 0.2;
                 _highlightPadding = const EdgeInsets.symmetric(
                   horizontal: 8,
@@ -85,13 +101,8 @@ class _CommentOverlayState extends State<CommentOverlay> {
         }
       });
     }
-  }
 
-  void _loadComments() {
-    final comments = CommentMockData.getCommentsForPost(widget.post.postId);
-    setState(() {
-      _comments = CommentMockData.sortComments(comments, _selectedSortOption);
-    });
+    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -103,63 +114,132 @@ class _CommentOverlayState extends State<CommentOverlay> {
     super.dispose();
   }
 
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.85) {
+      ref.read(commentProvider(_providerParams).notifier).loadMore();
+    }
+  }
+
   void _scrollToHighlightedComment() {
     if (widget.highlightCommentId == null) return;
-
     final key = _commentKeys[widget.highlightCommentId];
     if (key?.currentContext != null) {
       Scrollable.ensureVisible(
         key!.currentContext!,
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        alignment: 0.3, // Position comment at 30% from top
+        alignment: 0.3,
+      );
+    }
+  }
+
+  /// Optimistic like toggle:
+  /// 1. Guard _isLikeProcessing chặn double-tap
+  /// 2. Cập nhật UI ngay (optimistic)
+  /// 3. Gọi repository qua communityFeedProvider để đồng bộ với feed
+  /// 4. Rollback nếu Supabase trả về lỗi
+  Future<void> _handleToggleLike() async {
+    if (_isLikeProcessing) return;
+
+    final user = ref.read(currentAuthUserProvider);
+    if (user == null) return;
+
+    final wasLiked = _isLikedByMe;
+    setState(() {
+      _isLikeProcessing = true;
+      _isLikedByMe = !wasLiked;
+      _post = _post.copyWith(
+        reactsCount: _isLikedByMe
+            ? _post.reactsCount + 1
+            : (_post.reactsCount - 1).clamp(0, double.maxFinite).toInt(),
+      );
+    });
+
+    try {
+      await ref.read(communityFeedProvider.notifier).toggleLike(_post.postId);
+    } catch (_) {
+      // Rollback nếu lỗi
+      if (mounted) {
+        setState(() {
+          _isLikedByMe = wasLiked;
+          _post = _post.copyWith(
+            reactsCount: wasLiked
+                ? _post.reactsCount + 1
+                : (_post.reactsCount - 1).clamp(0, double.maxFinite).toInt(),
+          );
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLikeProcessing = false);
+      }
+    }
+  }
+
+  Future<void> _handleSendComment() async {
+    final content = _commentController.text.trim();
+    if (content.isEmpty) return;
+
+    final user = ref.read(currentAuthUserProvider);
+    if (user == null) return;
+
+    _commentController.clear();
+    _commentFocusNode.unfocus();
+
+    final success = await ref
+        .read(commentProvider(_providerParams).notifier)
+        .addComment(
+          authorId: user.id,
+          authorName: user.fullName,
+          authorAvatar: user.avatarUrl ?? '',
+          content: content,
+        );
+
+    if (!success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Không thể gửi bình luận'),
+          backgroundColor: AppColors.errorRed,
+        ),
       );
     }
   }
 
   void _handleSortChanged(CommentSortOption? newOption) {
-    if (newOption != null) {
-      setState(() {
-        _selectedSortOption = newOption;
-        _loadComments();
-      });
-    }
+    if (newOption == null) return;
+    ref.read(commentProvider(_providerParams).notifier).changeSort(newOption);
   }
 
-  void _handleSendComment() {
-    if (_commentController.text.trim().isEmpty) return;
-
-    // TODO: Implement send comment logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Comment sent: ${_commentController.text}'),
-        duration: const Duration(seconds: 1),
-        backgroundColor: AppColors.accentOrange,
-      ),
-    );
-
-    _commentController.clear();
-    _commentFocusNode.unfocus();
+  void _handleToggleReact(Comment comment) {
+    ref
+        .read(commentProvider(_providerParams).notifier)
+        .toggleReact(comment.commentId);
   }
 
-  void _handleCommentReact(Comment comment) {
-    // isReactedByMe is now computed from COMMENT_REACTS junction table
-    // Update logic will be handled via repository/state management
-    setState(() {
-      final index = _comments.indexWhere(
-        (c) => c.commentId == comment.commentId,
-      );
-      if (index != -1) {
-        _comments[index] = comment.copyWith(
-          reactCount:
-              comment.reactCount + 1, // Placeholder - will be updated via state
-        );
-      }
-    });
+  void _handleDeleteComment(String commentId) {
+    ref
+        .read(commentProvider(_providerParams).notifier)
+        .deleteComment(commentId);
   }
 
   @override
   Widget build(BuildContext context) {
+    final commentState = ref.watch(commentProvider(_providerParams));
+    final currentUserId = ref.watch(currentAuthUserProvider)?.id;
+
+    ref.listen<CommentState>(commentProvider(_providerParams), (prev, next) {
+      if (next.errorMessage != null &&
+          next.errorMessage != prev?.errorMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.errorMessage!),
+            backgroundColor: AppColors.errorRed,
+          ),
+        );
+      }
+    });
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
       decoration: const BoxDecoration(
@@ -170,32 +250,22 @@ class _CommentOverlayState extends State<CommentOverlay> {
       ),
       child: Column(
         children: [
-          // Drag Handle
           _buildDragHandle(),
-
-          // Scrollable content (Post Preview + Comments)
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Post Preview using SocialPostCard
                   _buildPostPreview(),
-
-                  // Divider
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppShapes.paddingM,
                     ),
                     child: const Divider(height: 1, color: AppColors.textHint),
                   ),
-
-                  // Comment Input & Filter Section
-                  _buildCommentInputSection(),
-
-                  // Comments List
-                  _buildCommentsList(),
+                  _buildCommentInputSection(commentState),
+                  _buildCommentsList(commentState, currentUserId),
                 ],
               ),
             ),
@@ -205,7 +275,6 @@ class _CommentOverlayState extends State<CommentOverlay> {
     );
   }
 
-  /// Drag handle at top
   Widget _buildDragHandle() {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -218,21 +287,12 @@ class _CommentOverlayState extends State<CommentOverlay> {
     );
   }
 
-  /// Post Preview Section - Reusing CommentPostPreview
   Widget _buildPostPreview() {
     return CommentPostPreview(
       post: _post,
-      onLike: () {
-        // isLikedByMe is now computed from POST_LIKES junction table
-        // Update logic will be handled via repository/state management
-        setState(() {
-          _post = _post.copyWith(
-            reactsCount:
-                _post.reactsCount +
-                1, // Placeholder - will be updated via state
-          );
-        });
-      },
+      isLikedByMe: _isLikedByMe,
+      isLikeProcessing: _isLikeProcessing,
+      onLike: _handleToggleLike,
       onAvatarTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -244,20 +304,28 @@ class _CommentOverlayState extends State<CommentOverlay> {
     );
   }
 
-  /// Comment Input & Filter Section
-  Widget _buildCommentInputSection() {
+  Widget _buildCommentInputSection(CommentState commentState) {
     return CommentInputSection(
       commentController: _commentController,
       commentFocusNode: _commentFocusNode,
-      selectedSortOption: _selectedSortOption,
+      selectedSortOption: commentState.sortOption,
       onSortChanged: _handleSortChanged,
       onSendComment: _handleSendComment,
+      isSubmitting: commentState.isSubmitting,
     );
   }
 
-  /// Comments List
-  Widget _buildCommentsList() {
-    if (_comments.isEmpty) {
+  Widget _buildCommentsList(CommentState commentState, String? currentUserId) {
+    if (commentState.isLoading && commentState.comments.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(AppShapes.paddingXL),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.accentOrange),
+        ),
+      );
+    }
+
+    if (commentState.comments.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(AppShapes.paddingXL),
         child: Center(
@@ -288,49 +356,84 @@ class _CommentOverlayState extends State<CommentOverlay> {
       );
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppShapes.paddingM,
-        vertical: AppShapes.paddingS,
-      ),
-      itemCount: _comments.length,
-      itemBuilder: (context, index) {
-        final comment = _comments[index];
-        final isHighlighted = _currentHighlightedCommentId == comment.commentId;
+    return Column(
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppShapes.paddingM,
+            vertical: AppShapes.paddingS,
+          ),
+          itemCount: commentState.comments.length,
+          itemBuilder: (context, index) {
+            final entry = commentState.comments[index];
+            final comment = entry.comment;
+            final isHighlighted =
+                _currentHighlightedCommentId == comment.commentId;
 
-        // Create GlobalKey for this comment if it's highlighted
-        if (isHighlighted && !_commentKeys.containsKey(comment.commentId)) {
-          _commentKeys[comment.commentId] = GlobalKey();
-        }
+            if (isHighlighted &&
+                !_commentKeys.containsKey(comment.commentId)) {
+              _commentKeys[comment.commentId] = GlobalKey();
+            }
 
-        return CommentItem(
-          comment: comment,
-          isHighlighted: isHighlighted,
-          highlightOpacity: _highlightOpacity,
-          highlightPadding: _highlightPadding,
-          commentKey: _commentKeys[comment.commentId],
-          onReact: _handleCommentReact,
-        );
-      },
+            return CommentItem(
+              comment: comment,
+              isReactedByMe: entry.isReactedByMe,
+              isHighlighted: isHighlighted,
+              highlightOpacity: _highlightOpacity,
+              highlightPadding: _highlightPadding,
+              commentKey: _commentKeys[comment.commentId],
+              onReact: _handleToggleReact,
+              onDelete: comment.authorId == currentUserId
+                  ? () => _handleDeleteComment(comment.commentId)
+                  : null,
+            );
+          },
+        ),
+
+        if (commentState.isLoading && commentState.comments.isNotEmpty)
+          const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.accentOrange),
+            ),
+          ),
+
+        if (!commentState.hasMore && commentState.comments.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Center(
+              child: Text(
+                'Đã xem hết bình luận',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textHint,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
-
-  // [Refactored] Phase 1.5 — _formatCount chuyển sang core/utils/formatters.dart.
 }
 
-/// Helper function to show comment overlay
+/// Helper function để show comment overlay
+///
+/// [isLikedByMe] bắt buộc — lấy từ feedState.likedPostIds.contains(post.postId)
 void showCommentOverlay(
   BuildContext context,
   Post post, {
+  required bool isLikedByMe,
   String? highlightCommentId,
 }) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) =>
-        CommentOverlay(post: post, highlightCommentId: highlightCommentId),
+    builder: (context) => CommentOverlay(
+      post: post,
+      isLikedByMe: isLikedByMe,
+      highlightCommentId: highlightCommentId,
+    ),
   );
 }

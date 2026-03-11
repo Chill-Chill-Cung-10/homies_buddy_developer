@@ -52,7 +52,7 @@ class FirebaseService {
   Reference get storageRoot => storage.ref();
   Reference avatarRef(String userId) => storageRoot.child('avatars/$userId');
   Reference coverRef(String userId) => storageRoot.child('covers/$userId');
-  Reference postMediaRef(String postId) => storageRoot.child('posts/$postId');
+  Reference postMediaRef(String userId, String postId) => storageRoot.child('posts/$userId/$postId');
 
   /// Batch write helper
   WriteBatch batch() => firestore.batch();

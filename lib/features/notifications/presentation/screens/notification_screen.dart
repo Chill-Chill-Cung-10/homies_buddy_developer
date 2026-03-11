@@ -122,7 +122,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       // Open comment overlay after short delay
       Future.delayed(const Duration(milliseconds: 300), () {
-        showCommentOverlay(context, post);
+        showCommentOverlay(context, post, isLikedByMe: false);
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -147,7 +147,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
       // Open comment overlay with highlight after short delay
       Future.delayed(const Duration(milliseconds: 300), () {
-        showCommentOverlay(context, post, highlightCommentId: commentId);
+        showCommentOverlay(
+          context,
+          post,
+          isLikedByMe: false,
+          highlightCommentId: commentId,
+        );
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

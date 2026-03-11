@@ -1,5 +1,5 @@
 /// [Refactored] Phase 3.2 — Extracted from social_post_card.dart
-/// Footer: heart reaction button with scale animation + comment button
+/// [Updated] — isLikeProcessing guard chống double-tap ở cả feed lẫn comment overlay
 library;
 
 import 'package:flutter/material.dart';
@@ -11,6 +11,11 @@ import '../../../../../data/models/post_model.dart';
 
 class PostFooter extends StatefulWidget {
   final Post post;
+  final bool isLikedByMe;
+
+  /// Khi true, nút like bị vô hiệu hoá — tránh race condition / double-tap
+  final bool isLikeProcessing;
+
   final VoidCallback? onLike;
   final VoidCallback? onComment;
   final bool isCommentHighlighted;
@@ -18,6 +23,8 @@ class PostFooter extends StatefulWidget {
   const PostFooter({
     super.key,
     required this.post,
+    this.isLikedByMe = false,
+    this.isLikeProcessing = false,
     this.onLike,
     this.onComment,
     this.isCommentHighlighted = false,
@@ -36,11 +43,10 @@ class _PostFooterState extends State<PostFooter>
   void initState() {
     super.initState();
     _heartAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
       vsync: this,
     );
-
-    _heartScaleAnimation = Tween<double>(begin: 1.0, end: 1.3).animate(
+    _heartScaleAnimation = Tween<double>(begin: 1.0, end: 1.35).animate(
       CurvedAnimation(
         parent: _heartAnimationController,
         curve: Curves.easeInOut,
@@ -55,21 +61,24 @@ class _PostFooterState extends State<PostFooter>
   }
 
   void _handleLike() {
-    // isLikedByMe is now computed from POST_LIKES junction table
-    // Heart animation plays regardless - actual like status from state
+    // Guard: không xử lý nếu đang pending hoặc không có callback
+    if (widget.isLikeProcessing || widget.onLike == null) return;
+
     _heartAnimationController.forward().then((_) {
       _heartAnimationController.reverse();
     });
-    widget.onLike?.call();
+    widget.onLike!();
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLiked = widget.isLikedByMe;
+
     return Padding(
       padding: const EdgeInsets.all(AppShapes.paddingM),
       child: Row(
         children: [
-          // Heart/Like Button with Animation
+          // Heart/Like Button
           GestureDetector(
             onTap: _handleLike,
             child: Row(
@@ -77,8 +86,9 @@ class _PostFooterState extends State<PostFooter>
                 ScaleTransition(
                   scale: _heartScaleAnimation,
                   child: SvgPicture.asset(
-                    // isLikedByMe computed from POST_LIKES via state
-                    'assets/images/icons/heart_reactions_off.svg',
+                    isLiked
+                        ? 'assets/images/icons/heart_reactions_on.svg'
+                        : 'assets/images/icons/heart_reactions_off.svg',
                     width: 24,
                     height: 24,
                   ),
@@ -86,10 +96,10 @@ class _PostFooterState extends State<PostFooter>
                 const SizedBox(width: 6),
                 Text(
                   formatCount(widget.post.reactsCount),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Norican',
                     fontSize: 16,
-                    color: AppColors.textPrimary,
+                    color: isLiked ? AppColors.errorRed : AppColors.textPrimary,
                   ),
                 ),
               ],

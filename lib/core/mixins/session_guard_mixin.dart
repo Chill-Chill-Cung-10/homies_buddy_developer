@@ -86,9 +86,9 @@ mixin SessionGuardMixin {
         yield value;
       }
       
-    } on AuthFailure catch (e) {
+    } on AuthFailure {
       debugPrint('🚫 SessionGuard: $opName - Auth failed');
-      throw e;
+      rethrow;
     } catch (e) {
       debugPrint('❌ SessionGuard: $opName - Stream failed: $e');
       rethrow;
