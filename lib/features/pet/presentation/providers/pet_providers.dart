@@ -61,7 +61,7 @@ class PetResumeNotifier extends StateNotifier<PetResumeState> {
 
   // Tối thiểu 1 phút giữa 2 lần gọi RPC
   // Điều chỉnh nếu cần: Duration(minutes: 5) cho app ít update hơn
-  static const _cooldown = Duration(minutes: 1);
+  static const _cooldown = Duration(seconds: 5);
 
   PetResumeNotifier(this._datasource, this._firebaseService)
       : super(PetResumeState.initial());
@@ -146,21 +146,89 @@ class PetResumeNotifier extends StateNotifier<PetResumeState> {
     state = state.copyWith(errorMessage: null);
   }
 
-  /// Log all RPC state results
+  /// Log all RPC state results + lý do mood được chọn
   void _logRpcResult(Map<String, dynamic> result) {
-    _logger.i('═══ 🐾 RPC update_pet_on_resume RESULT ═══');
-    _logger.i('  energy:            ${result['energy']}');
-    _logger.i('  current_mood:      ${result['current_mood']}');
-    _logger.i('  streak:            ${result['streak']}');
-    _logger.i('  visit_count_today: ${result['visit_count_today']}');
-    _logger.i('  delta_hours:       ${result['delta_hours']}');
-    _logger.i('  time_of_day:       ${result['time_of_day']}');
-    _logger.i('  streak_changed:    ${result['streak_changed']}');
-    _logger.i('  is_first_today:    ${result['is_first_today']}');
-    _logger.i('  user_tone:         ${result['user_tone']}');
-    _logger.i('  emotional_trend:   ${result['emotional_trend']}');
-    _logger.i('  severity:          ${result['severity']}');
-    _logger.i('═════════════════════════════════════════════');
+    final energy     = (result['energy']         as num?)?.toDouble() ?? 0.0;
+    final mood       = result['current_mood']    as String? ?? '?';
+    final tone       = result['user_tone']       as String? ?? '?';
+    final trend      = result['emotional_trend'] as String? ?? '?';
+    final severity   = result['severity']        as int?    ?? 0;
+    final deltaHours = (result['delta_hours']    as num?)?.toDouble() ?? 0.0;
+    final timeOfDay  = result['time_of_day']     as int?    ?? 0;
+
+    // ── Energy level label ────────────────────────────────────────────────
+    final energyLabel = energy < 0.20
+        ? '🔴 CRITICAL  (<0.20 → sleep forced)'
+        : energy < 0.40
+            ? '🟠 LOW       (<0.40 → idle/sleep random)'
+            : energy < 0.60
+                ? '🟡 MEDIUM    (<0.60)'
+                : '🟢 HIGH      (≥0.60)';
+
+    // ── Lý do mood được chọn theo priority chain ──────────────────────────
+    final moodReason = _inferMoodReason(
+      tone: tone, severity: severity, deltaHours: deltaHours,
+      energy: energy, trend: trend, mood: mood,
+    );
+
+    _logger.i('╔══════════ 🐾 PET RESUME RESULT ══════════╗');
+    _logger.i('║  ENERGY');
+    _logger.i('║    value:          ${energy.toStringAsFixed(3)}');
+    _logger.i('║    level:          $energyLabel');
+    _logger.i('║    delta_hours:    ${deltaHours}h since last interaction');
+    _logger.i('║    time_of_day:    ${timeOfDay}h (VN)');
+    _logger.i('║');
+    _logger.i('║  MOOD');
+    _logger.i('║    current_mood:   $mood');
+    _logger.i('║    reason:         $moodReason');
+    _logger.i('║');
+    _logger.i('║  USER CONTEXT');
+    _logger.i('║    user_tone:      $tone  (severity: $severity/5)');
+    _logger.i('║    trend:          $trend');
+    _logger.i('║');
+    _logger.i('║  SESSION');
+    _logger.i('║    streak:         ${result['streak']} days');
+    _logger.i('║    visit_today:    ${result['visit_count_today']}');
+    _logger.i('║    streak_changed: ${result['streak_changed']}');
+    _logger.i('║    is_first_today: ${result['is_first_today']}');
+    _logger.i('╚═══════════════════════════════════════════╝');
+  }
+
+  /// Suy luận lý do mood theo priority chain của resolve_pet_mood()
+  String _inferMoodReason({
+    required String tone,
+    required int severity,
+    required double deltaHours,
+    required double energy,
+    required String trend,
+    required String mood,
+  }) {
+    const negTones = ['sad', 'very_sad', 'anxious'];
+    if (negTones.contains(tone) && severity >= 4) {
+      return '⚠️  [1] tone=$tone severity=$severity≥4 → healing override';
+    }
+    if (negTones.contains(tone)) {
+      return '😢 [2] tone=$tone → forced sad';
+    }
+    if (tone == 'angry') {
+      return '😤 [3] tone=angry → forced idle';
+    }
+    if (deltaHours > 48) {
+      return '👀 [4] abandoned ${deltaHours.toStringAsFixed(1)}h >48h → looking_outside';
+    }
+    if (energy < 0.20) {
+      return '😴 [5] energy=${energy.toStringAsFixed(3)} <0.20 → sleep';
+    }
+    if (energy < 0.40) {
+      return '😑 [6] energy=${energy.toStringAsFixed(3)} <0.40 → idle/sleep (random)';
+    }
+    if (trend == 'declining') {
+      return '📉 [7] trend=declining → sad';
+    }
+    if ((tone == 'happy' || tone == 'very_happy') && energy >= 0.60) {
+      return '😊 [8] tone=$tone energy≥0.60 → happy/happy_smiling (random)';
+    }
+    return '😐 [9] neutral fallback trend=$trend → $mood';
   }
 }
 

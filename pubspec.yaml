@@ -76,6 +76,7 @@ dependencies:
   google_sign_in: ^7.2.0
   # sign_in_with_apple: ^6.0.0
 
+  url_launcher: ^6.3.2
   # 8. Local Storage
   isar: ^3.1.0+1
   hive: ^2.2.3
@@ -106,6 +107,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   # Enginee
   flame: ^1.35.1
+  flutter_timezone: ^5.0.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

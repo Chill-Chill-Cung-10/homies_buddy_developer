@@ -316,17 +316,37 @@ class AuthRepository {
   }
 
   /// Get current user profile
-  Future<UserModel?> getCurrentUserProfile() async {
+  Future<UserModel?> getCurrentUserProfile({bool allowFirebaseFallback = true}) async {
     final userId = currentUserId;
     if (userId == null) return null;
 
     final profile = await _fetchUserProfile(userId);
     if (profile != null) return profile;
 
+    if (!allowFirebaseFallback) {
+      return null;
+    }
+
     // Fallback to Firebase user data
     final user = currentUser;
     if (user == null) return null;
 
+    return _createUserModelFromFirebase(user);
+  }
+
+  /// Force refresh current Firebase user against server.
+  Future<User?> reloadCurrentUser() async {
+    final user = currentUser;
+    if (user == null) return null;
+
+    await user.reload();
+    return _auth.currentUser;
+  }
+
+  /// Build lightweight fallback user from current Firebase session.
+  UserModel? getCurrentFirebaseUserModel() {
+    final user = currentUser;
+    if (user == null) return null;
     return _createUserModelFromFirebase(user);
   }
 

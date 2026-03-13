@@ -16,10 +16,13 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_text_styles.dart';
+import '../../../../data/models/post_model.dart';
 import '../../../../data/models/user_model.dart';
+import '../../../community/presentation/providers/community_providers.dart';
 import '../../../community/presentation/screens/personal_profile_screen.dart';
 import '../../../community/presentation/widgets/comment_overlay.dart';
 import '../../../community/presentation/widgets/profile/profile_buddies_section.dart';
@@ -41,11 +44,44 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  final Map<String, bool> _likedStatusByPostId = {};
+  final Map<String, Post> _postOverrides = {};
 
   @override
   void initState() {
     super.initState();
     // Profile will be loaded automatically by the provider
+  }
+
+  String? get _currentUserId => FirebaseAuth.instance.currentUser?.uid;
+
+  Future<void> _toggleLike(List<Post> posts, int index) async {
+    final currentUserId = _currentUserId;
+    if (currentUserId == null || index < 0 || index >= posts.length) return;
+
+    final post = posts[index];
+    final postId = post.postId;
+    final wasLiked = _likedStatusByPostId[postId] ?? false;
+    final updatedPost = post.copyWith(
+      reactsCount: wasLiked
+          ? (post.reactsCount - 1).clamp(0, double.maxFinite).toInt()
+          : post.reactsCount + 1,
+    );
+
+    setState(() {
+      _likedStatusByPostId[postId] = !wasLiked;
+      _postOverrides[postId] = updatedPost;
+    });
+
+    try {
+      await ref.read(postRepositoryProvider).toggleLike(postId, currentUserId);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _likedStatusByPostId[postId] = wasLiked;
+        _postOverrides[postId] = post;
+      });
+    }
   }
 
   // ── Settings Menu Actions ──
@@ -258,6 +294,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     final allBuddies = user.allHomies;
+    final posts = user.posts
+        .map((post) => _postOverrides[post.postId] ?? post)
+        .toList(growable: false);
+    final likedStatus = posts
+        .map((post) => _likedStatusByPostId[post.postId] ?? false)
+        .toList(growable: false);
 
     return Scaffold(
       body: RefreshIndicator(
@@ -272,12 +314,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
             // Post feed (reuse từ community)
             ProfilePostFeed(
-              posts: user.posts,
-              onLike: (index) {
-                // TODO: Implement like via API
-              },
+              posts: posts,
+              likedStatus: likedStatus,
+              onLike: (index) => _toggleLike(posts, index),
               onComment: (post) {
-                showCommentOverlay(context, post, isLikedByMe: false);
+                showCommentOverlay(
+                  context,
+                  post,
+                  isLikedByMe: _likedStatusByPostId[post.postId] ?? false,
+                );
               },
             ),
 

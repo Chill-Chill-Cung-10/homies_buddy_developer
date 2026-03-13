@@ -27,9 +27,10 @@ class CardNoteItem extends StatelessWidget {
 
   /// Format DateTime -> "2:40 PM 02/28/2026"
   String _formatTimestamp(DateTime dateTime) {
+    final localDateTime = dateTime.toLocal();
     final timeFormat = DateFormat('h:mm a');
     final dateFormat = DateFormat('MM/dd/yyyy');
-    return '${timeFormat.format(dateTime)} ${dateFormat.format(dateTime)}';
+    return '${timeFormat.format(localDateTime)} ${dateFormat.format(localDateTime)}';
   }
 
   @override

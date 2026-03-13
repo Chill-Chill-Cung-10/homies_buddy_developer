@@ -12,20 +12,24 @@ import '../../../../../data/models/user_model.dart';
 class ProfileStatsSection extends StatelessWidget {
   final UserModel user;
   final VoidCallback onFollowToggle;
+  final VoidCallback? onChatTap;
 
   const ProfileStatsSection({
     super.key,
     required this.user,
     required this.onFollowToggle,
+    this.onChatTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final showChatButton = user.isFollowedByMe && onChatTap != null;
+
     return Column(
       children: [
         _buildProfileStats(),
         const SizedBox(height: AppShapes.paddingM),
-        _buildFollowButton(),
+        showChatButton ? _buildFollowAndChatRow() : _buildFollowButton(),
       ],
     );
   }
@@ -97,6 +101,35 @@ class ProfileStatsSection extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFollowAndChatRow() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppShapes.paddingL),
+      child: Row(
+        children: [
+          Expanded(child: _buildFollowButton()),
+          const SizedBox(width: AppShapes.paddingS),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: onChatTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentOrange,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppShapes.buttonRadius),
+                ),
+              ),
+              child: const Icon(Icons.chat_bubble_rounded, size: 22),
+            ),
+          ),
+        ],
       ),
     );
   }

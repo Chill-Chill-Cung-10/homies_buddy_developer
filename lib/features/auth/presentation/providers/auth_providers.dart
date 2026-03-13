@@ -32,8 +32,11 @@ final authStateChangesProvider = StreamProvider<User?>((ref) {
 /// Main auth state provider - manages authentication lifecycle
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository);
+  return AuthNotifier(ref, repository);
 });
+
+/// Indicates the authenticated Firebase user still needs an app profile.
+final authNeedsProfileSetupProvider = StateProvider<bool>((ref) => false);
 
 /// Current authenticated user
 final currentAuthUserProvider = Provider<UserModel?>((ref) {
@@ -44,7 +47,8 @@ final currentAuthUserProvider = Provider<UserModel?>((ref) {
 /// Check if user is authenticated
 final isAuthenticatedProvider = Provider<bool>((ref) {
   final authState = ref.watch(authStateProvider);
-  return authState.isAuthenticated;
+  final needsProfileSetup = ref.watch(authNeedsProfileSetupProvider);
+  return authState.isAuthenticated && !needsProfileSetup;
 });
 
 // =============================================================================
@@ -53,16 +57,18 @@ final isAuthenticatedProvider = Provider<bool>((ref) {
 
 /// Auth State Notifier - manages auth operations and state
 class AuthNotifier extends StateNotifier<AuthState> {
+  final Ref _ref;
   final AuthRepository _repository;
   final SessionService _sessionService = SessionService.instance;
   StreamSubscription<User?>? _authSubscription;
 
-  AuthNotifier(this._repository) : super(const AuthState.initial()) {
+  AuthNotifier(this._ref, this._repository) : super(const AuthState.initial()) {
     _init();
   }
 
   /// Initialize auth state listener
   void _init() {
+    _bootstrapAuth();
     _authSubscription = _repository.authStateChanges.listen(
       _onAuthStateChanged,
       onError: (error) {
@@ -76,38 +82,106 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (firebaseUser == null) {
       // Clear session when user is not authenticated
       await _sessionService.clearSession();
+      _ref.read(authNeedsProfileSetupProvider.notifier).state = false;
       state = const AuthState.unauthenticated();
       return;
     }
 
-    // Fetch full user profile
     try {
-      final userProfile = await _repository.getCurrentUserProfile();
-      if (userProfile != null) {
-        final accessToken = await firebaseUser.getIdToken() ?? '';
-        final refreshToken = firebaseUser.refreshToken ?? '';
-        
-        // Firebase ID tokens expire after 1 hour
-        final expiresAt = DateTime.now().add(const Duration(hours: 1));
-        
-        // Save session to secure storage
-        await _sessionService.saveSession(
-          userId: userProfile.id,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-          expiresAt: expiresAt,
-        );
-        
-        state = AuthState.authenticated(
-          user: userProfile,
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-        );
-      } else {
-        state = const AuthState.unauthenticated();
-      }
+      await _resolveAuthenticatedUser(firebaseUser);
     } catch (e) {
       state = AuthState.error(message: 'Failed to load user profile: $e');
+    }
+  }
+
+  Future<void> _bootstrapAuth() async {
+    state = const AuthState.initial();
+    _ref.read(authNeedsProfileSetupProvider.notifier).state = false;
+
+    final firebaseUser = _repository.currentUser;
+    if (firebaseUser == null) {
+      await _sessionService.clearSession();
+      if (mounted) {
+        state = const AuthState.unauthenticated();
+      }
+      return;
+    }
+
+    try {
+      final refreshedUser = await _repository.reloadCurrentUser();
+      if (refreshedUser == null) {
+        await _forceUnauthenticated();
+        return;
+      }
+
+      final freshToken = await refreshedUser.getIdToken(true);
+      if (freshToken == null || freshToken.isEmpty) {
+        await _forceUnauthenticated();
+        return;
+      }
+
+      await _resolveAuthenticatedUser(
+        refreshedUser,
+        accessTokenOverride: freshToken,
+      );
+    } on FirebaseAuthException catch (_) {
+      await _forceUnauthenticated();
+    } catch (e) {
+      if (mounted) {
+        state = AuthState.error(message: 'Failed to verify session: $e');
+      }
+    }
+  }
+
+  Future<void> _resolveAuthenticatedUser(
+    User firebaseUser, {
+    String? accessTokenOverride,
+  }) async {
+    final userProfile = await _repository.getCurrentUserProfile(
+      allowFirebaseFallback: false,
+    );
+    final accessToken =
+        accessTokenOverride ?? await firebaseUser.getIdToken() ?? '';
+    final refreshToken = firebaseUser.refreshToken ?? '';
+
+    if (accessToken.isEmpty) {
+      await _forceUnauthenticated();
+      return;
+    }
+
+    final resolvedUser =
+        userProfile ?? _repository.getCurrentFirebaseUserModel();
+    if (resolvedUser == null) {
+      await _forceUnauthenticated();
+      return;
+    }
+
+    final expiresAt = DateTime.now().add(const Duration(hours: 1));
+    await _sessionService.saveSession(
+      userId: resolvedUser.id,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
+      expiresAt: expiresAt,
+    );
+
+    _ref.read(authNeedsProfileSetupProvider.notifier).state =
+        userProfile == null;
+
+    if (mounted) {
+      state = AuthState.authenticated(
+        user: resolvedUser,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      );
+    }
+  }
+
+  Future<void> _forceUnauthenticated() async {
+    await _sessionService.clearSession();
+    await _repository.signOut();
+    _ref.read(authNeedsProfileSetupProvider.notifier).state = false;
+    if (mounted) {
+      state = const AuthState.unauthenticated();
     }
   }
 
@@ -123,17 +197,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState.loading();
 
     try {
-      final user = await _repository.signInWithEmail(
+      await _repository.signInWithEmail(
         email: email,
         password: password,
       );
 
-      final token = await _repository.currentUser?.getIdToken() ?? '';
-      state = AuthState.authenticated(
-        user: user,
-        accessToken: token,
-        refreshToken: _repository.currentUser?.refreshToken ?? '',
-      );
+      final currentFirebaseUser = _repository.currentUser;
+      if (currentFirebaseUser == null) {
+        state = const AuthState.unauthenticated();
+        return;
+      }
+
+      await _resolveAuthenticatedUser(currentFirebaseUser);
     } on AuthException catch (e) {
       state = AuthState.error(message: e.message);
     } catch (e) {
@@ -153,7 +228,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState.loading();
 
     try {
-      final user = await _repository.signUpWithEmail(
+      await _repository.signUpWithEmail(
         email: email,
         password: password,
         fullName: fullName,
@@ -162,12 +237,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
         dateOfBirth: dateOfBirth,
       );
 
-      final token = await _repository.currentUser?.getIdToken() ?? '';
-      state = AuthState.authenticated(
-        user: user,
-        accessToken: token,
-        refreshToken: _repository.currentUser?.refreshToken ?? '',
-      );
+      final currentFirebaseUser = _repository.currentUser;
+      if (currentFirebaseUser == null) {
+        state = const AuthState.unauthenticated();
+        return;
+      }
+
+      await _resolveAuthenticatedUser(currentFirebaseUser);
     } on AuthException catch (e) {
       state = AuthState.error(message: e.message);
     } catch (e) {
@@ -180,6 +256,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       // Clear session from secure storage
       await _sessionService.clearSession();
+      _ref.read(authNeedsProfileSetupProvider.notifier).state = false;
       await _repository.signOut();
       state = const AuthState.unauthenticated();
     } catch (e) {
@@ -240,9 +317,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Reset to initial state (for error recovery)
   void resetState() {
+    _authSubscription?.cancel();
     state = const AuthState.initial();
+    _ref.read(authNeedsProfileSetupProvider.notifier).state = false;
     _init();
   }
+
+  Future<void> refreshAuthState() => _bootstrapAuth();
 
   @override
   void dispose() {

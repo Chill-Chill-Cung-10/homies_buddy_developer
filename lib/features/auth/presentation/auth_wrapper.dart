@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../navigation/presentation/main_navigation_screen.dart';
 import 'providers/auth_providers.dart';
 import 'screens/login_screen.dart';
+import 'screens/profile_setup_gate_screen.dart';
 
 /// Auth Wrapper - Routes user based on authentication state
 ///
@@ -18,11 +19,14 @@ class AuthWrapper extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authStateProvider);
+    final needsProfileSetup = ref.watch(authNeedsProfileSetupProvider);
 
     return authState.when(
       initial: () => _buildLoadingScreen(),
       loading: () => _buildLoadingScreen(),
-      authenticated: (user, _, _) => const MainNavigationScreen(),
+      authenticated: (user, _, _) => needsProfileSetup
+          ? const ProfileSetupGateScreen()
+          : const MainNavigationScreen(),
       unauthenticated: () => const LoginScreen(),
       error: (message, _) => _buildErrorScreen(context, ref, message),
     );

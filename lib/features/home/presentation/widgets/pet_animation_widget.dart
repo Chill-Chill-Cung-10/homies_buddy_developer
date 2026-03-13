@@ -20,7 +20,7 @@ enum PetState {
 enum PetTransition {
   idleToSleep,
   lookFrontToBack,
-  lookBackToFront,
+  lookBackToFront, sleepToIdle,
 }
 
 sealed class PetAnimation {
@@ -134,7 +134,7 @@ const Map<PetState, _SpriteConfig> _stateConfigs = {
     assetPath: 'assets/images/home/sprite_pets/lumni_happy_vs_smiling.png',
     columns: 5,
     rows: 8,
-    frameCount: 36,
+    frameCount: 37,
     fps: 14,
   ),
 };
@@ -150,18 +150,26 @@ const Map<PetTransition, _SpriteConfig> _transitionConfigs = {
   PetTransition.lookFrontToBack: _SpriteConfig(
     assetPath: 'assets/images/home/sprite_pets/lumni_look_front_to_back.png',
     columns: 5,
-    rows: 13,
-    frameCount: 61,
+    rows: 7,
+    frameCount: 34,
     fps: 14,
   ),
   PetTransition.lookBackToFront: _SpriteConfig(
     assetPath: 'assets/images/home/sprite_pets/lumni_look_front_to_back.png',
     columns: 5,
+    rows: 7,
+    frameCount: 34,
+    fps: 14,
+    reversePlayback: true,
+  ),
+  PetTransition.sleepToIdle: _SpriteConfig(
+    assetPath: 'assets/images/home/sprite_pets/lumni_idle_to_sleep.png',
+    columns: 5,
     rows: 13,
     frameCount: 61,
     fps: 14,
     reversePlayback: true,
-  ),
+  )
 };
 
 // ─────────────────────────────────────────────
@@ -175,6 +183,17 @@ class PetFSM extends ChangeNotifier {
 
   bool _autoBehaviorEnabled = false;
 
+  /// Mood do DB quyết định — "home base" mà auto behavior luôn phải quay về.
+  PetState _dbMood = PetState.idle;
+
+  /// Energy nhận từ DB (0.0 → 1.0).
+  /// Quyết định pet có tự ngủ không — không do DB set sleep trực tiếp.
+  double _energy = 1.0;
+
+  // Ngưỡng energy
+  static const double _sleepThreshold  = 0.25; // < 25% → tự ngủ
+  static const double _tiredThreshold  = 0.50; // < 50% → hạn chế hoạt động
+
   final math.Random _random = math.Random();
 
   PetAnimation get currentAnimation => _currentAnimation;
@@ -186,8 +205,12 @@ class PetFSM extends ChangeNotifier {
 
   bool get isInTransition => _currentAnimation.isTransition;
 
+  /// Mood hiện tại do DB set — dùng để debug log bên ngoài.
+  PetState get dbMood => _dbMood;
+
   PetFSM({PetState initialState = PetState.idle})
-      : _currentAnimation = PetAnimation.state(initialState);
+      : _currentAnimation = PetAnimation.state(initialState),
+        _dbMood = initialState;
 
   @override
   void dispose() {
@@ -199,17 +222,52 @@ class PetFSM extends ChangeNotifier {
   // PUBLIC API
   // ═══════════════════════════════════════════
 
-  void transitionTo(PetState newState) {
-    final current = currentState;
-    if (current == null) return;
-    if (current == newState) return;
+  /// Entry point duy nhất cho DB/external mood update.
+  ///
+  /// - [mood]           : mood mới từ DB
+  /// - [energy]         : energy mới từ DB (0.0–1.0), dùng để quyết định sleep
+  /// - [withTransition] : có chạy transition animation không
+  ///
+  /// Flow:
+  ///   1. Cập nhật _dbMood và _energy
+  ///   2. Cancel timer cũ
+  ///   3. Nếu energy thấp → ưu tiên sleep ngay, bỏ qua mood DB
+  ///   4. Nếu không → chuyển sang mood DB (có/không transition)
+  ///   5. Restart auto behavior
+  void setMoodFromDB(
+    PetState mood, {
+    double energy = 1.0,
+    bool withTransition = false,
+  }) {
+    _dbMood  = mood;
+    _energy  = energy.clamp(0.0, 1.0);
 
-    final transition = _findTransition(current, newState);
-    if (transition != null) {
-      _playTransition(transition, targetState: newState);
+    // Cancel timer cũ — bắt đầu fresh
+    stopAutoBehavior();
+
+    // Energy quá thấp → ngủ ngay, bất kể mood DB
+    if (_energy < _sleepThreshold && mood != PetState.sad) {
+      _goSleep();
+    } else if (withTransition && currentState != null && currentState != mood) {
+      if (isInTransition) {
+        // Đang chạy transition → override target, animation hiện tại
+        // chạy tiếp rồi onTransitionComplete sẽ về đúng mood
+        _targetState = mood;
+      } else {
+        final t = _findTransition(currentState!, mood);
+        if (t != null) {
+          _playTransition(t, targetState: mood);
+        } else {
+          _changeToState(mood);
+        }
+      }
     } else {
-      _changeToState(newState);
+      _currentAnimation = PetAnimation.state(mood);
+      _targetState = null;
+      notifyListeners();
     }
+
+    startAutoBehavior();
   }
 
   void startAutoBehavior() {
@@ -223,11 +281,23 @@ class PetFSM extends ChangeNotifier {
     _stateTimer = null;
   }
 
-  void forceState(PetState state) {
-    _currentAnimation = PetAnimation.state(state);
-    _targetState = null;
-    notifyListeners();
+  /// Chỉ dùng nội bộ cho auto behavior transitions.
+  /// Bên ngoài FSM nên dùng [setMoodFromDB].
+  void transitionTo(PetState newState) {
+    final current = currentState;
+    if (current == null) return;
+    if (current == newState) return;
+
+    final transition = _findTransition(current, newState);
+    if (transition != null) {
+      _playTransition(transition, targetState: newState);
+    } else {
+      _changeToState(newState);
+    }
   }
+
+  /// @deprecated Dùng [setMoodFromDB] thay thế.
+  void forceState(PetState state) => setMoodFromDB(state);
 
   // ═══════════════════════════════════════════
   // PRIVATE METHODS
@@ -253,11 +323,8 @@ class PetFSM extends ChangeNotifier {
   }
 
   void onTransitionComplete() {
-    if (_targetState != null) {
-      _changeToState(_targetState!);
-    } else {
-      _changeToState(PetState.idle);
-    }
+    // Ưu tiên _targetState, fallback về _dbMood — không bao giờ về idle mặc định
+    _changeToState(_targetState ?? _dbMood);
   }
 
   PetTransition? _findTransition(PetState from, PetState to) {
@@ -268,15 +335,18 @@ class PetFSM extends ChangeNotifier {
       (PetState.lookingOutside, PetState.sad): PetTransition.lookBackToFront,
       (PetState.idle, PetState.lookingOutside): PetTransition.lookFrontToBack,
       (PetState.happy, PetState.lookingOutside): PetTransition.lookFrontToBack,
+      (PetState.happyVsSmilling, PetState.lookingOutside): PetTransition.lookFrontToBack,
+      (PetState.sleep, PetState.idle): PetTransition.sleepToIdle,
+
     };
     return transitionMap[(from, to)];
-  }
+  } 
 
   void _scheduleNextBehavior() {
     _stateTimer?.cancel();
     if (!_autoBehaviorEnabled) return;
 
-    final delaySeconds = 5 + _random.nextInt(8);
+    final delaySeconds = 140 + _random.nextInt(8);
     _stateTimer = Timer(
       Duration(seconds: delaySeconds),
       _performRandomBehavior,
@@ -287,49 +357,83 @@ class PetFSM extends ChangeNotifier {
     if (!_autoBehaviorEnabled) return;
 
     final current = currentState;
-    if (current == null) return;
+    if (current == null) return; // Đang transition → chờ
 
-    switch (current) {
-      case PetState.idle:
-        final roll = _random.nextDouble();
-        if (roll < 0.30) {
-          transitionTo(PetState.sleep);
-        } else if (roll < 0.55) {
-          transitionTo(PetState.lookingOutside);
-        } else if (roll < 0.80) {
-          transitionTo(PetState.happy);
-        } else {
-          _scheduleNextBehavior();
-        }
+    // ── Ưu tiên sleep nếu energy cạn, bất kể mood ──
+    // (trừ sad — pet buồn không cần sleep logic này)
+    if (_energy < _sleepThreshold && _dbMood != PetState.sad) {
+      if (current != PetState.sleep) {
+        _goSleep();
+      } else {
+        _scheduleNextBehavior(); // Đang ngủ rồi → tiếp tục ngủ
+      }
+      return;
+    }
 
+    // ── Pet đang ngủ nhưng energy đã phục hồi → thức dậy ──
+    if (current == PetState.sleep) {
+      transitionTo(_dbMood); // Thức dậy về đúng mood DB
+      return;
+    }
+
+    // ── Auto behavior theo _dbMood ──
+    switch (_dbMood) {
+
+      // Mood tích cực + còn sức: xoay happy ↔ lookingOutside
       case PetState.happy:
-        final roll = _random.nextDouble();
-        if (roll < 0.40) {
-          _playTransition(
-            PetTransition.lookFrontToBack,
-            targetState: PetState.happy,
-          );
-        } else if (roll < 0.70) {
-          transitionTo(PetState.idle);
-        } else {
-          transitionTo(PetState.lookingOutside);
-        }
-
-      case PetState.sleep:
-        transitionTo(PetState.idle);
-
-      case PetState.lookingOutside:
-        final roll = _random.nextDouble();
-        if (roll < 0.60) {
-          transitionTo(PetState.idle);
-        } else {
-          transitionTo(PetState.happy);
-        }
-
-      // SAD / HAPPYVSSMILLING: driven by DB, không auto-change
-      case PetState.sad:
       case PetState.happyVsSmilling:
+        if (_energy < _tiredThreshold) {
+          // Hơi mệt → không nhìn ra ngoài, ở lại
+          _scheduleNextBehavior();
+        } else if (current == PetState.lookingOutside) {
+          transitionTo(_dbMood); // Quay về mood gốc
+        } else {
+          final roll = _random.nextDouble();
+          if (roll < 0.45) {
+            transitionTo(PetState.lookingOutside);
+          } else {
+            _scheduleNextBehavior();
+          }
+        }
+
+      // Mood trung tính: xoay idle ↔ lookingOutside (không sleep ở đây — đã handle ở trên)
+      case PetState.idle:
+      case PetState.lookingOutside:
+      case PetState.sleep:
+        if (_energy < _tiredThreshold) {
+          // Mệt nhưng chưa ngủ → chỉ idle, không lookingOutside
+          if (current != PetState.idle) {
+            transitionTo(PetState.idle);
+          } else {
+            _scheduleNextBehavior();
+          }
+        } else if (current == PetState.lookingOutside) {
+          transitionTo(PetState.idle);
+        } else {
+          final roll = _random.nextDouble();
+          if (roll < 0.45) {
+            transitionTo(PetState.lookingOutside);
+          } else {
+            _scheduleNextBehavior();
+          }
+        }
+
+      // Mood tiêu cực: đứng im, không tự thay đổi
+      case PetState.sad:
         _scheduleNextBehavior();
+    }
+  }
+
+  /// Chuyển pet vào sleep — tìm transition animation nếu có.
+  void _goSleep() {
+    final current = currentState;
+    if (current == null || current == PetState.sleep) return;
+
+    final t = _findTransition(current, PetState.sleep);
+    if (t != null) {
+      _playTransition(t, targetState: PetState.sleep);
+    } else {
+      _changeToState(PetState.sleep);
     }
   }
 
@@ -337,11 +441,11 @@ class PetFSM extends ChangeNotifier {
   // HELPER SHORTCUTS
   // ═══════════════════════════════════════════
 
-  void makeSad() => forceState(PetState.sad);
-  void makeHappy() => forceState(PetState.happy);
-  void makeSleep() => forceState(PetState.sleep);
-  void makeIdle() => forceState(PetState.idle);
-  void makeLookOutside() => forceState(PetState.lookingOutside);
+  void makeSad()         => setMoodFromDB(PetState.sad);
+  void makeHappy()       => setMoodFromDB(PetState.happy);
+  void makeSleep()       => setMoodFromDB(PetState.sleep);
+  void makeIdle()        => setMoodFromDB(PetState.idle);
+  void makeLookOutside() => setMoodFromDB(PetState.lookingOutside);
 }
 
 // ─────────────────────────────────────────────
@@ -458,7 +562,7 @@ class _PetAnimationWidgetState extends State<PetAnimationWidget>
       height: widget.height,
       child: AnimatedBuilder(
         animation: _controller!,
-        builder: (_, __) {
+        builder: (_, _) {
           final rawFrame = (_controller!.value * config.frameCount)
               .floor()
               .clamp(0, config.frameCount - 1);

@@ -75,11 +75,11 @@ class UserProfileHeroHeader extends StatelessWidget {
   }
 
   Widget _buildCoverImage() {
-    final coverUrl = user.coverUrl;
-    final avatarUrl = user.avatarUrl;
-    final imageUrl = (coverUrl != null && coverUrl.isNotEmpty) 
-        ? coverUrl 
-        : (avatarUrl.isNotEmpty ? avatarUrl : null);
+    final coverUrl = user.coverUrl?.trim();
+    final avatarUrl = user.avatarUrl.trim();
+    final imageUrl = _isValidHttpUrl(coverUrl)
+      ? coverUrl
+      : (_isValidHttpUrl(avatarUrl) ? avatarUrl : null);
     
     if (imageUrl == null) {
       return Container(
@@ -168,9 +168,9 @@ class UserProfileHeroHeader extends StatelessWidget {
                   border: Border.all(color: AppColors.accentOrange, width: 2),
                 ),
                 child: ClipOval(
-                  child: user.avatarUrl.isNotEmpty
+                  child: _isValidHttpUrl(user.avatarUrl)
                       ? CachedNetworkImage(
-                          imageUrl: user.avatarUrl,
+                          imageUrl: user.avatarUrl.trim(),
                           width: 48,
                           height: 48,
                           fit: BoxFit.cover,
@@ -226,5 +226,13 @@ class UserProfileHeroHeader extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _isValidHttpUrl(String? url) {
+    if (url == null) return false;
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return false;
+    final uri = Uri.tryParse(trimmed);
+    return uri != null && uri.hasScheme && uri.host.isNotEmpty;
   }
 }

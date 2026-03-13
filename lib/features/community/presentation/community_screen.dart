@@ -1,13 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/spinning_nav_button.dart';
 import '../../../data/models/post_model.dart';
+import '../../../data/models/user_model.dart';
 
 import '../../notifications/data/notification_mock_data.dart';
-import '../mockdata/profile_mock_data.dart';
 import 'widgets/social_post_card.dart';
 import 'widgets/comment_overlay.dart';
 import 'widgets/your_latest_post_section.dart';
@@ -39,6 +40,10 @@ class _CommunityScreenContent extends ConsumerStatefulWidget {
 class _CommunityScreenContentState
     extends ConsumerState<_CommunityScreenContent> {
   late ScrollController _scrollController;
+  final SupabaseClient _supabase = Supabase.instance.client;
+
+  // Track which authorIds are currently being fetched — tránh duplicate navigate
+  final Set<String> _navigatingToProfile = {};
 
   @override
   void initState() {
@@ -61,28 +66,139 @@ class _CommunityScreenContentState
     }
   }
 
-  void _navigateToProfile(String authorId) {
-    final user = ProfileMockData.getUserByAuthorId(authorId);
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PersonalProfileScreen(user: user),
-      ),
-    );
+  // ── Fetch user from Supabase ─────────────────────────────────────────────
+
+  Future<UserModel?> _getUserById(String userId) async {
+    try {
+      final response = await _supabase
+          .from('user_profile')
+          .select()
+          .eq('id', userId)
+          .maybeSingle();
+
+      if (response == null) return null;
+
+      return UserModel(
+        id: response['id'] as String,
+        username: response['username'] as String? ?? '',
+        fullName: response['full_name'] as String? ?? '',
+        avatarUrl: response['avatar_url'] as String? ?? '',
+        coverUrl: response['cover_url'] as String?,
+        bio: response['bio'] as String?,
+        location: response['location'] as String?,
+        followerCount: (response['follower_count'] as num?)?.toInt() ?? 0,
+        followingCount: (response['following_count'] as num?)?.toInt() ?? 0,
+        createdAt: response['created_at'] != null
+            ? DateTime.tryParse(response['created_at'] as String)
+            : null,
+      );
+    } catch (e) {
+      debugPrint('❌ Failed to get user by id: $e');
+      return null;
+    }
   }
 
-  void _navigateToProfileByUsername(String mention) {
-    final user = ProfileMockData.getUserByUsername(mention);
-    if (user != null) {
-      Navigator.of(context).push(
+  Future<UserModel?> _getUserByUsername(String username) async {
+    try {
+      final response = await _supabase
+          .from('user_profile')
+          .select()
+          .eq('username', username)
+          .maybeSingle();
+
+      if (response == null) return null;
+
+      return UserModel(
+        id: response['id'] as String,
+        username: response['username'] as String? ?? '',
+        fullName: response['full_name'] as String? ?? '',
+        avatarUrl: response['avatar_url'] as String? ?? '',
+        coverUrl: response['cover_url'] as String?,
+        bio: response['bio'] as String?,
+        location: response['location'] as String?,
+        followerCount: (response['follower_count'] as num?)?.toInt() ?? 0,
+        followingCount: (response['following_count'] as num?)?.toInt() ?? 0,
+        createdAt: response['created_at'] != null
+            ? DateTime.tryParse(response['created_at'] as String)
+            : null,
+      );
+    } catch (e) {
+      debugPrint('❌ Failed to get user by username: $e');
+      return null;
+    }
+  }
+
+  // ── Navigate to profile (fetch real user from Supabase) ───────────────────
+
+  Future<void> _navigateToProfile(String authorId) async {
+    // Tránh double-tap navigate cùng lúc
+    debugPrint('🚀 _navigateToProfile called: $authorId');
+    if (_navigatingToProfile.contains(authorId)) return;
+    _navigatingToProfile.add(authorId);
+
+    try {
+      final user = await _getUserById(authorId);
+
+      if (user == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not load profile'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      await Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => PersonalProfileScreen(user: user),
         ),
       );
-    } else {
+    } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Profile not found for $mention'),
-          duration: const Duration(seconds: 1),
+          content: Text('Failed to load profile: $e'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    } finally {
+      _navigatingToProfile.remove(authorId);
+    }
+  }
+
+  Future<void> _navigateToProfileByUsername(String mention) async {
+    // Strip '@' prefix nếu có
+    final username = mention.startsWith('@') ? mention.substring(1) : mention;
+
+    try {
+      final user = await _getUserByUsername(username);
+
+      if (user == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profile not found for $mention'),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+        return;
+      }
+
+      if (!mounted) return;
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => PersonalProfileScreen(user: user),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to load profile: $e'),
+          duration: const Duration(seconds: 2),
         ),
       );
     }
@@ -95,7 +211,9 @@ class _CommunityScreenContentState
   void _deletePost(String postId) {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
-    ref.read(communityFeedProvider.notifier).deletePost(postId, currentUser.uid);
+    ref
+        .read(communityFeedProvider.notifier)
+        .deletePost(postId, currentUser.uid);
   }
 
   void _deleteLatestPost() {
@@ -158,7 +276,8 @@ class _CommunityScreenContentState
                 color: AppColors.iconColor,
               ),
               onPressed: () {
-                final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+                final currentUserId =
+                    FirebaseAuth.instance.currentUser?.uid;
                 if (currentUserId == null) return;
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -205,14 +324,13 @@ class _CommunityScreenContentState
                           showCommentOverlay(
                             context,
                             latestPostState.post!,
-                            // isLikedByMe lấy từ latestPostState
                             isLikedByMe: latestPostState.isLikedByMe,
                           );
                         },
-                        onAvatarTap: () =>
-                            _navigateToProfile(latestPostState.post!.authorId),
-                        onAuthorNameTap: () =>
-                            _navigateToProfile(latestPostState.post!.authorId),
+                        onAvatarTap: () => _navigateToProfile(
+                            latestPostState.post!.authorId),
+                        onAuthorNameTap: () => _navigateToProfile(
+                            latestPostState.post!.authorId),
                         onMentionTap: _navigateToProfileByUsername,
                         onPostTap: () {},
                         onDelete: _deleteLatestPost,
@@ -251,7 +369,6 @@ class _CommunityScreenContentState
                     }
 
                     // ── Post card ────────────────────────────────────────────
-                    // feedState.posts là List<Post>; isLikedByMe tra qua likedPostIds
                     final post = feedState.posts[adjustedIndex];
                     final isLiked =
                         feedState.likedPostIds.contains(post.postId);
@@ -263,7 +380,6 @@ class _CommunityScreenContentState
                       onComment: () => showCommentOverlay(
                         context,
                         post,
-                        // isLikedByMe lấy từ feedState.likedPostIds
                         isLikedByMe: isLiked,
                       ),
                       onAvatarTap: () => _navigateToProfile(post.authorId),

@@ -62,7 +62,7 @@ class ProfileBuddiesSection extends StatelessWidget {
   Widget _buildBuddyItem(dynamic buddy) {
     final user = buddy as UserModel;
     final name = user.fullName;
-    final avatarUrl = user.avatarUrl;
+    final avatarUrl = user.avatarUrl.trim();
 
     return GestureDetector(
       onTap: () => onBuddyTap(user),
@@ -72,24 +72,37 @@ class ProfileBuddiesSection extends StatelessWidget {
         child: Column(
           children: [
             ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: avatarUrl,
-                width: 60,
-                height: 60,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  width: 60,
-                  height: 60,
-                  color: AppColors.surfaceColor,
-                  child: const Icon(Icons.person, color: AppColors.textHint),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  width: 60,
-                  height: 60,
-                  color: AppColors.surfaceColor,
-                  child: const Icon(Icons.person, color: AppColors.textHint),
-                ),
-              ),
+              child: _isValidHttpUrl(avatarUrl)
+                  ? CachedNetworkImage(
+                      imageUrl: avatarUrl,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: 60,
+                        height: 60,
+                        color: AppColors.surfaceColor,
+                        child: const Icon(
+                          Icons.person,
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: 60,
+                        height: 60,
+                        color: AppColors.surfaceColor,
+                        child: const Icon(
+                          Icons.person,
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: 60,
+                      height: 60,
+                      color: AppColors.surfaceColor,
+                      child: const Icon(Icons.person, color: AppColors.textHint),
+                    ),
             ),
             const SizedBox(height: 6),
             Text(
@@ -107,5 +120,12 @@ class ProfileBuddiesSection extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _isValidHttpUrl(String? url) {
+    if (url == null) return false;
+    if (url.isEmpty) return false;
+    final uri = Uri.tryParse(url);
+    return uri != null && uri.hasScheme && uri.host.isNotEmpty;
   }
 }

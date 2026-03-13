@@ -5,5 +5,5 @@ export {onReactPost, onUnreactPost} from "./postReacts";
 export {onCreateComment, onDeleteComment} from "./comments";
 export {onFollowUser, onUnfollowUser} from "./follows";
 export {onUpdateUserProfile} from "./userProfile";
-export {sendPushNotification} from "./notifications";
+export { sendPetNotifications } from "./notifications";
 export {analyzeNote} from "./analyzeNote";

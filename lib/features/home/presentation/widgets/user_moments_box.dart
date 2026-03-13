@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../../core/services/firebase_service.dart';
+import '../../../feedback/presentation/feedback_bottom_sheet.dart';
 import 'user_moments_box/typing_text_button.dart';
 import 'user_moments_box/moments_input_field.dart';
 import 'user_moments_box/moments_modal_content.dart';
@@ -36,17 +38,29 @@ class _UserMomentsBoxState extends State<UserMomentsBox> {
   void _openModal() {
     setState(() => isOpenModal = true);
 
-    showModalBottomSheet(
+    showModalBottomSheet<bool>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withOpacity(0.3),
       builder: (context) => MomentsModalContent(imagePicker: _imagePicker),
-    ).whenComplete(() {
+    ).then((shouldShowFeedback) {
       if (mounted) {
         setState(() => isOpenModal = false);
         _focusNode.unfocus();
         _textController.clear();
+
+        // Show feedback popup after 2s delay if 3rd note was created
+        if (shouldShowFeedback == true) {
+          final userId = FirebaseService.instance.currentUserId;
+          if (userId != null) {
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                FeedbackBottomSheet.show(context, userId: userId);
+              }
+            });
+          }
+        }
       }
     });
   }

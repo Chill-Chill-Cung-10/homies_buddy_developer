@@ -45,32 +45,43 @@ class CommentItem extends StatelessWidget {
         children: [
           // Commenter Avatar
           ClipOval(
-            child: CachedNetworkImage(
-              imageUrl: comment.authorAvatar,
-              width: 36,
-              height: 36,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                width: 36,
-                height: 36,
-                color: AppColors.surfaceColor,
-                child: const Icon(
-                  Icons.person,
-                  size: 18,
-                  color: AppColors.textHint,
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                width: 36,
-                height: 36,
-                color: AppColors.surfaceColor,
-                child: const Icon(
-                  Icons.person,
-                  size: AppShapes.iconS,
-                  color: AppColors.textHint,
-                ),
-              ),
-            ),
+            child: _isValidHttpUrl(comment.authorAvatar)
+                ? CachedNetworkImage(
+                    imageUrl: comment.authorAvatar.trim(),
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      width: 36,
+                      height: 36,
+                      color: AppColors.surfaceColor,
+                      child: const Icon(
+                        Icons.person,
+                        size: 18,
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      width: 36,
+                      height: 36,
+                      color: AppColors.surfaceColor,
+                      child: const Icon(
+                        Icons.person,
+                        size: AppShapes.iconS,
+                        color: AppColors.textHint,
+                      ),
+                    ),
+                  )
+                : Container(
+                    width: 36,
+                    height: 36,
+                    color: AppColors.surfaceColor,
+                    child: const Icon(
+                      Icons.person,
+                      size: 18,
+                      color: AppColors.textHint,
+                    ),
+                  ),
           ),
 
           const SizedBox(width: 12),
@@ -204,5 +215,13 @@ class CommentItem extends StatelessWidget {
     }
 
     return commentWidget;
+  }
+
+  bool _isValidHttpUrl(String? url) {
+    if (url == null) return false;
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return false;
+    final uri = Uri.tryParse(trimmed);
+    return uri != null && uri.hasScheme && uri.host.isNotEmpty;
   }
 }

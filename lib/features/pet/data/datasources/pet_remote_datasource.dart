@@ -4,6 +4,7 @@ import '../models/pet_table.dart';
 /// Pet Remote Datasource — Data Layer
 ///
 /// Handles direct communication with Supabase for pet operations.
+/// App dùng Firebase Auth thuần — Supabase chỉ là database, không có session.
 class PetRemoteDatasource {
   final SupabaseClient _supabase;
 
@@ -11,12 +12,9 @@ class PetRemoteDatasource {
       : _supabase = supabase ?? Supabase.instance.client;
 
   /// Get user's pet by userId
+  /// userId được truyền từ Firebase Auth (FirebaseService.currentUserId)
+  /// KHÔNG check Supabase session vì app không dùng Supabase Auth
   Future<Map<String, dynamic>?> getUserPet(String userId) async {
-    final session = _supabase.auth.currentSession;
-    if (session == null) {
-      return null; // caller sẽ handle
-    }
-    
     return await _supabase
         .from(PetTable.name)
         .select()

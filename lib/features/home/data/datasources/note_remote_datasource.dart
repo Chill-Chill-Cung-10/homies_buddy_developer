@@ -25,6 +25,8 @@ class NoteRemoteDatasource {
   /// Get current user ID from Firebase Auth
   String? get _currentUserId => _firebaseService.currentUserId;
 
+  static const _userProfileTable = 'user_profile';
+
   // ═══════════════════════════════════════════════════════════════════════════
   // READ OPERATIONS
   // ═══════════════════════════════════════════════════════════════════════════
@@ -53,7 +55,7 @@ class NoteRemoteDatasource {
         .lt(MomentNoteTable.createdAt, startOfNextDay.toIso8601String())
         .order(MomentNoteTable.createdAt, ascending: false);
 
-    return (response as List).map((e) => NoteModel.fromMap(e)).toList();
+    return _hydrateNotesWithProfiles(response as List);
   }
 
   /// Get note by ID
@@ -65,7 +67,8 @@ class NoteRemoteDatasource {
         .maybeSingle();
 
     if (response == null) return null;
-    return NoteModel.fromMap(response);
+    final hydratedNotes = await _hydrateNotesWithProfiles([response]);
+    return hydratedNotes.isEmpty ? null : hydratedNotes.first;
   }
 
   /// Get notes by user ID with pagination
@@ -96,7 +99,7 @@ class NoteRemoteDatasource {
     }
 
     final response = await query;
-    return (response as List).map((e) => NoteModel.fromMap(e)).toList();
+    return _hydrateNotesWithProfiles(response as List);
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -122,12 +125,22 @@ class NoteRemoteDatasource {
       mediaUrls = await _uploadMediaFiles(noteId, mediaFilePaths);
     }
 
+    final profile = await _getUserProfile(userId);
+    final resolvedAuthorName = _resolveAuthorName(
+      profile: profile,
+      fallbackAuthorName: authorName,
+    );
+    final resolvedAuthorAvatarUrl = _resolveAuthorAvatarUrl(
+      profile: profile,
+      fallbackAuthorAvatarUrl: authorAvatarUrl,
+    );
+
     // Create note model
     final noteModel = NoteModel(
       id: '', // Will be assigned by database
       userId: userId,
-      authorName: authorName,
-      authorAvatarUrl: authorAvatarUrl,
+      authorName: resolvedAuthorName,
+      authorAvatarUrl: resolvedAuthorAvatarUrl,
       textContent: textContent,
       mediaUrls: mediaUrls,
       createdAt: DateTime.now(),
@@ -140,7 +153,8 @@ class NoteRemoteDatasource {
         .select()
         .single();
 
-    return NoteModel.fromMap(response);
+    final hydratedNotes = await _hydrateNotesWithProfiles([response]);
+    return hydratedNotes.first;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -179,7 +193,8 @@ class NoteRemoteDatasource {
         .select()
         .single();
 
-    return NoteModel.fromMap(response);
+    final hydratedNotes = await _hydrateNotesWithProfiles([response]);
+    return hydratedNotes.first;
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -224,5 +239,101 @@ class NoteRemoteDatasource {
     for (final url in mediaUrls) {
       await _storageService.deleteFile(url);
     }
+  }
+
+  Future<List<NoteModel>> _hydrateNotesWithProfiles(List rawNotes) async {
+    final notes = rawNotes
+        .whereType<Map>()
+        .map((note) => NoteModel.fromMap(Map<String, dynamic>.from(note)))
+        .toList();
+
+    if (notes.isEmpty) return notes;
+
+    final userIds = notes.map((note) => note.userId).toSet().toList();
+    final profiles = await _getProfilesByUserIds(userIds);
+
+    return notes.map((note) {
+      final profile = profiles[note.userId];
+      if (profile == null) return note;
+
+      return note.copyWith(
+        authorName: _resolveAuthorName(
+          profile: profile,
+          fallbackAuthorName: note.authorName,
+        ),
+        authorAvatarUrl: _resolveAuthorAvatarUrl(
+          profile: profile,
+          fallbackAuthorAvatarUrl: note.authorAvatarUrl,
+        ),
+      );
+    }).toList();
+  }
+
+  Future<Map<String, dynamic>?> _getUserProfile(String userId) async {
+    try {
+      final response = await _supabase
+          .from(_userProfileTable)
+          .select('id, full_name, username, avatar_url')
+          .eq('id', userId)
+          .maybeSingle();
+
+      return response == null ? null : Map<String, dynamic>.from(response);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<Map<String, Map<String, dynamic>>> _getProfilesByUserIds(
+    List<String> userIds,
+  ) async {
+    if (userIds.isEmpty) return const {};
+
+    try {
+      final response = await _supabase
+          .from(_userProfileTable)
+          .select('id, full_name, username, avatar_url')
+          .inFilter('id', userIds);
+
+      final profileMap = <String, Map<String, dynamic>>{};
+      for (final rawProfile in response as List) {
+        if (rawProfile is! Map) continue;
+        final profile = Map<String, dynamic>.from(rawProfile);
+        final id = profile['id'] as String?;
+        if (id == null || id.isEmpty) continue;
+        profileMap[id] = profile;
+      }
+      return profileMap;
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  String _resolveAuthorName({
+    required Map<String, dynamic>? profile,
+    required String fallbackAuthorName,
+  }) {
+    final fullName = (profile?['full_name'] as String?)?.trim();
+    if (fullName != null && fullName.isNotEmpty) {
+      return fullName;
+    }
+
+    final username = (profile?['username'] as String?)?.trim();
+    if (username != null && username.isNotEmpty) {
+      return username;
+    }
+
+    return fallbackAuthorName;
+  }
+
+  String _resolveAuthorAvatarUrl({
+    required Map<String, dynamic>? profile,
+    required String fallbackAuthorAvatarUrl,
+  }) {
+    final avatarUrl = (profile?['avatar_url'] as String?)?.trim();
+    if (avatarUrl != null && avatarUrl.isNotEmpty) {
+      return avatarUrl;
+    }
+
+    return fallbackAuthorAvatarUrl;
   }
 }

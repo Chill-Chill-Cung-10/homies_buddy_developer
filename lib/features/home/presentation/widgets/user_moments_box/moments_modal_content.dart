@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../../core/constants/app_colors.dart';
 import '../../../../../core/widgets/widgets.dart';
+import '../../../../feedback/data/feedback_providers.dart';
 import '../../../domain/entities/note_entity.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/notes_providers.dart';
@@ -106,9 +107,11 @@ class _MomentsModalContentState extends ConsumerState<MomentsModalContent> {
     if (text.isEmpty && _selectedMedia.isEmpty) return;
 
     final mediaPaths = _selectedMedia.map((f) => f.path).toList();
+    final selectedDate = ref.read(selectedDateProvider);
     final success = await ref.read(notesProvider.notifier).createNote(
           textContent: text,
           mediaFilePaths: mediaPaths,
+          refreshDate: selectedDate,
         );
 
     if (!mounted) return;
@@ -116,12 +119,23 @@ class _MomentsModalContentState extends ConsumerState<MomentsModalContent> {
     if (success) {
       _textController.clear();
       setState(() => _selectedMedia.clear());
+
+      // Check if this is the 3rd note — trigger feedback popup
+      final shouldShowFeedback =
+          ref.read(feedbackProvider.notifier).onNoteCreated();
+
       widget.onSend?.call();
       SystemNotificationPopup.show(
         context,
         message: 'Note posted!',
         type: NotificationType.success,
       );
+
+      // Return true to signal that feedback should be shown after modal closes
+      if (shouldShowFeedback && mounted) {
+        Navigator.pop(context, true);
+        return;
+      }
     } else {
       final error = ref.read(notesProvider).errorMessage ?? 'Unknown error';
       SystemNotificationPopup.show(

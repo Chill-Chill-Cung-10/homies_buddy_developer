@@ -1,5 +1,6 @@
-/// [Refactored] Phase 3.1 — Extracted from personal_profile_screen.dart
-/// Post feed sliver list using SocialPostCard
+/// [Refactored] Phase 3.2 — Updated to support:
+///   - External likedStatus list (managed by parent screen)
+///   - Loading skeleton while initial fetch is in progress
 library;
 
 import 'package:flutter/material.dart';
@@ -11,12 +12,20 @@ import '../social_post_card.dart';
 
 class ProfilePostFeed extends StatelessWidget {
   final List<Post> posts;
+
+  /// Parallel list to [posts] — tracks like state for each post.
+  /// Managed externally so parent can do optimistic updates + repository calls.
+  final List<bool> likedStatus;
+
+  /// Called with the index of the tapped post.
   final ValueChanged<int> onLike;
+
   final ValueChanged<Post> onComment;
 
   const ProfilePostFeed({
     super.key,
     required this.posts,
+    required this.likedStatus,
     required this.onLike,
     required this.onComment,
   });
@@ -50,19 +59,25 @@ class ProfilePostFeed extends StatelessWidget {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate((context, index) {
-        final post = posts[index];
-        return Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppShapes.paddingM),
-          child: SocialPostCard(
-            post: post,
-            onLike: () => onLike(index),
-            onComment: () => onComment(post),
-            onAvatarTap: () {},
-            onPostTap: () {},
-          ),
-        );
-      }, childCount: posts.length),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final post = posts[index];
+          final isLiked = index < likedStatus.length && likedStatus[index];
+
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: AppShapes.paddingM),
+            child: SocialPostCard(
+              post: post,
+              isLikedByMe: isLiked,
+              onLike: () => onLike(index),
+              onComment: () => onComment(post),
+              onAvatarTap: () {},
+              onPostTap: () {},
+            ),
+          );
+        },
+        childCount: posts.length,
+      ),
     );
   }
 }

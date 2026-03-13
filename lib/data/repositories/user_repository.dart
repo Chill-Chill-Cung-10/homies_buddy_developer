@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import '../../data/models/user_model.dart';
 import '../../core/services/firebase_service.dart';
 import '../../core/mixins/session_guard_mixin.dart';
@@ -16,7 +17,7 @@ class UserRepository with SessionGuardMixin {
   final FirebaseService _firebaseService = FirebaseService.instance;
 
   /// Get user profile by ID
-  /// 
+  ///
   /// Public operation - does not require auth
   Future<UserModel?> getUserById(String userId) async {
     return guardedRequest(
@@ -24,19 +25,52 @@ class UserRepository with SessionGuardMixin {
         try {
           final doc = await _firebaseService.usersCollection.doc(userId).get();
           if (!doc.exists) return null;
-
+          // TEMP DEBUG
+          debugPrint('📄 Doc exists: ${doc.exists}');
+          debugPrint('📄 UserId queried: $userId');
+          if (doc.exists) debugPrint('📄 Data: ${doc.data()}');
+          
+          if (!doc.exists) return null;
           return UserModel.fromJson({...doc.data()!, 'id': doc.id});
         } catch (e) {
           throw UserRepositoryException('Failed to get user: $e');
         }
       },
-      requiresAuth: false, // Public read
+      requiresAuth: false,
       operationName: 'getUserById',
     );
   }
 
+  /// Get user profile by username
+  ///
+  /// Looks up userId from usernamesCollection, then fetches full profile.
+  /// Public operation - does not require auth.
+  Future<UserModel?> getUserByUsername(String username) async {
+    return guardedRequest(
+      () async {
+        try {
+          // usernamesCollection: doc(username) → { userId: '...' }
+          final usernameDoc = await _firebaseService.usernamesCollection
+              .doc(username)
+              .get();
+
+          if (!usernameDoc.exists) return null;
+
+          final userId = usernameDoc.data()?['userId'] as String?;
+          if (userId == null) return null;
+
+          return getUserById(userId);
+        } catch (e) {
+          throw UserRepositoryException('Failed to get user by username: $e');
+        }
+      },
+      requiresAuth: false,
+      operationName: 'getUserByUsername',
+    );
+  }
+
   /// Get user profile stream (realtime updates)
-  /// 
+  ///
   /// Public operation - does not require auth
   Stream<UserModel?> getUserStream(String userId) {
     return guardedStream(
@@ -155,12 +189,10 @@ class UserRepository with SessionGuardMixin {
     }
 
     try {
-      // Add to current user's following list
       await _firebaseService.userFollowing(currentUserId).doc(targetUserId).set(
         {'followedAt': FieldValue.serverTimestamp()},
       );
 
-      // Add to target user's followers list
       await _firebaseService.userFollowers(targetUserId).doc(currentUserId).set(
         {'followedAt': FieldValue.serverTimestamp()},
       );
@@ -177,13 +209,11 @@ class UserRepository with SessionGuardMixin {
     }
 
     try {
-      // Remove from current user's following list
       await _firebaseService
           .userFollowing(currentUserId)
           .doc(targetUserId)
           .delete();
 
-      // Remove from target user's followers list
       await _firebaseService
           .userFollowers(targetUserId)
           .doc(currentUserId)
@@ -219,7 +249,6 @@ class UserRepository with SessionGuardMixin {
         .asyncMap((snapshot) async {
           final followerIds = snapshot.docs.map((doc) => doc.id).toList();
 
-          // Fetch user profiles
           final users = <UserModel>[];
           for (final followerId in followerIds) {
             final user = await getUserById(followerId);
@@ -240,7 +269,6 @@ class UserRepository with SessionGuardMixin {
         .asyncMap((snapshot) async {
           final followingIds = snapshot.docs.map((doc) => doc.id).toList();
 
-          // Fetch user profiles
           final users = <UserModel>[];
           for (final followingId in followingIds) {
             final user = await getUserById(followingId);
@@ -258,14 +286,12 @@ class UserRepository with SessionGuardMixin {
 
       final queryLower = query.toLowerCase();
 
-      // Search by username (starts with)
       final usernameResults = await _firebaseService.usersCollection
           .where('username', isGreaterThanOrEqualTo: queryLower)
           .where('username', isLessThan: '${queryLower}z')
           .limit(limit)
           .get();
 
-      // Convert to UserModel list
       final users = usernameResults.docs
           .map((doc) => UserModel.fromJson({...doc.data(), 'id': doc.id}))
           .toList();
@@ -277,9 +303,6 @@ class UserRepository with SessionGuardMixin {
   }
 
   /// Get user's homies (buddies/friends)
-  ///
-  /// For now, returns following list
-  /// TODO: Implement proper friends/buddies system
   Stream<List<UserModel>> getHomies(String userId) {
     return getFollowing(userId);
   }

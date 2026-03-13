@@ -259,6 +259,7 @@ class PostRepositoryImpl implements PostRepository {
     required String userId,
     required int page,
     int limit = 10,
+    String? currentUserId,
   }) async {
     try {
       final offset = page * limit;
@@ -282,7 +283,7 @@ class PostRepositoryImpl implements PostRepository {
       // Batch check likes cho tất cả posts của user
       final likedSet = await _batchGetLikedPostIds(
         postIds: rows.map((r) => r[FeedPostTable.postId] as String).toList(),
-        userId: userId,
+        userId: currentUserId,
       );
 
       final posts = rows

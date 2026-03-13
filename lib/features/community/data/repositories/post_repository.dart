@@ -65,10 +65,12 @@ abstract class PostRepository {
   /// [userId] - The user ID to get posts for
   /// [page] - Page number (0-indexed)
   /// [limit] - Number of posts per page
+  /// [currentUserId] - Current signed-in user ID to compute like status
   Future<PostFeedResult> getUserPosts({
     required String userId,
     required int page,
     int limit = 10,
+    String? currentUserId,
   });
 }
 

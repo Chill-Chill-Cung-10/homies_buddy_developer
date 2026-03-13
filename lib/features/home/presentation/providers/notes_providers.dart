@@ -3,11 +3,13 @@ import 'package:logger/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/firebase_service.dart';
 import '../../../../core/services/storage_service.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/datasources/note_remote_datasource.dart';
 import '../../data/repositories/note_repository_impl.dart';
 import '../../domain/entities/note_entity.dart';
 import '../../domain/repositories/note_repository.dart';
 import '../../domain/usecases/create_note_usecase.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 
 final _logger = Logger();
 
@@ -27,13 +29,19 @@ final noteRemoteDatasourceProvider = Provider<NoteRemoteDatasource>((ref) {
 /// Note Repository Provider
 final noteRepositoryProvider = Provider<NoteRepository>((ref) {
   final datasource = ref.watch(noteRemoteDatasourceProvider);
-  final firebaseService = FirebaseService.instance;
+  final profile = ref.watch(currentUserProfileProvider);
+  final authUser = ref.watch(currentAuthUserProvider);
 
   return NoteRepositoryImpl(
     remoteDatasource: datasource,
-    getCurrentUserName: () => firebaseService.currentUser?.displayName ?? 'Me',
-    getCurrentUserAvatar: () =>
-        firebaseService.currentUser?.photoURL ?? 'https://i.pravatar.cc/150',
+    getCurrentUserName: () =>
+        ((profile?.fullName.isNotEmpty ?? false)
+            ? profile!.fullName
+            : profile?.username) ??
+        authUser?.fullName ??
+        authUser?.username ??
+        'Me',
+    getCurrentUserAvatar: () => profile?.avatarUrl ?? authUser?.avatarUrl ?? '',
   );
 });
 
@@ -162,10 +170,14 @@ class NotesNotifier extends StateNotifier<NotesState> {
   Future<bool> createNote({
     required String textContent,
     List<String> mediaFilePaths = const [],
+    DateTime? refreshDate,
+    Duration lazyLoadDelay = const Duration(seconds: 3),
   }) async {
     state = state.copyWith(isCreating: true, errorMessage: null);
-    _logger.i('📝 Creating note — text: ${textContent.length} chars, '
-        'media: ${mediaFilePaths.length} files');
+    _logger.i(
+      'Creating note - text: ${textContent.length} chars, '
+      'media: ${mediaFilePaths.length} files',
+    );
 
     final params = CreateNoteParams(
       textContent: textContent,
@@ -178,29 +190,85 @@ class NotesNotifier extends StateNotifier<NotesState> {
 
       return result.fold(
         (failure) {
-          _logger.e('❌ Failed to create note: ${failure.message}');
+          _logger.e('Failed to create note: ${failure.message}');
           state = state.copyWith(
             isCreating: false,
             errorMessage: failure.message,
           );
           return false;
         },
-        (note) {
-          _logger.i('✅ Note created: ${note.id}');
+        (note) async {
+          _logger.i('Note created: ${note.id}');
+          if (lazyLoadDelay > Duration.zero) {
+            _logger.i(
+              'Delaying note refresh for ${lazyLoadDelay.inMilliseconds}ms',
+            );
+          }
+          return _finishCreateNote(
+            note: note,
+            refreshDate: refreshDate,
+            lazyLoadDelay: lazyLoadDelay,
+          );
+        },
+      );
+    } catch (e) {
+      _logger.e('Unexpected error creating note: $e');
+      if (mounted) {
+        state = state.copyWith(
+          isCreating: false,
+          errorMessage: 'Unexpected error: $e',
+        );
+      }
+      return false;
+    }
+  }
+
+  Future<bool> _finishCreateNote({
+    required NoteEntity note,
+    DateTime? refreshDate,
+    required Duration lazyLoadDelay,
+  }) async {
+    if (lazyLoadDelay > Duration.zero) {
+      await Future.delayed(lazyLoadDelay);
+    }
+
+    if (!mounted) return false;
+
+    if (refreshDate != null) {
+      final refreshResult = await _repository.getNotesByDate(refreshDate);
+      if (!mounted) return false;
+
+      return refreshResult.fold(
+        (failure) {
+          _logger.e(
+            'Failed to refresh notes after create: ${failure.message}',
+          );
           state = state.copyWith(
             isCreating: false,
-            notes: [note, ...state.notes],
+            errorMessage: failure.message,
+          );
+          return false;
+        },
+        (notes) {
+          _logger.i(
+            'Refreshed ${notes.length} notes after delayed create',
+          );
+          state = state.copyWith(
+            isCreating: false,
+            errorMessage: null,
+            notes: notes,
           );
           return true;
         },
       );
-    } catch (e) {
-      _logger.e('❌ Unexpected error creating note: $e');
-      if (mounted) {
-        state = state.copyWith(isCreating: false, errorMessage: 'Unexpected error: $e');
-      }
-      return false;
     }
+
+    state = state.copyWith(
+      isCreating: false,
+      notes: [note, ...state.notes],
+      errorMessage: null,
+    );
+    return true;
   }
 
   /// Update a note

@@ -37,32 +37,43 @@ class PostHeader extends StatelessWidget {
           GestureDetector(
             onTap: onAvatarTap,
             child: ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: post.authorAvatar,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  width: 40,
-                  height: 40,
-                  color: AppColors.surfaceColor,
-                  child: const Icon(
-                    Icons.person,
-                    size: 20,
-                    color: AppColors.textHint,
-                  ),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  width: 40,
-                  height: 40,
-                  color: AppColors.surfaceColor,
-                  child: const Icon(
-                    Icons.person,
-                    size: 20,
-                    color: AppColors.textHint,
-                  ),
-                ),
-              ),
+              child: _isValidHttpUrl(post.authorAvatar)
+                  ? CachedNetworkImage(
+                      imageUrl: post.authorAvatar.trim(),
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(
+                        width: 40,
+                        height: 40,
+                        color: AppColors.surfaceColor,
+                        child: const Icon(
+                          Icons.person,
+                          size: 20,
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        width: 40,
+                        height: 40,
+                        color: AppColors.surfaceColor,
+                        child: const Icon(
+                          Icons.person,
+                          size: 20,
+                          color: AppColors.textHint,
+                        ),
+                      ),
+                    )
+                  : Container(
+                      width: 40,
+                      height: 40,
+                      color: AppColors.surfaceColor,
+                      child: const Icon(
+                        Icons.person,
+                        size: 20,
+                        color: AppColors.textHint,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 12),
@@ -210,5 +221,13 @@ class PostHeader extends StatelessWidget {
       default:
         return Icons.public;
     }
+  }
+
+  bool _isValidHttpUrl(String? url) {
+    if (url == null) return false;
+    final trimmed = url.trim();
+    if (trimmed.isEmpty) return false;
+    final uri = Uri.tryParse(trimmed);
+    return uri != null && uri.hasScheme && uri.host.isNotEmpty;
   }
 }
